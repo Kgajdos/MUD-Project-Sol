@@ -1,0 +1,6 @@
+from evennia import create_object, search_object
+import typeclasses.ships
+
+#First code block
+
+ship = create_object()

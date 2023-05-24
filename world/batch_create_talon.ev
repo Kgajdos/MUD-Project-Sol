@@ -1,0 +1,13 @@
+#
+# A batch build for Talon-Dae only
+#
+@py import typeclasses.characters
+#create Talon
+@charcreate Talon-Dae = An average sized man with poor posture and a limp.
+#Hardcode 3 skills for Talon
+@py talon = me.search("Talon"); talon.db.skills = {"Sneak": {"level": 1, "xp": 0}, "Fly": {"level": 1, "xp": 0}, "Craft": {"level": 1, "xp": 0}}; talon.player_sheet()
+#
+
+
+##command below for shop
+py rev = me.search("#238");rev.db.inventory.add({"BS Fighter": {"credit_value": 15000, "desc": "Basic Space has served as a low cost entry to space combat for generations. WARNING: Basic Space is not responsible for the death of a pilot in the even of a firefight."}}, {"BS Freighter": {"credit_value": 15000, "desc": "Basic Space has created a luxurious tank, so you can rest well knowing the pirates wont even leave a scratch! WARNING: Basic Space is not responsible for any hardships as a result of slow travel."}}, {"BS Miner": {"credit_value": 15000, "desc": "Not the best mining ship, but it is the cheapest. WARNING: Basic Space is not responsible for death or damage caused by asteroids."}}, {"BS Researcher": {"credit_value": 15000, "desc": "Let Basic Space take you to the corners of spacetime. WARNING: Basic Space is not responsible for loss of life due to strandenment."}})

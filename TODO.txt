@@ -1,0 +1,40 @@
+KNOWN BUGS:
+Store command currently sends item to all available storage units. Not good
+----------------------------------------------------------------------------------------------------------------------------------------------
+Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
+BOOK(menu) ----> PAGE(text, pg#)
+
+Books now have their own directory within the game as each book will have it's own file to define it
+	*is it the right answer? Probably not
+-----------------------------------------------------------------------
+Create wearables object with applicable commands (In progress, few bugs)
+bugs include:
+	*Not checking if player is already wearing something (only change would be some text flair that 
+tells the player they're removing one piece of armor for another
+	*Remove exists in infancy
+-----------------------------------------------------------------------------------------------
+start considering how objects improve players life (this will be a long road). 
+QUALITY LEVEL = -POOR: +1
+		-MODEST: +2
+		-GOOD: +3
+		-GREAT: +4
+		-SPECTACULAR: +5
+Example:
+	*MultiTool provides a +5 to every skill check it's used with. Can be used with fabricating, tinkering, guns (Maintainence), melee (same), and maintainence
+	*Weapons provide based off of quality and type:
+		**Riffle +5 + (quality level)
+		**Pistol +3 + (quality level)
+		**Infernal Knife + 3 + (quality level)
+			-Inflicts +1 burn damage every second for a max of 10 seconds + melee level
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Start seperating player roles/jobs based on their chosen class.
+All pilots will need a tutorial on basic movement, commands, and ship commands.
+*Miner: Tutorial on finding asteroids, landing or attaching (what the difference is), and beginning mining
+	**If they find an asteroid large enough to land on, have a tutorial on space mining where the player leaves the comfort of the
+ship and mines the asteroid alongside their ship. This only works on massive asteroids that are at least ten times the size of the ship.
+*Fighter: Tutorial on getting contracts, fulfilling them, and general space travel
+	**Focus more on close combat space flight 
+*Freighter: Tutorial on getting contracts, fulling storage space, understanding economies, and deep-space travel.
+	**Encourage players to pick up a "Hobby" to pass the time
+*Researcher: Tutorial on their ship's unique research room and all it's fixin's. Provide beginner contracts to allow the player
+to build up their relevant skills.

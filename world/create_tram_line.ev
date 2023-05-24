@@ -1,0 +1,20 @@
+#
+# A batch build file for A Tram and Tram Line
+#
+@import typeclasses.trams
+#This creates the tram 
+@create/drop Tram:tram.Tram
+#Station
+@dig/tel West Tram Station
+#Line
+@tunnel/tel e = Tram Track West
+#Line
+@tunnel/tel e = Tram Track East
+#Station
+@tunnel/tel e = East Tram Station
+#Set Description for tram
+@set Tram/desc = You stand in the tram car and see a mixture of plastic and metal benches. There is an odd smell in the air.
+#set tram Line
+@py Tram = me.search("Tram"); Tram.create_line(me.search("West Tram Station"), me.search("Tram Track West"), me.search("Tram Track East"), me.search("East Tram Station"))
+#Looking up tram
+

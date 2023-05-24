@@ -1,0 +1,4 @@
+all wearables must be created with a armor_slot attribute set before distribution. Consider making copies of objects already in the developers chest
+------------------------------------------------------------
+*Books must be made as objects (book objects) and their pages must also be made as objects. 
+	**page.db.desc is where the text content of the pages is stored and must be called from.
