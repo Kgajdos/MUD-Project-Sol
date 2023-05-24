@@ -89,6 +89,9 @@ class BagCmdSet(CmdSet):
         self.add(CmdRetrieve())
     
 class Bag(Object):
+    """
+    Every player object (Character) starts off with a basic bag.
+    """
     
     def at_object_creation(self):
         self.db.desc = "A sturdy canvas bag to hold all your belongings."

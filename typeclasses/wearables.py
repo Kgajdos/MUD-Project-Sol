@@ -1,6 +1,25 @@
 from evennia import DefaultObject
 
 class Wearable(DefaultObject):
+	"""
+	A wearable can be defined as anything that the user can place on their body. 
+
+	Each character has a ____.db.worn[armor_slot] attribute to track worn items.
+
+	Armor_Slot: 
+	-head
+	-body
+	-arms
+	-feet
+
+	Functions:
+
+	-- do_wear:
+			set's the players __.db.worn[<armor slot>] = <item name> and set's the items self.db.worn = player
+
+	-- do_remove:
+			Not properly implemented
+	"""
 	def at_object_creation(self):
 		super().at_object_creation()
 		self.db.wearer = None
