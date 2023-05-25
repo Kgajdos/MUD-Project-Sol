@@ -19,14 +19,18 @@ class Ships(Object):
         self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
         #creates the 4 rooms attached to the ship (all rooms must move too)
         # Create the rooms
-        bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-        bridge_room.location = self
-        console = create_object(typeclasses.ships.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
-        chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
-        console.move_to(bridge_room)
-        chair.move_to(bridge_room)
-        storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
-        quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
+
+        if not self.search("Bridge"):
+            bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
+            bridge_room.location = self
+            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
+            chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
+            console.move_to(bridge_room)
+            chair.move_to(bridge_room)
+            storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
+            quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
+        else:
+            return
        
         # Create the exits between rooms
         create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge

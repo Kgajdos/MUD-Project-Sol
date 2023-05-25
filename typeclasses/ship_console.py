@@ -1,4 +1,7 @@
+import datetime
 from typeclasses import ships
+from typeclasses.objects import Object
+from evennia import InterruptCommand
 from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
 
 _SHIP_CONSOLE_DICT = []
@@ -148,9 +151,13 @@ class ConsoleCmdSet(CmdSet):
         self.add(CmdUnloadCargo())
         self.add(CmdShoot())
         self.add(CmdLaunch())
+###########################################################################################################
 
 #opens an EvMenu to allow interactions with the ship
 def menunode_start(caller):
+    """
+    This is the start of the ship console's menu. Any additions to this menu must be added here.
+    """
     menu = caller.ndb._evmenu
     ai = menu.ai
     text = f"Welcome aboard Captain {caller.key}. Enter quit or q to exit."
@@ -173,6 +180,26 @@ Every ship comes with a Captain's log for your convienence.'"""
     }
     return text, options
 
+def menunode_captains_logs(caller, raw_string, **kwargs):
+    text = f"""
+    Welcome {caller.key}. Choose log to read, or start a new log."""
+
+    options = [{
+        "key": ("(New)", "new", "n"),
+        "desc": "Create new log.",
+        "goto": "_new_log" 
+    },{
+        "key": ("(Read)", "read", "r"),
+        "desc": "Read old logs.",
+        "goto": "_choose_log"
+    },
+    {
+        "key": ("(Back)", "back", "b"),
+        "desc": "Back to home screen.",
+        "goto": "menunode_start"
+    }]
+    return text, options
+
 ###### Ship_stats
 def _ship_stats(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
@@ -186,18 +213,25 @@ def _ship_stats(caller, raw_string, **kwargs):
     }
     return text, options
 
-def menunode_captains_logs(caller, raw_string, **kwargs):
-    text = "Captain's log"
-    options = {"key": "_default", "goto": _captains_log}
+def _new_log(caller, raw_string, **kwargs):
+    menu = caller.ndb._evmenu
+    player = menu.player
+    new_entry = raw_string
+    log_date = datetime.datetime.now()
+    caller.db.logs[log_date] = new_entry
+    player.msg("Saving log.")
+
+    return "menunode_captains_logs"
+
+def _choose_log(caller, raw_string, **kwargs):
+    text = "Choose a Date."
+    options = []
+
+    for date in caller.db.logs[date]:
+        options.append({"desc": (f"{date}"),
+                        "goto": ("_read_log", {"selected_date": date})})
 
     return text, options
-
-## Where the actual journal is stored and accessed
-def _captains_log(caller, raw_string, **kwargs):
-    
-
-    return "menunode_start"
-
 
 class ShipConsole(Object):
 
