@@ -157,6 +157,13 @@ class ConsoleCmdSet(CmdSet):
 def menunode_start(caller):
     """
     This is the start of the ship console's menu. Any additions to this menu must be added here.
+
+    --menunode_help
+            All relevant help for the ship, this can be where the player is reminded how to load and unload, alongside combat.
+    --menunode_captains_logs
+            A menunode strictly for the player to have an in game journal.
+    --_ship_stats
+            A non-interactive page for viewing the ship's statistics in a visual way.
     """
     menu = caller.ndb._evmenu
     ai = menu.ai
@@ -164,7 +171,7 @@ def menunode_start(caller):
     #This is where every option for the ship console exists
     options = [{
         "desc": "Help", "goto": "menunode_help"},
-        {"desc": "Captain's Log", "goto": "menunode_captains_log"},
+        {"desc": "Captain's Log", "goto": "menunode_captains_logs"},
         {"desc": "Ship Statistics", "goto": "_ship_stats"
     }]
     return text, options
@@ -181,17 +188,18 @@ Every ship comes with a Captain's log for your convienence.'"""
     return text, options
 
 def menunode_captains_logs(caller, raw_string, **kwargs):
-    text = f"""
-    Welcome {caller.key}. Choose log to read, or start a new log."""
+    menu = caller.ndb._evmenu
+    player = menu.player
+    text = f"""Welcome {player.key}. Choose log to read, or start a new log."""
 
     options = [{
         "key": ("(New)", "new", "n"),
         "desc": "Create new log.",
-        "goto": "_new_log" 
+        "goto": "menunode_new_log" 
     },{
         "key": ("(Read)", "read", "r"),
         "desc": "Read old logs.",
-        "goto": "_choose_log"
+        "goto": "menunode_choose_log"
     },
     {
         "key": ("(Back)", "back", "b"),
@@ -213,7 +221,7 @@ def _ship_stats(caller, raw_string, **kwargs):
     }
     return text, options
 
-def _new_log(caller, raw_string, **kwargs):
+def menunode_new_log(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
     player = menu.player
     new_entry = raw_string
@@ -223,7 +231,7 @@ def _new_log(caller, raw_string, **kwargs):
 
     return "menunode_captains_logs"
 
-def _choose_log(caller, raw_string, **kwargs):
+def menunode_choose_log(caller, raw_string, **kwargs):
     text = "Choose a Date."
     options = []
 
@@ -231,6 +239,15 @@ def _choose_log(caller, raw_string, **kwargs):
         options.append({"desc": (f"{date}"),
                         "goto": ("_read_log", {"selected_date": date})})
 
+    return text, options
+
+def _read_log(caller, raw_string, **kwargs):
+    text = caller.db.logs[kwargs]
+    options = {
+        "key": ("(Back)", "back", "b"),
+        "desc": "Back to home screen.",
+        "goto": "menunode_start"
+    }
     return text, options
 
 class ShipConsole(Object):
@@ -245,7 +262,10 @@ class ShipConsole(Object):
             "menunode_start": menunode_start,
             "_ship_stats": _ship_stats,
             "menunode_help": menunode_help,
-            "menunode_captains_logs": menunode_captains_logs
+            "menunode_captains_logs": menunode_captains_logs,
+            "menunode_new_log": menunode_new_log,
+            "menunode_choose_log": menunode_choose_log,
+            "_read_log": _read_log
         }
         consolename = self.db.name or "Admin"
         EvMenu(player, menunodes, startnode = "menunode_start",
