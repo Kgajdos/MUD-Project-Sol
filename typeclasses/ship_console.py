@@ -170,18 +170,23 @@ def menunode_start(caller):
     text = f"Welcome aboard Captain {caller.key}. Enter quit or q to exit."
     #This is where every option for the ship console exists
     options = [{
-        "desc": "Help", "goto": "menunode_help"},
-        {"desc": "Captain's Log", "goto": "menunode_captains_logs"},
-        {"desc": "Ship Statistics", "goto": "_ship_stats"
+        "desc": f"|gHelp|n", "goto": "menunode_help"},
+        {"desc": f"|gCaptain's Log|n", "goto": "menunode_captains_logs"},
+        {"desc": f"|gShip Statistics|n", "goto": "_ship_stats"
     }]
     return text, options
 
 def menunode_help(caller, raw_string, **kwargs):
-    text = """Welcome to your ship! You are accessing your onboard computer system. Here you can check out your ships statistics sheet, as well as cargo currently in storage.
-Every ship comes with a Captain's log for your convienence.'"""
+    text = f"""Welcome to your ship! You are accessing your onboard computer system. Here you can check out your ships statistics sheet, as well as cargo currently in storage.
+Every ship comes with a Captain's log for your convienence.
+
+To make things simpler, your options are color coded:
+|cCyan|n: This means you are about to interact with or modify your ship. (example: new Captain's log.)
+|gGreen|n: This means you are revieving information about your ship.
+|yYellow|n: This refers to basic screen options."""
         
     options = {
-        "key": ("(Back)", "back", "b"),
+        "key": (f"|y(Back)|n", "back", "b"),
         "desc": "Back to home screen.",
         "goto": "menunode_start"
     }
@@ -189,20 +194,20 @@ Every ship comes with a Captain's log for your convienence.'"""
 
 def menunode_captains_logs(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
-    player = menu.player
+    player = menu.caller
     text = f"""Welcome {player.key}. Choose log to read, or start a new log."""
 
     options = [{
-        "key": ("(New)", "new", "n"),
+        "key": (f"|c(New)|n", "new", "n"),
         "desc": "Create new log.",
         "goto": "menunode_new_log" 
     },{
-        "key": ("(Read)", "read", "r"),
+        "key": (f"|g(Read)|n", "read", "r"),
         "desc": "Read old logs.",
         "goto": "menunode_choose_log"
     },
     {
-        "key": ("(Back)", "back", "b"),
+        "key": (f"|y(Back)|n", "back", "b"),
         "desc": "Back to home screen.",
         "goto": "menunode_start"
     }]
@@ -215,19 +220,36 @@ def _ship_stats(caller, raw_string, **kwargs):
     text = ai.ship_sheet(caller)
 
     options = {
-        "key": ("(Back)", "back", "b"),
+        "key": (f"|y(Back)|n", "back", "b"),
         "desc": "Back to home screen.",
         "goto": "menunode_start"
     }
     return text, options
 
 def menunode_new_log(caller, raw_string, **kwargs):
+    """
+    Create a new log.
+    """
+    text = "Begin typing up log, press enter to save log to console."
+
+    options = {"key": "_default", "goto": _new_log}
+
+    return text, options
+
+def _new_log(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
-    player = menu.player
+    player = menu.caller
     new_entry = raw_string
     log_date = datetime.datetime.now()
-    caller.db.logs[log_date] = new_entry
-    player.msg("Saving log.")
+    years_added = log_date.year + 2053
+    date = log_date.strftime("%Y-%m-%d")
+    date_2 = log_date.replace(year = years_added).strftime("%Y-%m-%d")
+    if not caller.db.logs:
+        caller.db.logs = {}
+    if not caller.db.logs.get(date):
+        caller.db.logs[date] = new_entry
+    else:
+        caller.db.logs[date] += new_entry
 
     return "menunode_captains_logs"
 
@@ -235,16 +257,17 @@ def menunode_choose_log(caller, raw_string, **kwargs):
     text = "Choose a Date."
     options = []
 
-    for date in caller.db.logs[date]:
-        options.append({"desc": (f"{date}"),
-                        "goto": ("_read_log", {"selected_date": date})})
+    for date, data in caller.db.logs.items():
+        options.append({"desc": (f"|g{date}|n"),
+                        "goto": ("_read_log", {"date": date})})
 
     return text, options
 
 def _read_log(caller, raw_string, **kwargs):
-    text = caller.db.logs[kwargs]
+    date = kwargs.get('date')
+    text = caller.db.logs[date]
     options = {
-        "key": ("(Back)", "back", "b"),
+        "key": (f"|y(Back)|n", "back", "b"),
         "desc": "Back to home screen.",
         "goto": "menunode_start"
     }
@@ -256,6 +279,7 @@ class ShipConsole(Object):
         super().at_object_creation()
         self.cmdset.add_default(ConsoleCmdSet())
         self.db.desc = "This is the main computer of the ship. Here is where you can access things like your Captain's log, or take a look at your ship stats."
+        self.db.logs = []
 
     def start_consoles(self, player):
         menunodes = {
@@ -288,7 +312,6 @@ class ShipConsole(Object):
         custom_mapping = {"v&": "v2"}
         form.map(tables={"A": table}, literals = custom_mapping)
 
-        print (str(form))
         return str(form)
 
     def store_cargo(self, cargo, player):
