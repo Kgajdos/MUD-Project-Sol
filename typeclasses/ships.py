@@ -22,6 +22,8 @@ class Ships(Object):
 
         if not self.search("Bridge"):
             bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
+            #this doesn't work, it doesn't effect the look command
+            bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
             bridge_room.location = self
             console = create_object(typeclasses.ship_console.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
             chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
