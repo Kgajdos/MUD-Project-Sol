@@ -18,14 +18,11 @@ class CmdWear(Command):
 			raise InterruptCommand
 
 	def func(self):
-		wearable = self.caller.search(self.args)
+		wearable = self.caller.search(self.args, candidates = self.obj.contents)
 		if not wearable:
 			return
-		try:
-			slot = self.obj.db.armor_slot.get()
-			wearable.do_wear(self.caller, slot)
-		except AttributeError:
-			self.caller.msg("You can't wear that!")
+		wearable.do_wear(self.caller, wearable)
+
 
 class CmdRemove(Command):
 	""" 

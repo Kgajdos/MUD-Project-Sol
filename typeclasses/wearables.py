@@ -24,7 +24,7 @@ class Wearable(DefaultObject):
 		super().at_object_creation()
 		self.db.wearer = None
 
-	def do_wear(self, wearer, armor_slot):
+	def do_wear(self, wearer, wearable):
 		"""
 		Called when trying to wear this item.
 
@@ -37,11 +37,13 @@ class Wearable(DefaultObject):
 				wearer.msg(f"You are already wearing {self.key}.")
 			else:
 				wearer.msg(f"You can't wear {self.key} " 
-				f"- {current.key} is already wearing that!")
+				f"- {current} is already wearing that!")
 			return
 		self.db.wearer = wearer
-		wearer.db.worn[f"{armor_slot}"] = self
-		wearer.msg(f"You wear {self.key} on {armor_slot} armor slot.")
+		print(wearer.db.worn)
+		slot = wearable.db.armor_slot
+		wearer.db.worn[f"{slot}"] = self
+		wearer.msg(f"You wear {self.key} on {slot} armor slot.")
 
 	def do_remove(self, remover, armor_slot):
 		"""

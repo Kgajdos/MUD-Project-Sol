@@ -172,7 +172,8 @@ def menunode_start(caller):
     options = [{
         "desc": f"|gHelp|n", "goto": "menunode_help"},
         {"desc": f"|gCaptain's Log|n", "goto": "menunode_captains_logs"},
-        {"desc": f"|gShip Statistics|n", "goto": "_ship_stats"
+        {"desc": f"|gShip Statistics|n", "goto": "_ship_stats"},
+        {"desc": f"|cRename Ship|n", "goto": "menunode_ship_rename"
     }]
     return text, options
 
@@ -230,15 +231,16 @@ def menunode_new_log(caller, raw_string, **kwargs):
     """
     Create a new log.
     """
-    text = "Begin typing up log, press enter to save log to console."
+    text = f"""Begin typing up log, press enter to save log to console. 
+Remember that for the time being, all logs are |rpermanent|n!"""
 
     options = {"key": "_default", "goto": _new_log}
 
     return text, options
 
 def _new_log(caller, raw_string, **kwargs):
-    menu = caller.ndb._evmenu
-    player = menu.caller
+    #menu = caller.ndb._evmenu
+    #player = menu.caller
     new_entry = raw_string
     log_date = datetime.datetime.now()
     years_added = log_date.year + 2053
@@ -273,6 +275,20 @@ def _read_log(caller, raw_string, **kwargs):
     }
     return text, options
 
+def menunode_ship_rename(caller, raw_string, **kwargs):
+    text = f"""Type in a new name for your ship and press enter. 
+|rWARNING: You will not be notified of this change!|n"""
+
+    options = {"key": "_default", "goto": _new_name}
+
+    return text, options
+
+def _new_name(caller, raw_string, **kwargs):
+    menu = caller.ndb._evmenu
+    menu.ai.set_new_name(raw_string)
+
+    return "menunode_start"
+
 class ShipConsole(Object):
 
     def at_object_creation(self):
@@ -289,12 +305,17 @@ class ShipConsole(Object):
             "menunode_captains_logs": menunode_captains_logs,
             "menunode_new_log": menunode_new_log,
             "menunode_choose_log": menunode_choose_log,
-            "_read_log": _read_log
+            "_read_log": _read_log,
+            "menunode_ship_rename": menunode_ship_rename
         }
         consolename = self.db.name or "Admin"
         EvMenu(player, menunodes, startnode = "menunode_start",
                consolename = consolename, ai = self, console = self.contents)
         
+    def set_new_name(self, new_name):
+        ship = self.location.location
+        ship.key = new_name
+
     def ship_sheet(self,player):
         '''Using the EvForm shipform for creation'''
         ship = self.location.location

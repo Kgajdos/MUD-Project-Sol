@@ -7,11 +7,7 @@ BOOK(menu) ----> PAGE(text, pg#)
 Books now have their own directory within the game as each book will have it's own file to define it
 	*is it the right answer? Probably not
 -----------------------------------------------------------------------
-Create wearables object with applicable commands (In progress, few bugs)
-bugs include:
-	*Not checking if player is already wearing something (only change would be some text flair that 
-tells the player they're removing one piece of armor for another
-	*Remove exists in infancy
+Give wearables "stats" and make sure to document how to build the object in game
 -----------------------------------------------------------------------------------------------
 start considering how objects improve players life (this will be a long road). 
 QUALITY LEVEL = -POOR: +1

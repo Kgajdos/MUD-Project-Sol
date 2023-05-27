@@ -25,15 +25,16 @@ class Character(DefaultCharacter):
     """
     (class docstring)
     """
-    #not working at the moment
+
     def at_object_creation(self):     
         self.db.stats = {}
-        #self.db.skills
-
+        self.db.worn = {
+            "head": None, "body": None, "arms": None, "feet": None}
+        
         if not self.db.contents:
             pc_bag = evennia.create_object("typeclasses.bags.Bag", key="Bag", location = self, attributes = [("desc", "A sturdy canvas bag to hold your belongings.")])
         
-
+        
     #Belo is functions that set a new ship to the player based on their class
     def set_ship_by_pc_class(self):
         ship = evennia.create_object(f"typeclasses.ships.{self.db.player_class}", key = "Ship", location = self.location, attributes = [("class", f"{self.db.player_class}")])
@@ -48,8 +49,8 @@ class Character(DefaultCharacter):
         self.db.stats["Health"] = random.randint(1,10) * self.db.stats.get("Physical")
         self.db.stats["Stamina"] = random.randint(1, 10) * (self.db.stats.get("Physical") + self.db.stats.get("Mental"))
 
-
-
+    def get_display_desc(self, looker, **kwargs):
+        return super().get_display_desc(looker, **kwargs)
 ################################################################
 ################################################################
 ###########REWORK THIS ITS NOT RIGHT!!##########################
@@ -58,7 +59,7 @@ class Character(DefaultCharacter):
         sex = self.db.sex
         if sex == "male":
             pronoun = "he"
-        if sex == "female":
+        elif sex == "female":
             pronoun = "she"
         else:
             pronoun = "they"
