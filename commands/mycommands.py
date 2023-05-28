@@ -7,6 +7,7 @@ from evennia import default_cmds
 from evennia import CmdSet
 from evennia import InterruptCommand
 from commands.wearables import CmdSetWear
+from typeclasses.ships import Ships
 
 
 class CmdLogin(Command):
@@ -131,6 +132,50 @@ class CmdPlayerSheet(Command):
             return
         self.caller.msg(str(caller.player_sheet()))
         
+class CmdEnterShip(Command):
+    """
+    Entering the ship.
+
+    Usage:
+        board 
+    """
+    key = "board"
+    locks = "cmd:not cmdinside()"
+    help_category = "Ship"
+
+    def func(self):
+        ship = self.obj.db.ship
+        if not ship:
+            return
+
+        self.caller.msg("You board the ship.")
+        self.caller.move_to(ship)
+
+
+
+class CmdLeaveShip(Command):
+    """
+    Leaving the ship.
+
+    Usage:
+        disembark
+    """
+    key = "disembark"
+    locks = "cmd:cmdinside()"
+    help_category = "Ship"
+
+    def func(self):
+        self.caller.move_to(self.obj.location.location)
+
+
+
+class ShipCmdSet(CmdSet):
+    key = "shipcmdset"
+
+    def at_cmdset_creation(self):
+        self.add(CmdEnterShip())
+        self.add(CmdLeaveShip())
+
 
 
 class MyCmdGet(default_cmds.CmdGet):
@@ -147,6 +192,7 @@ class MyCharCmdSet(CmdSet):
         self.add(CmdShowWallet())
         self.add(CmdPlayerSheet())
         self.add(CmdSetWear())
+        self.add(ShipCmdSet())
 
 class MyAccountCmdSet(CmdSet):
 
