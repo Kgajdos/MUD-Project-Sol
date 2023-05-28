@@ -2,20 +2,19 @@ from typing import Self
 import evennia
 from evennia import InterruptCommand
 import typeclasses
+from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
 from typeclasses import rooms, exits, ships
 from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
-from commands import ships, sittables
-from commands.ships import ShipCmdSet
+from commands import sittables
 
 
 ## Ship Class definitions only
 class Ships(Object):
 
     def at_object_creation(self):
-        self.cmdset.add_default(ShipCmdSet())
         self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
         #creates the 4 rooms attached to the ship (all rooms must move too)
         # Create the rooms
@@ -25,7 +24,7 @@ class Ships(Object):
             #this doesn't work, it doesn't effect the look command
             bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
             bridge_room.location = self
-            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
+            console = create_object(ship_console.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
             chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
             console.move_to(bridge_room)
             chair.move_to(bridge_room)

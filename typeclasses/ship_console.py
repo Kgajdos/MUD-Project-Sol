@@ -261,11 +261,11 @@ def menunode_choose_log(caller, raw_string, **kwargs):
 
     for date, data in caller.db.logs.items():
         options.append({"desc": (f"|g{date}|n"),
-                        "goto": ("_read_log", {"date": date})})
+                        "goto": ("menunode_read_log", {"date": date})})
 
     return text, options
 
-def _read_log(caller, raw_string, **kwargs):
+def menonode_read_log(caller, raw_string, **kwargs):
     date = kwargs.get('date')
     text = caller.db.logs[date]
     options = {
@@ -305,7 +305,7 @@ class ShipConsole(Object):
             "menunode_captains_logs": menunode_captains_logs,
             "menunode_new_log": menunode_new_log,
             "menunode_choose_log": menunode_choose_log,
-            "_read_log": _read_log,
+            "menunode_read_log": menonode_read_log,
             "menunode_ship_rename": menunode_ship_rename
         }
         consolename = self.db.name or "Admin"

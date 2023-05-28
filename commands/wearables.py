@@ -32,8 +32,21 @@ class CmdRemove(Command):
 		remove <clothing/armor name>
 	"""
 	key = "remove"
+	help_category = "Player"
 
+	def parse(self):
+		self.args = self.args.strip()
+		if not self.args:
+			self.caller.msg("Remove what?")
+			raise InterruptCommand
+		
+	def func(self):
+		wearable = self.caller.search(self.args, candidates = self.obj.contents)
+		if not wearable:
+			return
+		wearable.do_remove(self.caller)
 
 class CmdSetWear(CmdSet):
 	def at_cmdset_creation(self):
 		self.add(CmdWear())
+		self.add(CmdRemove())

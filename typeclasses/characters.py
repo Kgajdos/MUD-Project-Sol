@@ -15,9 +15,9 @@ from evennia import scripts
 from evennia.utils import create
 from evennia import EvForm, EvTable
 import random
-
+import world.rules
 from typeclasses.objects import ObjectParent
-import random
+
 
 
 
@@ -30,14 +30,18 @@ class Character(DefaultCharacter):
         self.db.stats = {}
         self.db.worn = {
             "head": None, "body": None, "arms": None, "feet": None}
+        self.db.weapon = None
+        self.update_character_on_first_login()
+        self.db.HP = self.db.stats["Health"]
         
-        if not self.db.contents:
+        if self.db.contents:
             pc_bag = evennia.create_object("typeclasses.bags.Bag", key="Bag", location = self, attributes = [("desc", "A sturdy canvas bag to hold your belongings.")])
         
         
     #Belo is functions that set a new ship to the player based on their class
     def set_ship_by_pc_class(self):
         ship = evennia.create_object(f"typeclasses.ships.{self.db.player_class}", key = "Ship", location = self.location, attributes = [("class", f"{self.db.player_class}")])
+        self.db.ship = ship
 
     #only to be called at first login!!!! otherwise we'll be drowning in more ships
     def update_character_on_first_login(self):
@@ -49,6 +53,8 @@ class Character(DefaultCharacter):
         self.db.stats["Health"] = random.randint(1,10) * self.db.stats.get("Physical")
         self.db.stats["Stamina"] = random.randint(1, 10) * (self.db.stats.get("Physical") + self.db.stats.get("Mental"))
 
+
+
     def get_display_desc(self, looker, **kwargs):
         return super().get_display_desc(looker, **kwargs)
 ################################################################
@@ -57,13 +63,15 @@ class Character(DefaultCharacter):
     #sets the char description
     def set_char_description(self):
         sex = self.db.sex
+        adj = "is"
         if sex == "male":
             pronoun = "he"
         elif sex == "female":
             pronoun = "she"
         else:
             pronoun = "they"
-        self.db.desc = f"Before you stands {self.key}, {pronoun} are {self.db.adjective} and {self.db.body_type}. \nThey have a {self.db.disposition} disposition."
+            adj = "are"
+        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {self.db.adjective} and {self.db.body_type}. \nThey have a {self.db.disposition} disposition."
 
     #To be called when a character learns a new skill for the first time
     def create_skill_set(self, raw_string):
