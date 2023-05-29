@@ -9,6 +9,29 @@ from evennia import InterruptCommand
 from commands.wearables import CmdSetWear
 from typeclasses.ships import Ships
 
+class CmdWeild(Command):
+    """
+    Weild weapon
+
+    Usage:
+        wield <weapon_name>
+    """
+    key = "wield"
+    locks = "cmd:wield()"
+    
+    def parse(self):
+        self.args = self.args.strip()
+        if not self.args:
+            self.caller.msg("Test, something went wrong")
+            raise InterruptCommand
+        
+    def func(self):
+        weapon = self.caller.search(self.args, candidates = self.obj.contents)
+        if not weapon:
+            return
+        weapon.do_wear(self.caller, weapon)
+
+
 
 class CmdLogin(Command):
     """
@@ -193,6 +216,7 @@ class MyCharCmdSet(CmdSet):
         self.add(CmdPlayerSheet())
         self.add(CmdSetWear())
         self.add(ShipCmdSet())
+        self.add(CmdWeild())
 
 class MyAccountCmdSet(CmdSet):
 

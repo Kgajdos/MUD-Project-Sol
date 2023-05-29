@@ -41,6 +41,13 @@ def cmdheavy(accessing_obj, accessed_obj, *args, **kwargs):
     """
     return accessing_obj.msg("It's too heavy")
 
+def cmdweild(accessing_obj, accessed_obj, *args, **kwargs):
+    """
+    Usage: cmdweild()
+    Used to lock commands to only be available when the item is held.
+    """
+    return accessing_obj.db.worn["weapon"] == accessed_obj
+
 def cmdinside(accessing_obj, accessed_obj, *args, **kwargs):
     """
     Usage: cmdinside()
