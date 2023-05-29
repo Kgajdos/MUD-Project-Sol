@@ -360,16 +360,18 @@ _PROTOTYPES = [
     #Starter Pistol prototype
     {
         "key": "BS Pistol",
-        "desc": "A poor-quality pistol made by Basic Space",
+        "desc": "A pistol designed by Basic Space. It doesn't sit comfortably in your hands.",
         "tags": [("pistol", "gun")],
         "typeclass": "typeclasses.weapons.Gun"
+        "armor_slot": "hands" #This line may fail, unable to test at this time
     },
     #Starter Riffle prototype
     {
         "key": "BS Riffle",
-        "desc": "A poor-quality riffle made by Basic Space",
+        "desc": "A riffle designed by Basic Space. It seems kind of light and flimsy.",
         "tags": [("riffle", "gun")],
         "typclass": "typeclasses.weapons.Gun"
+        "armor_slot": "hands"
     },
     #MultiTool kit
     {
@@ -380,15 +382,16 @@ _PROTOTYPES = [
     #Starter Knife
     {
         "key": "BS Knife",
-        "desc": "A poor-quality knife made by Basic Space",
+        "desc": "A knife designed by Basic Space. It doesn't look very sharp.",
         "tags": [{"knife", "melee"}]
+        "armor_slot": "hands"
     }
 ]
 
 #this method creates the object
 def create_objects(character):
     """do the actual object spawning"""
-    proto = dict(character.db.starter_weapon)
+    proto = dict(character.db.starter_item)
     proto["location"] = character
     spawn(proto)
 

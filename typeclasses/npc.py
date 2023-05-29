@@ -46,7 +46,7 @@ class CmdRetrieveShip(Command):
     def func(self):
         self.obj.ship_service(self.caller)
 
-class NPC(Object):
+class NPC(Character, Object):
 
     def at_object_creation(self):
         self.cmdset.add_default(NPCCmdSet())
@@ -67,6 +67,17 @@ class NPC(Object):
     ## Import quest script and have it run from this command
     def add_dialog(self, dialog_line):
         self.db.dialog.append(dialog_line)
+
+    def at_char_entered(self, character):
+        """
+        A simple is_aggressive check.
+        Expand upon later - and make it more flexible
+        """
+        #This block here will need to be changed, it's way too static
+        if self.db.is_aggressive:
+            self.execute_cmd(f"say Die {character}!")
+        else:
+            self.execute_cmd(f"say Greetings, {character}")
 
 def _handle_answer(caller, raw_input, **kwargs):
     answer = kwargs.get("answer")

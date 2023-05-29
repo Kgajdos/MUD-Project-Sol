@@ -29,7 +29,7 @@ class Character(DefaultCharacter):
     def at_object_creation(self):     
         self.db.stats = {}
         self.db.worn = {
-            "head": None, "body": None, "arms": None, "feet": None}
+            "head": None, "body": None, "arms": None, "feet": None, "hands": None} #Hands is at the end since it should only be used by weapons
         self.db.weapon = None
         self.update_character_on_first_login()
         self.db.HP = self.db.stats["Health"]
@@ -37,6 +37,14 @@ class Character(DefaultCharacter):
         if self.db.contents:
             pc_bag = evennia.create_object("typeclasses.bags.Bag", key="Bag", location = self, attributes = [("desc", "A sturdy canvas bag to hold your belongings.")])
         
+    def return_appearance(self, looker):
+        """
+        The return from this method is what looker sees when looking at this object.
+        """
+        text = super().return_appearance(looker)
+        #Below we need to add the modifiers for how the armor itself looks
+
+
         
     #Belo is functions that set a new ship to the player based on their class
     def set_ship_by_pc_class(self):

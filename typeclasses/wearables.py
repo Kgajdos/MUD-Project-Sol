@@ -1,4 +1,5 @@
 from evennia import DefaultObject
+import random
 
 class Wearable(DefaultObject):
 	"""
@@ -34,9 +35,6 @@ class Wearable(DefaultObject):
 	def do_wear(self, wearer, wearable):
 		"""
 		Called when trying to wear this item.
-
-		Usage:
-			wear <item>
 		"""
 		current = self.db.wearer
 		if current:
@@ -74,4 +72,56 @@ class Armor(Wearable):
 	"""
 	def at_object_creation(self):
 		super().at_object_creation()
+
+class Weapon(Wearable):
+	"""
+	This is a seperate weapons class that inherits from the wearable class. 
+	The only changes made to this class are specific to attack modifiers.
+	"""
+	def at_object_creation(self):
+		super().at_object_creation()
+		self.db.wearer = None
+		self.db.armor_slot = "hands"
+		self.db.weapon = {}
+		self.db.modifier = random.randint(1, 10)
+
+	def set_weapon_modifier(self, amount):
+		self.db.modifer += amount
+
+
+	def set_weapon_type(self, type):
+		self.db.weapon = type
+
+	def do_wear(self, wielder, weapon):
+		"""
+		Called when trying to equip a weapon specifically.
+		"""
+		current = self.db.wearer
+		if current:
+			if current == wielder:
+				wielder.msg(f"You are already wearing {self.key}.")
+			else:
+				wielder.msg(f"You can't wear {self.key} " 
+				f"- {current} is already wearing that!")
+			return
+		self.db.wearer = wielder
+		slot = weapon.db.armor_slot
+		wielder.db.worn[f"{slot}"] = self
+		wielder.msg(f"You equip {self.key}.")
+
+	def attack(self, target):
+	#TODO: This is where a check against the targets physical would need to take place
+		if target.db.physical < self.db.damage:
+			damage = random.randint(1, 10) + 1
+		else:
+			damage = 1
+
+		return damage
+
+
+class Gun(Weapon):
+
+    def at_object_creation(self):
+        super().at_object_creation()
+
 

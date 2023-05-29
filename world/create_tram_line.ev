@@ -1,5 +1,5 @@
 #
-# A batch build file for A Tram and Tram Line
+# A batch build file for A Tram and Tram Line UPDATE ON LAUNCH!!!
 #
 @import typeclasses.trams
 #This creates the tram 

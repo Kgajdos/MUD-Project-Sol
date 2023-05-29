@@ -1,0 +1,26 @@
+#First block of code - building the beginner itemset
+#All players will have this load for the first time 
+@create BS Helmet;helmet:typeclasses.wearables.Armor
+#
+@set helmet/desc = A helmet made by Basic Space. Are those dents?
+#
+@set helmet/armor_slot = head
+#
+@create BS Suit;suit:typeclasses.wearables.Armor
+#
+@set BS Suit/desc = A space suit designed by Basic Space. I'm sure that's not a stain.
+#
+@set BS Suit/armor_slot = body
+#
+@create BS Gloves;gloves:typeclasses.wearables.Armor
+#
+@set BS Gloves/desc = Gloves made by Basic Space, hopefully your fingers wont freeze out there.
+#
+@set BS Gloves/armor_slot = arms
+#
+@create BS Boots;boots:typeclasses.wearables.Armor
+#
+@set boots/desc = Boots designed by Basic Space. They don't look very comfortable.
+#
+@set boots/armor_slot = feet
+#

@@ -6,6 +6,7 @@ from commands.command import Command
 from evennia import default_cmds
 from evennia import CmdSet
 from evennia import InterruptCommand
+from typeclasses.wearables import Wearable
 import random
 
 #### Start of weapon specific commands!
@@ -38,32 +39,3 @@ class CmdLoadWeapon(Command):
         #stores the ammo in the Gun
         _ammo.move_to(self.obj.contents)
         item.delete()
-
-
-class WeaponCmdSet(CmdSet):
-    key = "weaponcmdset"
-    def at_object_creation(self):
-        self.add(CmdLoadWeapon())
-
-#Parent class for all weapons
-class Weapon(Object):
-    
-    def at_object_creation(self):
-        self.cmdset.add_default(WeaponCmdSet())
-        self.db.physical = random.randint(1, 10)
-
-    def attack(self, target):
-        #TODO: This is where a check against the targets physical would need to take place
-        if target.db.physical < self.db.damage:
-            damage = random.randint(1, 10) + 1
-        else:
-            damage = 1
-
-        return damage
-    
-class Gun(Weapon):
-
-    def at_object_creation(self):
-        super().at_object_creation()
-
-

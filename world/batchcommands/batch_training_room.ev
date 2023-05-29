@@ -1,0 +1,6 @@
+#Create a room where players can go to the console and spawn an enemy to Fighter
+@dig Training Room = north;n
+#
+@tel Training Room
+#
+@spawn RAT_ENEMY

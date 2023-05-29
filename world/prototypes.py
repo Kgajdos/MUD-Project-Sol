@@ -53,17 +53,56 @@ See the `spawn` command and `evennia.prototypes.spawner.spawn` for more info.
 ## simple Attributes
 import evennia
 
-SHIP = {
-    "key": "ship",
-    "typeclass": "typeclasses.ships.Ships"
-}
+#BS Armor line - for use as beginner equipment
+BS_HELMET = {
+    "prototype_key": "BS_HELMET",
+    "key": "BS Helmet",
+    "typeclass": "typeclasses.wearables.Armor",
+    "aliases": ["helmet"],
+    "attrs": [("desc", "A helmet made by Basic Space. Are those dents?"),("armor_slot", "head")],
+    }
+BS_SUIT = {
+    "prototype_key": "BS_SUIT",
+    "key": "BS Suit",
+    "typeclass": "typeclasses.wearables.Armor",
+    "aliases": ["suit"],
+    "attrs": [("desc", "A space suit designed by Basic Space. I'm sure that's not a stain."),("armor_slot", "body")],
+    }
+BS_GLOVES = {
+    "prototype_key": "BS_GLOVES",
+    "key": "BS Gloves",
+    "typeclass": "typeclasses.wearables.Armor",
+    "aliases": ["gloves"],
+    "attrs": [("desc", "Gloves made by Basic Space, hopefully your fingers wont freeze out there."),("armor_slot", "arms")],
+    }
+BS_BOOTS = {
+    "prototype_key": "BS_BOOTS",
+    "key": "BS Boots",
+    "typeclass": "typeclasses.wearables.Armor",
+    "aliases": ["gloves"],
+    "attrs": [("desc", "Boots designed by Basic Space. They don't look very comfortable."),("armor_slot", "feet")],
+    }
+
 
 ROOM_BRIDGE = {
     "prototype_key": "ROOM_BRIDGE",
     "key": "Bridge",
     "typeclass": "typeclasses.rooms.Room",
-    "attribute": {"desc": 
-                   "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."}
+    "attrs": [("desc","You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you.")]
+    }
+
+BS_RIFFLE = {
+    "prototype_key": "BS_RIFFLE",
+    "key": "BS Riffle",
+    "typeclass": "typeclasses.weapons.Gun",
+    "attrs": [("desc", "A riffle designed by Basic Space. It seems kind of light and flimsy."), ("armor_slot", "hands")]
+}
+
+RAT_ENEMY = {
+    "prototype_key": "RAT_ENEMY",
+    "key": "Rat",
+    "typeclass": "typeclasses.enemies.Enemy",
+    "attrs": [("desc", "A small, angry looking rat.")]
 }
 
 ROOM_QUARTERS = {
