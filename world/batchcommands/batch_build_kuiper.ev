@@ -1,0 +1,39 @@
+#Create Kuiper station at the click of a button!
+#OUTDATED, MOVE TO BATCH CODE!
+@dig Market Floor 1;market
+#
+@dig Ship Hanger;hanger
+#
+@tel Ship Hanger
+#
+@set hanger/desc = You stand in a massive hanger. The walls are bare steel and cables. Several robotic arms work diligently to store spaceships. It is very loud here. There is a woman standing near a console, her sign says "Ship Retrieval"
+#
+@tunnel e = Public Hallway;hallway
+#
+@tel Public Hallway
+#
+@set hallway/desc = You stand in a long hallway with dull, egg-shell colors.
+#
+@tunnel e = Rev's Emporium;rev
+#
+@set rev/desc = You stand in a small room with several clothing displays. A few people mill about. There is a heavy scent in the air.
+#
+@tel Public Hallway
+#
+@tunnel n = Basic Space Gun Shop;gunshop
+#
+@set gunshop/desc = You stand in a smaller room with each wall displaying several weapons. This is a fairly busy shop, the one employee looks frantic.
+#
+@tel Public Hallway
+#
+@tunnel sw = Tram Station;station
+#
+@set station/desc = You stand in the tram station and see rows of metal benches. There are some pictures on the walls of mountains.
+#
+@tel Tram Station
+#
+@create/drop Metal Bench = typeclasses.sittables.Sittable 
+#
+@set Metal Bench/desc = A sturdy metal bench. It looks cold and unforgiving.
+#
+@update/reset Bench

@@ -3,4 +3,5 @@
 #
 @tel Training Room
 #
-@spawn RAT_ENEMY
+@set Training Room/desc = You stand in a large, open room. The walls are impossibly high. No effort has been made to hide Kuiper Station's metal skeleton.
+#

@@ -121,6 +121,6 @@ class Chest(Bag):
 
     def retrieve_item(self, caller, item_name):
         super().retrieve_item()
-        caller.location.msg(f"You grab {item.key} from {chest.key}")
+        caller.location.msg(f"You grab {item_name.key} from {self.key}")
 
     

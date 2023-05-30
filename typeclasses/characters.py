@@ -32,9 +32,9 @@ class Character(DefaultCharacter):
             "head": None, "body": None, "arms": None, "feet": None, "hands": None} #Hands is at the end since it should only be used by weapons
         self.db.weapon = None
         self.update_character_on_first_login()
-        self.db.HP = self.db.stats["Health"]
+        self.db.HP = self.db.stats['Health']
         
-        if self.db.contents:
+        if not "bag" in self.db.contents:
             pc_bag = evennia.create_object("typeclasses.bags.Bag", key="Bag", location = self, attributes = [("desc", "A sturdy canvas bag to hold your belongings.")])
         
     def return_appearance(self, looker):
@@ -49,7 +49,7 @@ class Character(DefaultCharacter):
     #Belo is functions that set a new ship to the player based on their class
     def set_ship_by_pc_class(self):
         ship = evennia.create_object(f"typeclasses.ships.{self.db.player_class}", key = "Ship", location = self.location, attributes = [("class", f"{self.db.player_class}")])
-        self.db.ship = ship
+        self.db.active_ship = ship
 
     #only to be called at first login!!!! otherwise we'll be drowning in more ships
     def update_character_on_first_login(self):
@@ -60,6 +60,7 @@ class Character(DefaultCharacter):
         self.set_stat("Social")
         self.db.stats["Health"] = random.randint(1,10) * self.db.stats.get("Physical")
         self.db.stats["Stamina"] = random.randint(1, 10) * (self.db.stats.get("Physical") + self.db.stats.get("Mental"))
+
 
 
 

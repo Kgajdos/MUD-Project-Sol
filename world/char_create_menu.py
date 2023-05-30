@@ -362,15 +362,15 @@ _PROTOTYPES = [
         "key": "BS Pistol",
         "desc": "A pistol designed by Basic Space. It doesn't sit comfortably in your hands.",
         "tags": [("pistol", "gun")],
-        "typeclass": "typeclasses.weapons.Gun"
-        "armor_slot": "hands" #This line may fail, unable to test at this time
+        "typeclass": "typeclasses.weapons.Gun",
+        "armor_slot": "hands"
     },
     #Starter Riffle prototype
     {
         "key": "BS Riffle",
         "desc": "A riffle designed by Basic Space. It seems kind of light and flimsy.",
         "tags": [("riffle", "gun")],
-        "typclass": "typeclasses.weapons.Gun"
+        "typclass": "typeclasses.weapons.Gun",
         "armor_slot": "hands"
     },
     #MultiTool kit
@@ -383,7 +383,7 @@ _PROTOTYPES = [
     {
         "key": "BS Knife",
         "desc": "A knife designed by Basic Space. It doesn't look very sharp.",
-        "tags": [{"knife", "melee"}]
+        "tags": [{"knife", "melee"}],
         "armor_slot": "hands"
     }
 ]

@@ -24,7 +24,7 @@ class Ships(Object):
             #this doesn't work, it doesn't effect the look command
             bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
             bridge_room.location = self
-            console = create_object(ship_console.ShipConsole, key="Console", attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
+            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
             chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
             console.move_to(bridge_room)
             chair.move_to(bridge_room)
@@ -47,7 +47,11 @@ class Ships(Object):
             return self.db.interior_desc
         else:
             return self.db.exterior_desc
+        
+    def get_display_name(self, looker=None, **kwargs):
+        return super().get_display_name(looker, **kwargs)
 
+    
 
     def ship_turn_on(self):
         print(f"{self.key} turned on.")
@@ -55,6 +59,7 @@ class Ships(Object):
     def ship_idle(self):
         print(f"{self.key} is iddling.")
 
+    #This doesn't work
     def delete(self):
         room_names = ["Bridge", "Storage", "Quarters"]
         room_list = list()
@@ -71,7 +76,6 @@ class Ships(Object):
 
 
     
-
 
 ##Definitions for Miner, Fighter, Freighter, and Researcher
 class Miner(Ships):

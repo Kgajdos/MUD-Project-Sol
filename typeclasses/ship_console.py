@@ -285,7 +285,7 @@ def menunode_ship_rename(caller, raw_string, **kwargs):
 
 def _new_name(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
-    menu.ai.set_new_name(raw_string)
+    menu.ai.set_new_name(caller, raw_string)
 
     return "menunode_start"
 
@@ -312,9 +312,11 @@ class ShipConsole(Object):
         EvMenu(player, menunodes, startnode = "menunode_start",
                consolename = consolename, ai = self, console = self.contents)
         
-    def set_new_name(self, new_name):
+    def set_new_name(self, player, new_name):
+        player.db.active_ship = new_name
         ship = self.location.location
         ship.key = new_name
+        ship.name = new_name
 
     def ship_sheet(self,player):
         '''Using the EvForm shipform for creation'''
