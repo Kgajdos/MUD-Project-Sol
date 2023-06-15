@@ -1,8 +1,6 @@
 import evennia
-from typeclasses import rooms
 from evennia import DefaultObject
 from evennia import create_object, search_object
-from typeclasses.objects import Object
 
 #HEADER
 #This is a batch code vs of the build kuiper station

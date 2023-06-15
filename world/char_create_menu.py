@@ -8,6 +8,7 @@ from evennia.prototypes.spawner import spawn
 from evennia.utils import dedent
 from evennia.utils.evtable import EvTable
 import typeclasses.characters
+from enums import Ability, WieldLocation, ObjType
 import random
 
 _INFLECT = inflect.engine()
@@ -361,37 +362,32 @@ _PROTOTYPES = [
     {
         "key": "BS Pistol",
         "desc": "A pistol designed by Basic Space. It doesn't sit comfortably in your hands.",
-        "tags": [("pistol", "gun")],
-        "typeclass": "typeclasses.weapons.Gun",
-        "armor_slot": "hands"
+        "typeclass": "typeclasses.objects.ProjectSolWeapon"
     },
     #Starter Riffle prototype
     {
         "key": "BS Riffle",
         "desc": "A riffle designed by Basic Space. It seems kind of light and flimsy.",
-        "tags": [("riffle", "gun")],
-        "typclass": "typeclasses.weapons.Gun",
-        "armor_slot": "hands"
+        "typclass": "typeclasses.objects.ProjectSolWeapon"
     },
     #MultiTool kit
     {
         "key": "MultiTool Kit",
         "desc": "A tool to assist in a plethora of small jobs",
-        "tags": [("MultiTool", "tool")]
+        "typeclass": "typeclasses.objects.ProjectSolObject"
     },
     #Starter Knife
     {
         "key": "BS Knife",
         "desc": "A knife designed by Basic Space. It doesn't look very sharp.",
-        "tags": [{"knife", "melee"}],
-        "armor_slot": "hands"
+        "typeclass": "typeclasses.objects.ProjectSolWeapon"
     }
 ]
 
 #this method creates the object
 def create_objects(character):
     """do the actual object spawning"""
-    proto = dict(character.db.starter_item)
+    proto = dict(character.db.starting_weapon)
     proto["location"] = character
     spawn(proto)
 
@@ -427,7 +423,7 @@ def menunode_choose_objects(caller, raw_string, **kwargs):
     return (text, help), options
 
 def _set_object_choice(caller, raw_string, proto, **kwargs):
-    caller.new_char.db.starter_weapon = proto
+    caller.new_char.WieldLocation.BACKPACK = proto
 
     return "menunode_choose_name"
 
@@ -493,7 +489,7 @@ def menunode_confirm_name(caller, raw_string, **kwargs):
 def menunode_end(caller, raw_string):
     """End-of-chargen cleanup."""
     char = caller.new_char
-   #finilized = create_objects(char)
+    #create_objects(char)
     caller.new_char.attributes.remove("chargen_step")
     text = dedent(
         """

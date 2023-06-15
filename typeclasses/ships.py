@@ -9,7 +9,38 @@ from typeclasses import rooms, exits, ships
 from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
 from commands import sittables
+import random
 
+#exists as a way to spawn ships in for the player
+class ShipManager:
+    @staticmethod
+    def spawn_ship(ship_class):
+        """
+        Spawn a new ship of the given ship class.
+
+        Args:
+            ship_class (str): The ship/player class.
+
+        Returns:
+            obj: The spawned ship object.
+        """
+        ship = None
+        if ship_class == "Miner":
+            ship = Miner()
+        elif ship_class == "Fighter":
+            ship = Fighter()
+        elif ship_class == "Freighter":
+            ship = Freighter()
+        elif ship_class == "Researcher":
+            ship = Researcher()
+
+        if ship:
+            ship.setup_rooms()
+            ship.setup_exits()
+            return ship
+
+        return None
+        
 
 ## Ship Class definitions only
 class Ships(Object):
@@ -19,28 +50,56 @@ class Ships(Object):
         #creates the 4 rooms attached to the ship (all rooms must move too)
         # Create the rooms
 
-        if not self.search("Bridge"):
-            bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-            #this doesn't work, it doesn't effect the look command
-            bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
-            bridge_room.location = self
-            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
-            chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
-            console.move_to(bridge_room)
-            chair.move_to(bridge_room)
-            storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
-            quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
-        else:
-            return
+#        if not self.search("Bridge"):
+#            bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
+#            #this doesn't work, it doesn't effect the look command
+#            bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
+#            bridge_room.location = self
+#            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
+#            chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
+#            console.move_to(bridge_room)
+#            chair.move_to(bridge_room)
+#            storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
+#            quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
+#        else:
+#            return
        
         # Create the exits between rooms
-        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
-        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
-        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
-        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
-        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
-        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
+#        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
+#        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
+#        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
+#        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
+#        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
+#        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
 
+    def setup_rooms(self):
+        """
+        Create the rooms attached to the ship.
+        """
+        room_names = ["Bridge", "Storage", "Quarters"]
+        room_desc = ["You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you.",
+                    "You stand in the main storage room of your ship, there is space here for plenty of cargo.",
+                      "You stand in your ship's quarters, there is a bed here for you to sleep in."]
+        for room_name, room_desc in zip(room_names, room_desc):
+            if not self.search(room_name):
+                room = create_object("typeclasses.rooms.Room", key=room_name, location=self, attributes=[("desc", room_desc)])
+                room.location = self
+
+    def setup_exits(self):
+        """
+        Create the exits between rooms.
+         """
+        exits_data = [
+            {"key": "Bridge", "location": self, "destination": "Bridge"},
+            {"key": "Boarding", "location_key": "Bridge", "destination": self},
+            {"key": "Storage", "location_key": "Bridge", "destination": "Storage"},
+            {"key": "Bridge", "location_key": "Storage", "destination": self},
+            {"key": "Quarters", "location_key": "Storage", "destination": "Quarters"},
+            {"key": "Bridge", "location_key": "Quarters", "destination": self},
+            ]
+
+        for exit_data in exits_data:
+            create_object("exits.Exit" **exit_data)
 
     def get_display_desc(self, looker, **kwargs):
         if looker.location == self:
@@ -73,7 +132,27 @@ class Ships(Object):
 
         super().delete()
 
+    def warp_to_space(self):
+        """
+        Warp the ship into space.
 
+        Returns:
+            bool: True if the ship successfully warps into space, False otherwise.
+        """
+        #dict of available rooms
+        rooms = {("#161", "#187", "#189", "#195", "#201", "#208", "#213", "#219", "#224")}
+        # Check if the ship is already in space
+        if self.location == "space":
+            return False
+        
+        # Check if the ship is in a valid location to warp from (e.g., a hangar)
+        if not self.location.is_hangar:
+            return False
+
+        # Move the ship to the space location
+        space = random.choice(rooms)
+        self.move_to(space)
+        return True
 
     
 

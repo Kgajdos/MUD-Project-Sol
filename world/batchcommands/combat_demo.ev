@@ -1,0 +1,49 @@
+
+
+# start from limbo
+
+tel #2
+
+# turn ourselves into a evadventure-character
+
+type self = typeclasses.characters.Character
+
+# assign us the twitch combat cmdset (requires superuser/developer perms)
+
+py self.cmdset.add("world.combat_twitch.TwitchCombatCmdSet", persistent=True)
+
+# Create a weapon in our inventory (using all defaults)
+
+create sword:objects.ProjectSolWeapon
+
+# create a consumable to use
+
+create potion:objects.ProjectSolConsumable
+
+# dig a combat arena
+
+dig arena:typeclasses.rooms.Room = arena,back
+
+# go to arena
+
+arena
+
+# allow combat in this room
+
+set here/allow_combat = True
+
+# create a dummy enemy to hit on
+
+create/drop dummy:objects.ProjectSolObject
+
+# describe the dummy
+
+desc dummy = This is is an ugly training dummy made out of hay and wood.
+
+# make the dummy crazy tough
+
+set dummy/hp_max = 1000
+
+# 
+
+set dummy/hp = 1000

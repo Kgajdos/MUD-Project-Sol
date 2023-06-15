@@ -24,6 +24,30 @@ class CmdShipConsole(Command):
     def func(self):
         self.obj.start_consoles(self.caller)
 
+class CmdWarp(Command):
+    """
+    Initiates a warp to a random sector in space.
+
+    Usage:
+        warp
+
+    This command warps the spaceship to a random sector in space.
+    """
+    key = "warp"
+    locks = "cmd:cmdinside()"
+    help_category = "Ship"
+
+    def parse(self):
+        # Code for warping the spaceship to a random sector in space
+        # ...
+        pass
+
+
+    def func(self):
+        # Code for launching the spaceship into space
+        # ...
+        self.obj.warp_to_space()
+
 class CmdShoot(Command):
     """
     Firing the ships main gun
@@ -151,6 +175,7 @@ class ConsoleCmdSet(CmdSet):
         self.add(CmdUnloadCargo())
         self.add(CmdShoot())
         self.add(CmdLaunch())
+        self.add(CmdWarp())
 ###########################################################################################################
 
 #opens an EvMenu to allow interactions with the ship
