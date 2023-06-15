@@ -1,5 +1,7 @@
 KNOWN BUGS:
-Store command currently sends item to all available storage units. Not good
+*Store command currently sends item to all available storage units. Not good
+*Renaming a ship breaks it's connection to the room - not sure why
+	**Ship will no longer show up under You see: _____
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
 BOOK(menu) ----> PAGE(text, pg#)

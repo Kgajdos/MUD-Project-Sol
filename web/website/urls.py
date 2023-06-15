@@ -7,6 +7,7 @@ so it can reroute to all website pages.
 """
 
 from django.urls import path
+from web import story
 
 from evennia.web.website.urls import urlpatterns as evennia_website_urlpatterns
 
@@ -18,3 +19,7 @@ urlpatterns = [
 
 # read by Django
 urlpatterns = urlpatterns + evennia_website_urlpatterns
+
+custom_patterns = [
+    path(r'story', story.storypage, name='Story'),
+]

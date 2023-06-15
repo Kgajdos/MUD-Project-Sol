@@ -1,107 +1,86 @@
-from evennia import typeclasses
 from typeclasses.characters import Character
-from typeclasses.objects import Object
 from evennia import Command, CmdSet, EvMenu
-from evennia import InterruptCommand
-import random
+from typeclasses.ships import ShipManager
+from typeclasses.objects import Object
 
-
-class NPCCmdSet(CmdSet):
-    def at_cmdset_creation(self):
-        self.add(CmdRetrieveShip())
-        self.add(CmdStoreship())
-
-########SHIP RETRIEVAL SERVICE SOMMANDS
-class CmdStoreship(Command):
-    """
-    A command to store your ship with ship storage services.
-    Usage:
-        ship <shipname>
-    """
-    key = "ship"
-    help_category = "Ship"
-    
-    def parse(self):
-        self.args = self.args.strip()
-        if not self.args:
-            self.caller.msg("Store which ship?")
-            raise InterruptCommand
-        
-    def func(self):
-        ship = self.caller.search(self.args)
-        try:
-            ship.move_to(self.obj.contents)
-        except:
-            self.msg("Something went wrong.")
-
-class CmdRetrieveShip(Command):
-    """
-    A command to open up the ship retrieval service.
-
-    Usage:
-        valet
-    """
-    key = "valet"
-    help_category = "Menu"
-    def func(self):
-        self.obj.ship_service(self.caller)
-
-class NPC(Character, Object):
-
+#This needs Fixed!!
+class MechanicNPC(Character):
     def at_object_creation(self):
-        self.cmdset.add_default(NPCCmdSet())
+        self.cmdset.add_default(MechanicCommandSet)
 
-    def ship_service(self, shopper):
+
+    def spawn_ship(self):
+        player = self.caller
+        player_class = player.db.player_class
+        if not player_class:
+            pass #TODO: Probably need to handle this a little better
+        ship = self.spawn_ship(player_class)
+        return ship
+    
+    def mechanic_shop(self, player):
         menunodes = {
-            "shipselect": node_shipselect,
-            "end": node_end
+            "menunode_start": menunode_start,
         }
-        shopname = self.db.shopname or "The shop"
-        EvMenu(shopper, menunodes, startnode = "shipselect",
-               shopname = shopname, shopkeeper = self, wares = self.contents)
+        shopname = self.db.name or "Mechanic"
+        EvMenu(player, menunodes, startnode = "menunode_start",
+               shopname = shopname, shopkeeper = self)
+    
 
-    def random_response(self):
-        return  random.choice(self.db.dialog_list)
 
-    ##def load_quest(self):
-    ## Import quest script and have it run from this command
-    def add_dialog(self, dialog_line):
-        self.db.dialog.append(dialog_line)
-
-    def at_char_entered(self, character):
-        """
-        A simple is_aggressive check.
-        Expand upon later - and make it more flexible
-        """
-        #This block here will need to be changed, it's way too static
-        if self.db.is_aggressive:
-            self.execute_cmd(f"say Die {character}!")
-        else:
-            self.execute_cmd(f"say Greetings, {character}")
-
-def _handle_answer(caller, raw_input, **kwargs):
-    answer = kwargs.get("answer")
-    caller.msg(f"BEEP: Retrieving {answer}!")
-    return "end" #name of next node
-
-#Needs to be fixed!
-def node_shipselect(caller, raw_input, **kwargs):
-    "Top of the menu screen."
-    menu = caller.ndb._evmenu
-    shopname = menu.shopname
+#########################################################################
+# MECHANIC EVMENU 
+#########################################################################
+def menunode_start(caller):
+    menu = caller.nbd._evmenu
     shopkeeper = menu.shopkeeper
-    ships = shopkeeper.contents
-    text = f"Welcome to {shopname}!"
-
-    options = []
-    for ship in ships:
-        options.append = ({"key": f"{ship.key}",
-               "desc": f"{ship.desc}",
-               "goto": _handle_answer, "answer": ship})
+    player = menu.player
+    text = f"Welcome {player.key}!\nHow can I help you?"
+    options = [{
+        "desc": f"|cAsk about ship|n", "goto": "menunode_ship",
+    }]
     return text, options
 
-def node_end(caller, raw_input, **kwargs):
-    text = "Take care!"
-    return text, None # empty options ends the menu
+def menunode_ship(caller, raw_string, **kwargs):
+    menu = caller.nbd._evmenu
+    player = menu.player
+    player_ship = player.db.player_class
+    if not player_ship:
+        return
+    text = "Here you go!"
+    return text
 
 
+
+class GeneralNPC(Character):
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.cmdset.add_default(NPCCommandSet())
+
+    def at_char_entered(self, character):
+        self.execute_cmd(f"say Greetings, {character}. How can I assist you?")
+
+class MechanicCommandSet(CmdSet):
+    key = "mechaniccmdset"
+    def at_cmdset_creation(self):
+        super().at_cmdset_creation()
+        self.add(MechanicMenuCommand())
+
+class NPCCommandSet(CmdSet):
+    key = "npccmdset"
+    def at_cmdset_creation(self):
+        super().at_cmdset_creation()
+        self.add(CmdGreet())
+
+class CmdGreet(Command):
+    key = "greet"
+    aliases = ["hello", "hi"]
+    help_category = "General"
+
+    def func(self):
+        self.caller.msg("The NPC greets you warmly")
+
+class MechanicMenuCommand(Command):
+    key="mechanic"
+    
+    def func(self):
+        self.obj.mechanic_shop(self.caller)

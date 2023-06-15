@@ -24,6 +24,30 @@ class CmdShipConsole(Command):
     def func(self):
         self.obj.start_consoles(self.caller)
 
+class CmdWarp(Command):
+    """
+    Initiates a warp to a random sector in space.
+
+    Usage:
+        warp
+
+    This command warps the spaceship to a random sector in space.
+    """
+    key = "warp"
+    locks = "cmd:cmdinside()"
+    help_category = "Ship"
+
+    def parse(self):
+        # Code for warping the spaceship to a random sector in space
+        # ...
+        pass
+
+
+    def func(self):
+        # Code for launching the spaceship into space
+        # ...
+        self.obj.warp_to_space()
+
 class CmdShoot(Command):
     """
     Firing the ships main gun
@@ -151,6 +175,7 @@ class ConsoleCmdSet(CmdSet):
         self.add(CmdUnloadCargo())
         self.add(CmdShoot())
         self.add(CmdLaunch())
+        self.add(CmdWarp())
 ###########################################################################################################
 
 #opens an EvMenu to allow interactions with the ship
@@ -285,7 +310,7 @@ def menunode_ship_rename(caller, raw_string, **kwargs):
 
 def _new_name(caller, raw_string, **kwargs):
     menu = caller.ndb._evmenu
-    menu.ai.set_new_name(raw_string)
+    menu.ai.set_new_name(caller, raw_string)
 
     return "menunode_start"
 
@@ -312,9 +337,11 @@ class ShipConsole(Object):
         EvMenu(player, menunodes, startnode = "menunode_start",
                consolename = consolename, ai = self, console = self.contents)
         
-    def set_new_name(self, new_name):
+    def set_new_name(self, player, new_name):
+        player.db.active_ship = new_name
         ship = self.location.location
         ship.key = new_name
+        ship.name = new_name
 
     def ship_sheet(self,player):
         '''Using the EvForm shipform for creation'''
