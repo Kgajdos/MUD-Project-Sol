@@ -37,7 +37,9 @@ SERVERNAME = "Project Sol"
 AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False
 AUTO_PUPPET_ON_LOGIN = False
 MAX_NR_CHARACTERS = 4
-CHARGEN_MENU = "world.char_create_menu"
+CHARGEN_MENU = "world.chargen_menu"
+#Room #304 is the Cryo Room which will be the starting room for all players
+DEFAULT_HOME = "#304"
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################

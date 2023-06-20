@@ -2,6 +2,8 @@ KNOWN BUGS:
 *Store command currently sends item to all available storage units. Not good
 *Renaming a ship breaks it's connection to the room - not sure why
 	**Ship will no longer show up under You see: _____
+*Immense difficulties with character stats
+	-Unsure if enums are being utilized
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
 BOOK(menu) ----> PAGE(text, pg#)
@@ -9,21 +11,18 @@ BOOK(menu) ----> PAGE(text, pg#)
 Books now have their own directory within the game as each book will have it's own file to define it
 	*is it the right answer? Probably not
 -----------------------------------------------------------------------
-Give wearables "stats" and make sure to document how to build the object in game
+Give wearables "stats" and make sure to document how to build the object in game - In progress
 -----------------------------------------------------------------------------------------------
 start considering how objects improve players life (this will be a long road). 
-QUALITY LEVEL = -POOR: +1
-		-MODEST: +2
-		-GOOD: +3
-		-GREAT: +4
-		-SPECTACULAR: +5
-Example:
-	*MultiTool provides a +5 to every skill check it's used with. Can be used with fabricating, tinkering, guns (Maintainence), melee (same), and maintainence
-	*Weapons provide based off of quality and type:
-		**Riffle +5 + (quality level)
-		**Pistol +3 + (quality level)
-		**Infernal Knife + 3 + (quality level)
-			-Inflicts +1 burn damage every second for a max of 10 seconds + melee level
+Started:
+class ToolQuality(Enum):
+    POOR = 0.01
+    LOW = 0.05
+    MED = 0.10
+    GOOD = 0.15
+    GREAT = 0.20
+    EXTRORDINARY = 0.25
+These act as percentages.
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 Start seperating player roles/jobs based on their chosen class.
 All pilots will need a tutorial on basic movement, commands, and ship commands.
@@ -36,3 +35,4 @@ ship and mines the asteroid alongside their ship. This only works on massive ast
 	**Encourage players to pick up a "Hobby" to pass the time
 *Researcher: Tutorial on their ship's unique research room and all it's fixin's. Provide beginner contracts to allow the player
 to build up their relevant skills.
+------------------------------------------------------------------------------------------------------------------------------------------------------

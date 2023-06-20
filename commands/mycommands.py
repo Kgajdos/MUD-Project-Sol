@@ -160,14 +160,14 @@ class CmdEnterShip(Command):
     Entering the ship.
 
     Usage:
-        board 
+        board ship
     """
     key = "board"
     locks = "cmd:not cmdinside()"
     help_category = "Ship"
 
     def func(self):
-        ship = self.obj.db.ship
+        ship = self.obj.search(self.args)
         if not ship:
             return
 

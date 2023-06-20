@@ -100,3 +100,10 @@ class SpaceRoom(Room):
         #Choose a random existing room and move the player there
         existing_room = random.choice(existing_rooms)
         player.move_to(existing_room)
+
+
+class CorporateStorageRoom(Room):
+    """
+    A storage room unique to each player. All items not stored on a ship are stored here.
+    """
+    pass

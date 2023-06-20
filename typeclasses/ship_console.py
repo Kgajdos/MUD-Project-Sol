@@ -354,7 +354,8 @@ class ShipConsole(Object):
             4: ship.db.ship_id
         })
         table = EvTable("CARGO", border="incols")
-        for cargo in self.contents:
+        storage = self.search("Storage")
+        for cargo in storage.contents:
             table.add_row(cargo.key)
         
         custom_mapping = {"v&": "v2"}

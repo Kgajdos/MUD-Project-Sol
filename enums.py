@@ -7,6 +7,8 @@ class Ability(Enum):
     PHY = "physical"
     MEN = "mental"
     SOC = "social"
+    HEL = "health"
+    STA = "stamina"
 
     ARMOR = "armor"
 
@@ -43,3 +45,34 @@ class ObjType(Enum):
     GEAR = "gear"
     QUEST = "quest"
     LOOT = "loot"
+    RESOURCE = "resource"
+
+class ToolQuality(Enum):
+    POOR = 0.01
+    LOW = 0.05
+    MED = 0.10
+    GOOD = 0.15
+    GREAT = 0.20
+    EXTRORDINARY = 0.25
+
+class Resource(Enum):
+    IRON = ("iron", "common")
+    NICKLE = ("nickle", "common")
+    CLAY = ("clay", "common")
+    HYDROGEN = ("hydrogen", "common")
+
+    SILVER = ("silver", "uncommon")
+    WOOD = ("woord", "uncommon")
+    HELIUM = ("helium", "uncommon")
+
+    GOLD = ("gold", "rare")
+    PLATINUM = ("platinum", "rare")
+    SILICATE = ("silicate", "rare")
+    PLASMA = ("plasma", "rare")
+
+class SHIP(Enum):
+    MAIN_GUN = "main_gun"
+    ALT_GUN = "alt_gun"
+    MAIN_ROCKET = "main_rocket"
+    ALT_ROCKET = "alt_rocket"
+    CARGO = {}
