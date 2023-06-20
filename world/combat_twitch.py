@@ -37,6 +37,10 @@ class CombatTwitchHandler(CombatBaseHandler):
     advantage_against = AttributeProperty(dict)
     disadvantage_against = AttributeProperty(dict)
 
+    def at_init(self):
+        self.obj.cmdset.add(TwitchLookCmdSet, persistent = False)
+
+
     def msg(self, message, broadcast=True):
         """see CombatBaseHandler.msg"""
         super().msg(message, combatant=self.obj, broadcast=broadcast, location=self.obj.location)
@@ -109,8 +113,10 @@ class CombatTwitchHandler(CombatBaseHandler):
         if action_dict["key"] not in self.action_classes:
             self.obj.msg("This is an unknown action!")
             return
+        #store action dict and schedule it to run in dt time
         self.action_dict = action_dict
         dt = action_dict.get("dt", 0)
+
         if dt <= 0:
             self.current_ticker_ref = None
         else:
@@ -159,12 +165,17 @@ class CombatTwitchHandler(CombatBaseHandler):
         if not allies: 
             self.msg("The combat is over. You lost.", broadcast=False)
             self.stop_combat()
+            return
         if not enemies:
             self.msg("The combat is over. You won!", broadcast=False)
             self.stop_combat()
+            return
 
     def stop_combat(self):
-        pass  # We'll finish this last
+        self.queue_action({"key": "hold", "dt": 0}) #This kills the ticker
+        del self.obj.nbd.combathandler
+        self.obj.cmdset.remove(TwitchLookCmdSet)
+        self.delete()
 
 class _BaseTwitchCombatCommand(Command):
     """
@@ -211,7 +222,6 @@ class _BaseTwitchCombatCommand(Command):
 
         """
         if target:
-            print(target)
             # add/check combathandler to the target
             if target.db.hp_max is None:
                 self.msg("You can't attack that!")
@@ -261,16 +271,16 @@ class CmdAttack(_BaseTwitchCombatCommand):
     help_category = "combat"
 
     def func(self):
-        target = self.caller.search(self.lhs)
-        if not target:
+        if not self.obj:
             return
-        combathandler = self.get_or_create_combathandler(target)
-        combat_dict = {"key": "attack", 
-             "target": target,
+        combathandler = self.get_or_create_combathandler(self.obj)
+        combathandler.queue_action({
+            "key": "attack", 
+             "target": self.obj,
              "dt": 3, 
-             "repeat": True,}
-        combathandler.queue_action(combat_dict)
-        combathandler.msg(f"$You() $conj(attack) $You({target.key})!", self.caller)
+             "repeat": True}, self.obj
+             )
+        combathandler.msg(f"$You() $conj(attack) $You({self.obj.key})!", self.caller)
 
 class CmdStunt(_BaseTwitchCombatCommand):
     """
@@ -454,13 +464,13 @@ class CmdWield(_BaseTwitchCombatCommand):
 
     def func(self):
         item = self.caller.search(
-            self.args
-        ) #candidates = self.caller.equipment.get_wieldable_obj
+            self.args, candidates = self.obj.contents
+        ) 
         if not item:
             self.msg("(You must carry the item to wield it.)")
             return
         combathandler = self.get_or_create_combathandler()
-        combathandler.queue_action(self.caller, {"key": "wield", "item": item, "dt": 3})
+        combathandler.queue_action({"key": "wield", "item": item, "dt": 3}, self.caller)
         combathandler.msg(f"$You() reach for {item.get_display_name(self.caller)}!", self.caller)
 
 class TwitchCombatCmdSet(CmdSet):
@@ -484,12 +494,3 @@ class TwitchLookCmdSet(CmdSet):
     def at_cmdset_creation(self):
         self.add(CmdLook())
 
-class CombatTwitchHandler(CombatBaseHandler):
-    def at_init(self):
-        self.obj.cmdset.add(TwitchLookCmdSet, persistent = False)
-
-    def stop_combat(self):
-        self.queue_action({"key": "hold", "dt": 0}) #This kills the ticker
-        del self.obj.nbd.combathandler
-        self.obj.cmdset.remove(TwitchLookCmdSet)
-        self.delete()

@@ -98,9 +98,9 @@ class EquipmentHandler:
         if use_slot is WieldLocation.TWO_HANDS:
             #Two handed cant be wielded with a shield or other sword
             to_backpack = [slots[WieldLocation.WEAPON_HAND], slots[WieldLocation.OFF_HAND]]
-            slots[WieldLocation.WEAPON_HAND] = slots[WieldLocation.SHIELD_HAND]
+            slots[WieldLocation.WEAPON_HAND] = slots[WieldLocation.OFF_HAND]
             slots[use_slot] = obj
-        elif use_slot in (WieldLocation.WEAPON_HAND, WieldLocation.SHIELD_HAND):
+        elif use_slot in (WieldLocation.WEAPON_HAND, WieldLocation.OFF_HAND):
             #cant keep a two hander if adding a sword/shield
             to_backpack = [slots[WieldLocation.TWO_HANDED]]
             slots[WieldLocation.TWO_HANDED] = None

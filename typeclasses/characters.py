@@ -13,6 +13,7 @@ from evennia import DefaultCharacter, AttributeProperty, EvForm, EvTable, script
 from typeclasses.equipment import EquipmentHandler
 from typeclasses.bags import Bag, BagCmdSet
 import random
+from enums import Ability
 from rules import dice
 from typeclasses.objects import ObjectParent
 
@@ -101,12 +102,13 @@ class Character(LivingMixin, DefaultCharacter):
     """
     is_pc = True
 
-    physical = AttributeProperty(1)
-    mental = AttributeProperty(1)
-    social = AttributeProperty(1)
+    physical = AttributeProperty(random.randint(1, 10))
+    mental = AttributeProperty(random.randint(1, 10))
+    social = AttributeProperty(random.randint(1, 10))
 
-    hp = AttributeProperty(8)
-    hp_max = AttributeProperty(8)
+    hp = AttributeProperty(random.randint(10, 20))
+    hp_max = AttributeProperty(hp)
+    stamina = AttributeProperty(random.randint(10, 20))
 
     level = AttributeProperty(1)
     xp = AttributeProperty(0)
@@ -114,14 +116,6 @@ class Character(LivingMixin, DefaultCharacter):
 
 
     def at_object_creation(self):     
-        #self.db.worn = {
-            #"head": None, "body": None, "arms": None, "feet": None, "hands": None} #Hands is at the end since it should only be used by weapons
-        #self.db.weapon = None
-        #self.update_character_on_first_login()
-        #self.db.HP = self.db.stats['Health']
-        
-        #if not "bag" in self.db.contents:
-            #pc_bag = evennia.create_object("typeclasses.bags.Bag", key="Bag", location = self, attributes = [("desc", "A sturdy canvas bag to hold your belongings.")])
         pass
         
     @lazy_property
@@ -144,13 +138,10 @@ class Character(LivingMixin, DefaultCharacter):
 
     #Outdated, do not use, will delete when can
     def update_character_on_first_login(self):
-        self.set_char_description()
-        self.set_ship_by_pc_class()
-        self.set_stat("Mental")
-        self.set_stat("Physical")
-        self.set_stat("Social")
-        self.db.stats["Health"] = random.randint(1,10) * self.db.stats.get("Physical")
-        self.db.stats["Stamina"] = random.randint(1, 10) * (self.db.stats.get("Physical") + self.db.stats.get("Mental"))
+        #self.set_char_description()
+        #self.set_ship_by_pc_class()
+        self.set_stats()
+        
 
 
 
@@ -177,16 +168,6 @@ class Character(LivingMixin, DefaultCharacter):
     def create_skill_set(self, raw_string):
         skill = self.raw_string
 
-
-    def set_stat(self, stat):
-        #get a random num between 1-10
-        value = random.randint(1, 10)
-        #check if stat is already in db
-        if stat in self.db.stats:
-            #add the Value
-            self.db.stats[stat] += value
-        else:
-            self.db.stats[stat] = value
 
     def delete(self):
         bag = self.search("Bag", candidates=self.contents, typeclass = "typeclasses.bags.Bag")
@@ -216,18 +197,19 @@ class Character(LivingMixin, DefaultCharacter):
         '''
         Takes advantage of the EvForm to create the character sheet.
         '''
+
         form = EvForm("typeclasses.playerform")
         form.map(cells={1: self.account.key,
                         2: self.key,
                         3: self.db.desc,
-                        4: self.db.stats.get("Mental"),
-                        5: self.db.stats.get("Physical"),
-                        6: self.db.stats.get("Social"),
+                        4: self.mental,
+                        5: self.physical,
+                        6: self.social,
                         7: self.db.sex})
         # create the EvTables
 
-        health = self.db.stats["Health"]
-        stamina = self.db.stats["Stamina"]
+        health = self.hp
+        stamina = self.stamina
         tableA = EvTable("HEALTH", "STAMINA",
                          table=[[health], [stamina]],
                          border="incols")
@@ -265,6 +247,10 @@ class Character(LivingMixin, DefaultCharacter):
     def at_object_leave(self, moved_object, destination, **kwargs):
         """Called by Evennia when object leaves the character"""
         self.equipment.remove(moved_object)
+
+    def add_char_experience(self, amount):
+        self.xp += amount
+
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:

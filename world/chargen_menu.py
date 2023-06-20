@@ -1,16 +1,6 @@
-from evennia import DefaultObject, search_object, TICKER_HANDLER
-from evennia.objects.models import ObjectDB
-from evennia import Command, CmdSet, EvMenu
-from evennia import DefaultScript, DefaultObject
-import inflect
-from typeclasses.characters import Character
-from evennia.prototypes.spawner import spawn
 from evennia.utils import dedent
-from evennia.utils.evtable import EvTable
-import typeclasses.characters
-from enums import Ability, WieldLocation, ObjType
-import random
-
+from typeclasses.characters import Character
+import inflect
 _INFLECT = inflect.engine()
 
 #########################################################
@@ -20,15 +10,15 @@ def menunode_welcome(caller):
     """Starting Page"""
     text = dedent(
         """\
-        |wWelcome to Kuiper Station!|n
-
-        Why don't we get to know you a little better.
-        
+        You awaken in a small room, a warm glow dances around you.
+        Before you is a mirror.
         """
     )
     help = "You will have the ability to make changes before the character is finalized."
-    options = {"desc": "Let's begin!", "goto": "menunode_info_base"}
+    options = {"desc": "look mirror", "goto": "menunode_info_base"}
     return (text, help), options
+
+
 
 #########################################################
 #                INFORMATIONAL PAGES                    #
@@ -81,7 +71,9 @@ def menunode_info_base(caller):
 
     text = dedent(
         """\
-        |wThis is where you will choose your player class. Ships and jobs are locked behind their respective classes.|n
+        Hello, I'm Mirvelle, I'm here to assist you in getting started on Kupier Station.
+        Why don't you check out the type of work that's needed around here.
+        Perhaps there's something that interests you?
     
         """
     )
@@ -214,11 +206,11 @@ def menunode_categories(caller, **kwargs):
 
     text = dedent(
         """\
-        |wOption Categories|n
+        Why don't you tell me a little about yourself?
 
-        Here is where you will describe yourself. Remember that other players will get to know you based on this description.
         """
     )
+    help = "Here is where you will describe yourself. Remember that other players will get to know you based on this description."
     options = []
     ##appends dict key
     for category in _APPEARANCE_DICT.keys():
@@ -238,7 +230,7 @@ def menunode_categories(caller, **kwargs):
          "desc": "Go back to previous step.",
          "goto": "menunode_info_base"}
     )
-    return (text), options
+    return (text, help), options
 
 def menunode_category_options(caller, raw_string, category=None, **kwargs):
     """Choosing an option within the cat"""
@@ -301,7 +293,7 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
 
     text = dedent(
         """\
-        |wChoose 3 skills to aid you in your story|n
+        Tell me three things you're good at.
         """
     )
     help = ("Please choose exactly 3 skills.")
@@ -323,7 +315,7 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
             {
                 "key": ("(Next)", "next", "n"),
                 "desc": "Continue to next step",
-                "goto": "menunode_choose_objects"
+                "goto": "menunode_choose_name"
             }
         )
     options.append(
@@ -350,86 +342,23 @@ def _set_multichoice(caller, raw_string, selected=[], **kwargs):
 
     return ("menunode_multi_choice", {"selected": selected})
 
-
 #########################################################
-#                 STARTING OBJECTS                      #
+#                      THE END                          #
 #########################################################
 
-#Since ship is handled elsewhere, players pick between options
-
-_PROTOTYPES = [
-    #Starter Pistol prototype
-    {
-        "key": "BS Pistol",
-        "desc": "A pistol designed by Basic Space. It doesn't sit comfortably in your hands.",
-        "typeclass": "typeclasses.objects.ProjectSolWeapon"
-    },
-    #Starter Riffle prototype
-    {
-        "key": "BS Riffle",
-        "desc": "A riffle designed by Basic Space. It seems kind of light and flimsy.",
-        "typclass": "typeclasses.objects.ProjectSolWeapon"
-    },
-    #MultiTool kit
-    {
-        "key": "MultiTool Kit",
-        "desc": "A tool to assist in a plethora of small jobs",
-        "typeclass": "typeclasses.objects.ProjectSolObject"
-    },
-    #Starter Knife
-    {
-        "key": "BS Knife",
-        "desc": "A knife designed by Basic Space. It doesn't look very sharp.",
-        "typeclass": "typeclasses.objects.ProjectSolWeapon"
-    }
-]
-
-#this method creates the object
-def create_objects(character):
-    """do the actual object spawning"""
-    proto = dict(character.db.starting_weapon)
-    proto["location"] = character
-    spawn(proto)
-
-def menunode_choose_objects(caller, raw_string, **kwargs):
-    """Selecting objects to start with"""
+def menunode_end(caller, raw_string):
+    """End-of-chargen cleanup."""
     char = caller.new_char
-    char.db.chargen_step = "menunode_choose_objects"
-
+    #create_objects(char)
+    caller.new_char.attributes.remove("chargen_step")
     text = dedent(
-        """\
-        |wStarting Items|n
+        """
+        Welcome to Project Sol!
 
-
+        Enjoy your stay!
         """
     )
-    help = ("None of these items are strictly necessary, they will however, aid you in various tasks.")
-    options = []
-    for proto in _PROTOTYPES:
-        #Use the key as description, but pass everything
-        options.append(
-            {
-                "desc": f"Choose {_INFLECT.an(proto['key'])}",
-                "goto": (_set_object_choice, {"proto": proto})
-            }
-        )
-    options.append(
-        {
-            "key": ("(Back)", "back", "b"),
-            "desc": "Go back to previous step",
-            "goto": "menunode_multi_choice"
-        }
-    )
-    return (text, help), options
-
-def _set_object_choice(caller, raw_string, proto, **kwargs):
-    caller.new_char.db.starter_item = proto
-
-    return "menunode_choose_name"
-
-#########################################################
-#                 CHOOSE A NAME                         #
-#########################################################
+    return text, None
 
 def menunode_choose_name(caller, raw_string, **kwargs):
     """Name selection"""
@@ -445,7 +374,7 @@ def menunode_choose_name(caller, raw_string, **kwargs):
 
     text = dedent(
         f"""\
-        |wChoosing a Name|n
+        And finally, what's your name?
 
         {prompt_text}
         """
@@ -481,21 +410,3 @@ def menunode_confirm_name(caller, raw_string, **kwargs):
         {"key": ("No", "n"), "goto": "menunode_choose_name"}
     ]
     return text, options
-
-#########################################################
-#                      THE END                          #
-#########################################################
-
-def menunode_end(caller, raw_string):
-    """End-of-chargen cleanup."""
-    char = caller.new_char
-    #create_objects(char)
-    caller.new_char.attributes.remove("chargen_step")
-    text = dedent(
-        """
-        Welcome to Project Sol!
-
-        Enjoy your stay!
-        """
-    )
-    return text, None

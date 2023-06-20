@@ -7,7 +7,7 @@ from typeclasses import objects, sittables
 from typeclasses.objects import Object
 from typeclasses import rooms, exits, ships
 from typeclasses.rooms import Room
-from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
+from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER
 from commands import sittables
 import random
 
@@ -46,60 +46,32 @@ class ShipManager:
 class Ships(Object):
 
     def at_object_creation(self):
+        self.db.cargo = {}
         self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
         #creates the 4 rooms attached to the ship (all rooms must move too)
         # Create the rooms
 
-#        if not self.search("Bridge"):
-#            bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-#            #this doesn't work, it doesn't effect the look command
-#            bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
-#            bridge_room.location = self
-#            console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
-#            chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
-#            console.move_to(bridge_room)
-#            chair.move_to(bridge_room)
-#            storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
-#            quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
-#        else:
-#            return
+
+        bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
+#       #this doesn't work, it doesn't effect the look command
+        bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
+        bridge_room.location = self
+        console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
+        chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
+        console.move_to(bridge_room)
+        chair.move_to(bridge_room)
+        storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
+        quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
+
        
         # Create the exits between rooms
-#        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
-#        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
-#        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
-#        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
-#        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
-#        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
+        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
+        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
+        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
+        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
+        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
+        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
 
-    def setup_rooms(self):
-        """
-        Create the rooms attached to the ship.
-        """
-        room_names = ["Bridge", "Storage", "Quarters"]
-        room_desc = ["You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you.",
-                    "You stand in the main storage room of your ship, there is space here for plenty of cargo.",
-                      "You stand in your ship's quarters, there is a bed here for you to sleep in."]
-        for room_name, room_desc in zip(room_names, room_desc):
-            if not self.search(room_name):
-                room = create_object("typeclasses.rooms.Room", key=room_name, location=self, attributes=[("desc", room_desc)])
-                room.location = self
-
-    def setup_exits(self):
-        """
-        Create the exits between rooms.
-         """
-        exits_data = [
-            {"key": "Bridge", "location": self, "destination": "Bridge"},
-            {"key": "Boarding", "location_key": "Bridge", "destination": self},
-            {"key": "Storage", "location_key": "Bridge", "destination": "Storage"},
-            {"key": "Bridge", "location_key": "Storage", "destination": self},
-            {"key": "Quarters", "location_key": "Storage", "destination": "Quarters"},
-            {"key": "Bridge", "location_key": "Quarters", "destination": self},
-            ]
-
-        for exit_data in exits_data:
-            create_object("exits.Exit" **exit_data)
 
     def get_display_desc(self, looker, **kwargs):
         if looker.location == self:
@@ -181,6 +153,44 @@ class Miner(Ships):
 
     def start_consoles(self):
         super().start_consoles()
+    
+    def scan_asteroid(self):
+        if self.db.target:
+            asteroid = self.db.target
+            resources = asteroid.db.resources
+            resource_count = asteroid.db.resource_count
+            self.msg(f"Scanning asteroid...")
+            for resource, count in resources.items():
+                self.msg("f{resource}: {count}")
+            self.msg(f"Total resources: {resource_count}")
+        else:
+            self.msg("You are not targetting any asteroid.")
+
+    #Basic mining function, not very interesting....
+    def start_mining_asteroid(self):
+        TICKER_HANDLER.add(60, self.mine_asteroid)
+
+    def mine_asteroid(self, target):
+        if self.db.target:
+            asteroid = self.db.target
+            resources = asteroid.db.resources
+            if resources:
+                resource, count = resources.popitem()
+                asteroid.db.resource_count -= 1
+                self.db.ore_hold += 1
+                self.db.cargo.append((resource, 1)) #This stores the type and amount to cargo
+                self.msg(f"You mine {count} {resource} from the asteroid.")
+                if asteroid.db.resource_count == 0:
+                    #Removes depleted asteroids
+                    asteroid.delete()
+
+                else:
+                    self.msg("The asteroid is empty.")
+            else:
+                self.msg("You are not targting any asteroid.")
+
+    def stop_mining(self):
+        TICKER_HANDLER.remove(60, self.mine_asteroid)
 
 class Fighter(Ships):
 

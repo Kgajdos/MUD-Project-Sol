@@ -180,23 +180,13 @@ class CombatBaseHandler(DefaultScript):
             mapping={locobj.key: locobj for locobj in location.contents}
         )
 
-    def queue_action(self, combatant, action_dict):
+    def queue_action(self, action_dict, combatant):
         """ 
         Queue an action for the combatant by providing 
         action dict.
         
         """ 
-        key = action_dict.get("key")
-        if key == "wield":
-            item = action_dict.get("item")
-            if item:
-                action = CombatActionWield(self, combatant, action_dict)
-                self.msg(f"{combatant} readies {item} for battle!")
-            else:
-                self.msg(f"{combatant} tries to wield nothing and looks confused")
-
-        else:
-            super().queue_action(combatant, action_dict)
+        raise NotImplementedError
 
     def execute_next_action(self, combatant): 
         """ 
