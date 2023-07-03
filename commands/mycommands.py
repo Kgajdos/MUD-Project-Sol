@@ -7,7 +7,47 @@ from evennia import default_cmds
 from evennia import CmdSet
 from evennia import InterruptCommand
 from commands.wearables import CmdSetWear
+from typeclasses.equipment import EquipmentHandler
 from typeclasses.ships import Ships
+
+class CmdLook(Command):
+    """
+    look at location or object
+
+    Usage:
+      look
+      look <obj>
+      look *<account>
+
+    Observes your location or objects in your vicinity.
+    """
+
+    key = "look"
+    aliases = ["l", "ls"]
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        """
+        Handle the looking.
+        """
+        caller = self.caller
+        if not self.args:
+            target = caller.location
+            if not target:
+                caller.msg("You have no location to look at!")
+                return
+            if target == "Storage":
+                ship = caller.location.location
+                caller.msg(ship.return_ship_contents)
+        else:
+            target = caller.search(self.args)
+            if not target:
+                return
+        desc = caller.at_look(target)
+        # add the type=look to the outputfunc to make it
+        # easy to separate this output in client.
+        self.msg(text=(desc, {"type": "look"}), options=None)
 
 class CmdWeild(Command):
     """
@@ -174,6 +214,35 @@ class CmdEnterShip(Command):
         self.caller.msg("You board the ship.")
         self.caller.move_to(ship)
 
+#This will need to be revisited! -- OUTDATED COMMAND
+class CmdPutAway(Command):
+    """
+    Puts an item into the bag
+
+    Usage:
+        store <item_name> in <storage container>
+    """
+    key = "store"
+
+    def parse(self):
+        self.args = self.args.strip()
+        item, *container = self.args.split(" in ", 1)
+        self.item = item.strip()
+        if container: #sets the container if there is one specified
+            self.container = container[0].strip()
+        else:
+            self.container = "" #defaults to no container
+
+    def func(self):
+        items = self.caller.search(self.item)
+        if items:
+            item = items
+        else:
+            self.caller.msg(f"You do not have {items} in your hand.")
+            return
+
+        item = self.caller.search(items)
+        self.caller.equipment.add(item)
 
 
 class CmdLeaveShip(Command):
@@ -217,6 +286,7 @@ class MyCharCmdSet(CmdSet):
         self.add(CmdSetWear())
         self.add(ShipCmdSet())
         self.add(CmdWeild())
+        self.add(CmdPutAway())
 
 class MyAccountCmdSet(CmdSet):
 

@@ -2,12 +2,10 @@ from evennia import create_object
 from evennia import DefaultObject
 from typeclasses.objects import ProjectSolObject, Object
 import random
-
 from evennia import DefaultObject
-from typeclasses.asteroids import ProjectSolObject
 
 
-class Resource(ProjectSolObject):
+class Resource(Object):
     """
     Represents a resource object.
 
@@ -27,6 +25,9 @@ class Resource(ProjectSolObject):
         Called when the resource is first created.
         """
         self.db.quantity = 0
+
+    def at_desc(self, looker=None, **kwargs):
+        return super().at_desc(looker, **kwargs)
 
     @property
     def quantity(self):
@@ -61,7 +62,7 @@ class Resource(ProjectSolObject):
         return f"{self.key}: {self.db.quantity}"
 
 
-class Asteroid(ProjectSolObject, Object):
+class Asteroid(Object):
     """
     This is the Asteroid class. Asteroids are objects in space that provide the player with different resources.
 
@@ -147,23 +148,6 @@ class Asteroid(ProjectSolObject, Object):
         resource_string = "\n".join([f"{name}: {quantity}" for name, quantity in resource_contents.items()])
         return resource_string
     
-    def mine_asteroid(self, mining_skill):
-        """
-        Mine the asteroid and retrieve resources based on the mining skill.
-        """
-        resource_contents = self.db.resource_contents or {}
-        mined_resources = {}
-        for resource_name, quantity in resource_contents.items():
-            mined_quantity = quantity * mining_skill  # Adjust quantity based on mining skill
-            mined_resources[resource_name] = mined_quantity
-
-        # Remove the mined resources from the asteroid
-        for resource_name in mined_resources:
-            del resource_contents[resource_name]
-
-        self.db.resource_contents = resource_contents  # Update the remaining resource contents in the database
-
-        return mined_resources
 
 
         

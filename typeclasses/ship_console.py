@@ -1,4 +1,6 @@
 import datetime
+import time
+from evennia.utils import delay
 from typeclasses import ships
 from typeclasses.objects import Object
 from evennia import InterruptCommand
@@ -22,7 +24,8 @@ class CmdShipConsole(Command):
     help_category = "Ship"
 
     def func(self):
-        self.obj.start_consoles(self.caller)
+        self.obj.start_consoles(self.caller, self.session)
+
 
 class CmdWarp(Command):
     """
@@ -198,8 +201,9 @@ def menunode_start(caller):
         "desc": f"|gHelp|n", "goto": "menunode_help"},
         {"desc": f"|gCaptain's Log|n", "goto": "menunode_captains_logs"},
         {"desc": f"|gShip Statistics|n", "goto": "_ship_stats"},
-        {"desc": f"|cRename Ship|n", "goto": "menunode_ship_rename"
-    }]
+        {"desc": f"|gFly Ship|n", "goto": "menunode_fly_ship"},
+        {"desc": f"|cRename Ship|n", "goto": "menunode_ship_rename"}
+        ]
     return text, options
 
 def menunode_help(caller, raw_string, **kwargs):
@@ -314,6 +318,27 @@ def _new_name(caller, raw_string, **kwargs):
 
     return "menunode_start"
 
+def menunode_fly_ship(caller, raw_string, **kwargs):
+    text = f"Begin flying your ship?"
+
+    options = [
+        {"key": "|gYes|n", "goto": _puppet},
+        {"key": "|yNo|n", "goto": "menunode_start"}
+        ]
+    return text, options
+
+def _puppet(caller, raw_string, **kwargs):
+    caller.msg("Attempting to connect neurocybernetics to Ship.")
+    ship = caller.location.location
+    session = caller.ndb._evmenu._session
+    account = session.account
+    account.puppet_object(session, ship)
+    return "menunode_end"
+
+def menunode_end(caller, raw_string, **kwargs):
+    return None
+
+
 class ShipConsole(Object):
 
     def at_object_creation(self):
@@ -322,7 +347,7 @@ class ShipConsole(Object):
         self.db.desc = "This is the main computer of the ship. Here is where you can access things like your Captain's log, or take a look at your ship stats."
         self.db.logs = []
 
-    def start_consoles(self, player):
+    def start_consoles(self, player, session):
         menunodes = {
             "menunode_start": menunode_start,
             "_ship_stats": _ship_stats,
@@ -331,11 +356,13 @@ class ShipConsole(Object):
             "menunode_new_log": menunode_new_log,
             "menunode_choose_log": menunode_choose_log,
             "menunode_read_log": menonode_read_log,
-            "menunode_ship_rename": menunode_ship_rename
+            "menunode_ship_rename": menunode_ship_rename,
+            "menunode_fly_ship": menunode_fly_ship,
+            "menunode_end": menunode_end
         }
         consolename = self.db.name or "Admin"
         EvMenu(player, menunodes, startnode = "menunode_start",
-               consolename = consolename, ai = self, console = self.contents)
+               consolename = consolename, ai = self, console = self.contents, session = session)
         
     def set_new_name(self, player, new_name):
         player.db.active_ship = new_name
@@ -349,15 +376,15 @@ class ShipConsole(Object):
         form = EvForm("typeclasses.shipform-1")
         form.map(cells={
             1: ship.key,
-            2: player.key,
+            2: ship.db.pilot,
             3: ship.db.ship_class,
             4: ship.db.ship_id
         })
         table = EvTable("CARGO", border="incols")
-        storage = self.search("Storage")
+        storage = self.search("Storage", candidates = ship.contents)
         for cargo in storage.contents:
-            table.add_row(cargo.key)
-        
+            if not cargo.is_typeclass("typeclasses.exits.Exit"):
+                table.add_row(f"{cargo.key}: {cargo.quantity}")         
         custom_mapping = {"v&": "v2"}
         form.map(tables={"A": table}, literals = custom_mapping)
 
@@ -366,5 +393,3 @@ class ShipConsole(Object):
     def store_cargo(self, cargo, player):
         cargo.move_to(self)
         player.msg(f"You store {cargo.key} in your ship.")
-        #_SHIP_CONSOLE_DICT.append({cargo})#This exists as a potenial solution to allow items to be stored in the console but displayed in the Storage room!
-        #The idea is by creating a dict with the cargo key, it can be easily accessed by other parts of the ship

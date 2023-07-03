@@ -101,6 +101,14 @@ class SpaceRoom(Room):
         existing_room = random.choice(existing_rooms)
         player.move_to(existing_room)
 
+class ShipStorageRoom(Room):
+    def return_room_contents(self):
+        contents = {}
+        for obj in self.db.contents:
+            key = obj.key
+            quantity = obj.db.quantity
+            contents[key] = quantity
+        return contents
 
 class CorporateStorageRoom(Room):
     """

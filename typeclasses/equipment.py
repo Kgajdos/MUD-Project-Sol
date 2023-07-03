@@ -22,7 +22,6 @@ class EquipmentHandler:
             default={
                 WieldLocation.WEAPON_HAND: None, 
                 WieldLocation.TWO_HANDED: None,
-                WieldLocation.OFF_HAND: None, 
                 WieldLocation.BODY: None,
                 WieldLocation.HEAD: None,
                 WieldLocation.FEET: None,
@@ -67,7 +66,7 @@ class EquipmentHandler:
     
     def add(self, obj):
         """Put something in the backpack"""
-        self.validate_slot_usage(obj)
+        #self.validate_slot_usage(obj)
         self.slots[WieldLocation.BACKPACK].append(obj)
         self._save()
 
@@ -79,7 +78,7 @@ class EquipmentHandler:
         if slot is WieldLocation.BACKPACK:
             #empty entire backback
             ret.extend(slots[slot])
-            slots[slots] = []
+            slots[slot] = []
         else:
             ret.append(slots[slot])
             slots[slot] = None
@@ -123,9 +122,9 @@ class EquipmentHandler:
     def all(self):
         """Get all objects in inventory, regardless of location"""
         slots = self.slots
+        print("Slots: ", slots)
         lst = [
             (slots[WieldLocation.WEAPON_HAND], WieldLocation.WEAPON_HAND),
-            (slots[WieldLocation.OFF_HAND], WieldLocation.OFF_HAND),
             (slots[WieldLocation.FEET], WieldLocation.FEET),
             (slots[WieldLocation.TWO_HANDED], WieldLocation.TWO_HANDED),
             (slots[WieldLocation.BODY], WieldLocation.BODY),
