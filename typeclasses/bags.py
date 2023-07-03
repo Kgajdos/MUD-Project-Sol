@@ -18,38 +18,7 @@ class CmdOpenBag(Command):
         #self.obj is bag, self.caller is pc
         self.caller.msg(self.obj.contents)
 
-class CmdPutAway(Command):
-    """
-    Puts an item into the bag
 
-    Usage:
-        store <item_name> in <storage container>
-    """
-    key = "store"
-
-    def parse(self):
-        self.args = self.args.strip()
-        item, *container = self.args.split(" in ", 1)
-        self.item = item.strip()
-        if container: #sets the container if there is one specified
-            self.container = container[0].strip()
-        else:
-            self.container = "" #defaults to no container
-
-    def func(self):
-        items = self.caller.search(self.item)
-        if items:
-            item = items[0]
-        else:
-            self.caller.msg(f"You do not have {items} in your hand.")
-            return
-
-        item = self.caller.search(items)
-        container = self.obj.search(self.container)
-        if not container:
-            self.caller.msg(f"You do not see {container.key}")
-
-        container.store_item(self.caller, item)
 
 class CmdRetrieve(Command):
     """
@@ -85,7 +54,6 @@ class CmdRetrieve(Command):
 class BagCmdSet(CmdSet):
     def at_cmdset_creation(self):
         self.add(CmdOpenBag())
-        self.add(CmdPutAway())
         self.add(CmdRetrieve())
     
 class Bag(Object):

@@ -55,3 +55,7 @@ nosetests.xml
 
 #evadventure testing files
 evadventure
+launch.bat
+
+#Personal bat files
+*.bat

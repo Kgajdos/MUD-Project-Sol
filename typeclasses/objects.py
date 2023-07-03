@@ -273,7 +273,7 @@ class ProjectSolWeapon(ProjectSolObject):
     quality = AttributeProperty(3, autocreate=False)
     
     attack_type = AttributeProperty(Ability.PHY, autocreate=False)
-    defend_type = AttributeProperty(Ability.ARMOR, autocreate=False)
+    defend_type = AttributeProperty(Ability.PHY, autocreate=False)
     
     damage_roll = AttributeProperty("1d6", autocreate=False)
 

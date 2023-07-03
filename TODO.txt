@@ -1,9 +1,40 @@
 KNOWN BUGS:
-*Store command currently sends item to all available storage units. Not good
 *Renaming a ship breaks it's connection to the room - not sure why
 	**Ship will no longer show up under You see: _____
 *Immense difficulties with character stats
 	-Unsure if enums are being utilized
+*This command no longer works, needs to be updated:
+class CmdPutAway(Command):
+    """
+    Puts an item into the bag
+
+    Usage:
+        store <item_name> in <storage container>
+    """
+    key = "store"
+
+    def parse(self):
+        self.args = self.args.strip()
+        item, *container = self.args.split(" in ", 1)
+        self.item = item.strip()
+        if container: #sets the container if there is one specified
+            self.container = container[0].strip()
+        else:
+            self.container = "" #defaults to no container
+
+    def func(self):
+        items = self.caller.search(self.item)
+        if items:
+            item = items
+        else:
+            self.caller.msg(f"You do not have {items} in your hand.")
+            return
+
+        item = self.caller.search(items)
+        self.obj.add(item)
+
+*CombatHandler Script will endlessly repeat ending message
+*Mine command does not work
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
 BOOK(menu) ----> PAGE(text, pg#)

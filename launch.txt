@@ -1,0 +1,3 @@
+ECHO off
+ECHO Opening project
+code C:\Games\MUD-Project-Sol\MUD-Project-Sol.code-workspace

@@ -2,13 +2,16 @@ from typing import Self
 import evennia
 from evennia import InterruptCommand
 import typeclasses
+from typeclasses.accounts import Account
+#from typeclasses import scripts
 from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
 from typeclasses import rooms, exits, ships
 from typeclasses.rooms import Room
-from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER
+from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER
 from commands import sittables
+from commands.ships import ShipCmdSet
 import random
 
 #exists as a way to spawn ships in for the player
@@ -46,7 +49,10 @@ class ShipManager:
 class Ships(Object):
 
     def at_object_creation(self):
+        super().at_object_creation()
+        self.cmdset.add_default(ShipCmdSet())
         self.db.cargo = {}
+        self.db.targeting = None
         self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
         #creates the 4 rooms attached to the ship (all rooms must move too)
         # Create the rooms
@@ -82,7 +88,8 @@ class Ships(Object):
     def get_display_name(self, looker=None, **kwargs):
         return super().get_display_name(looker, **kwargs)
 
-    
+    def set_pilot(self, player):
+        self.db.pilot = player    
 
     def ship_turn_on(self):
         print(f"{self.key} turned on.")
@@ -126,6 +133,17 @@ class Ships(Object):
         self.move_to(space)
         return True
 
+    def scan(self, player):
+        self.db.scan_results = []
+        message =  ""
+        for content in self.location.contents:
+            self.db.scan_results.append(content)
+            message += f"{content} "
+        player.msg(message)
+
+    def target(self, target):
+        self.db.targeting = target   
+
     
 
 ##Definitions for Miner, Fighter, Freighter, and Researcher
@@ -167,30 +185,42 @@ class Miner(Ships):
             self.msg("You are not targetting any asteroid.")
 
     #Basic mining function, not very interesting....
-    def start_mining_asteroid(self):
-        TICKER_HANDLER.add(60, self.mine_asteroid)
+    def start_mining_asteroid(self, target):
+        new_script = evennia.create_script(typeclass = "typeclasses.scripts.AsteroidMiningScript", obj = self, key = "mine_script")
+
 
     def mine_asteroid(self, target):
-        if self.db.target:
-            asteroid = self.db.target
-            resources = asteroid.db.resources
-            if resources:
-                resource, count = resources.popitem()
-                asteroid.db.resource_count -= 1
-                self.db.ore_hold += 1
-                self.db.cargo.append((resource, 1)) #This stores the type and amount to cargo
-                self.msg(f"You mine {count} {resource} from the asteroid.")
-                if asteroid.db.resource_count == 0:
-                    #Removes depleted asteroids
-                    asteroid.delete()
-
-                else:
-                    self.msg("The asteroid is empty.")
+        resources = target.db.resource_contents
+        print(f"Target Resources: {resources}")
+        if resources:
+            resource = target.db.resource_contents.popitem()
+            #checks if hold is full
+            if self.db.orehold == 0:
+                self.msg("Your ore hold is full!")
+                return
+            self.db.orehold -= 1
+            #Spawns the resource in the ships contents
+            loot = evennia.create_object(typeclass="asteroids.Resource",
+                                         key = resource[0])
+            loot.quantity = resource[1]
+            if loot in self.search("Storage").contents:
+                loot.quantity += loot.quantity
             else:
-                self.msg("You are not targting any asteroid.")
+                loot.location = self.search("Storage")
+            self.msg(f"You mine {resource} from the asteroid.")
+            if not target.db.resource_contents:
+                #Removes depleted asteroids
+                self.stop_mining()
+
+            else:
+                self.msg("The asteroid is empty.")
+                self.stop_mining()
+
 
     def stop_mining(self):
-        TICKER_HANDLER.remove(60, self.mine_asteroid)
+        script = self.search("mine_script")
+        print(script)
+        script.delete()
 
 class Fighter(Ships):
 

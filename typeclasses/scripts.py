@@ -89,3 +89,18 @@ class Script(DefaultScript):
 
     """
     pass
+
+
+class AsteroidMiningScript(Script):
+    """
+    A script that fires the mine_asteroid function every 5 seconds.
+    """
+    def at_script_creation(self):
+        self.key = "mining_script"
+        self.desc = "Fires the mine_asteroid function every 5 seconds."
+        self.interval = 5  # every 5 seconds
+
+    def at_repeat(self):
+        "called every self.interval seconds."
+        # Assuming self.obj refers to the object containing the mine_asteroid function
+        self.obj.mine_asteroid(self.obj.db.target)
