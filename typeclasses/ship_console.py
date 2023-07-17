@@ -304,6 +304,9 @@ def menonode_read_log(caller, raw_string, **kwargs):
     }
     return text, options
 
+def menunode_store_cargo(caller, raw_string, **kwargs):
+    text = f"Store cargo in your "
+
 def menunode_ship_rename(caller, raw_string, **kwargs):
     text = f"""Type in a new name for your ship and press enter. 
 |rWARNING: You will not be notified of this change!|n"""
@@ -381,10 +384,13 @@ class ShipConsole(Object):
             4: ship.db.ship_id
         })
         table = EvTable("CARGO", border="incols")
-        storage = self.search("Storage", candidates = ship.contents)
-        for cargo in storage.contents:
-            if not cargo.is_typeclass("typeclasses.exits.Exit"):
-                table.add_row(f"{cargo.key}: {cargo.quantity}")         
+        storage = ship.db.cargo
+        print(storage)
+        if not storage:
+            table.add_row("No cargo")
+        else:
+            for cargo, quantity in storage.items():
+                table.add_row(f"{cargo}: {quantity}")         
         custom_mapping = {"v&": "v2"}
         form.map(tables={"A": table}, literals = custom_mapping)
 
