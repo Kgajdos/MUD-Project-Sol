@@ -1,6 +1,7 @@
 from typing import Self
 import evennia
 from evennia import InterruptCommand
+from commands.minercommands import MinerCmdSet
 import typeclasses
 from typeclasses.accounts import Account
 #from typeclasses import scripts
@@ -9,7 +10,7 @@ from typeclasses import objects, sittables
 from typeclasses.objects import Object
 from typeclasses import rooms, exits, ships
 from typeclasses.rooms import Room
-from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER
+from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
 from commands.ships import ShipCmdSet
 import random
@@ -47,7 +48,26 @@ class ShipManager:
 
 ## Ship Class definitions only
 class Ships(Object):
+    """
+    This is the Ships class. Ships are objects that players can use to travel through space.
 
+    Attributes:
+        cargo (dict): A dictionary mapping cargo names to their quantities.
+        targeting (Object): The object that the ship is currently targeting.
+        interior_desc (str): The description of the interior of the ship.
+        exterior_desc (str): The description of the exterior of the ship.
+
+    Methods:
+        at_object_creation(): Set up the ship when it is created.
+        get_display_desc(looker, **kwargs): Get the description of the ship as it appears to a player.
+        get_display_name(looker=None, **kwargs): Get the name of the ship as it appears to a player.
+        set_pilot(player): Set the pilot of the ship.
+        ship_turn_on(): Turn on the ship.
+        ship_idle(): Put the ship in idle mode.
+        delete(): Delete the ship and all its rooms.
+        warp_to_space(): Warp the ship into space.
+        scan(player, target): Scan a target for resources.
+    """
     def at_object_creation(self):
         super().at_object_creation()
         self.cmdset.add_default(ShipCmdSet())
@@ -60,7 +80,7 @@ class Ships(Object):
 
         bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
 #       #this doesn't work, it doesn't effect the look command
-        bridge_room.db.desc = "You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you."
+        bridge_room.db.desc = "You stand at the bridge of your ship. The space is cozy and intimate, with room for only three people to comfortably stand. A soft leather Captain's chair sits in front of you, and an older console hums quietly in the background."
         bridge_room.location = self
         console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
         chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
@@ -80,15 +100,43 @@ class Ships(Object):
 
 
     def get_display_desc(self, looker, **kwargs):
+        """
+        Get the description of the ship as it appears to a player.
+
+        Args:
+            looker (Object): The object that is looking at this object.
+
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            str: The description of the ship as it appears to a player.
+        """
         if looker.location == self:
             return self.db.interior_desc
         else:
             return self.db.exterior_desc
         
     def get_display_name(self, looker=None, **kwargs):
+        """
+         Get the name of the ship as it appears to a player.
+
+         Args:
+             looker (Object): The object that is looking at this object.
+
+             **kwargs: Arbitrary keyword arguments.
+
+         Returns:
+             str: The name of the ship as it appears to a player.
+         """
         return super().get_display_name(looker, **kwargs)
 
     def set_pilot(self, player):
+        """
+         Set the pilot of the ship.
+
+         Args:
+             player (Object): The object that will be piloting this ship.
+        """
         self.db.pilot = player    
 
     def ship_turn_on(self):
@@ -110,6 +158,11 @@ class Ships(Object):
             room.delete()
 
         super().delete()
+    
+    def store_cargo(self, destination):
+        if self.db.cargo:
+            for items in self.db.cargo.items():
+                destination.db.cargo += items
 
     def warp_to_space(self):
         """
@@ -133,16 +186,20 @@ class Ships(Object):
         self.move_to(space)
         return True
 
-    def scan(self, player):
+    def scan(self, player, target):
         self.db.scan_results = []
-        message =  ""
-        for content in self.location.contents:
-            self.db.scan_results.append(content)
-            message += f"{content} "
+        message = ""
+        if hasattr(target.db, "resource_contents"):
+            for content in target.db.resource_contents:
+                self.db.scan_results.append(content)
+                message += f"{content} "
+        else:
+            message = "No resource contents found."
         player.msg(message)
 
     def target(self, target):
-        self.db.targeting = target   
+        self.msg(f"Targetting {target}")
+        self.db.target = target   
 
     
 
@@ -150,14 +207,34 @@ class Ships(Object):
 class Miner(Ships):
     """
     This creates a mining class ship
+
+    Attributes:
+        ship_class (str): The class of the ship.
+        exterior_desc (str): The description of the exterior of the ship.
+        health (int): The health of the ship.
+        shields (int): The shields of the ship.
+        orehold (int): The amount of ore that the ship can hold.
+        genhold (int): The amount of general cargo that the ship can hold.
+        credit_value (int): The value of the ship in credits.
+
+    Methods:
+        at_object_creation(): Set up the miner when it is created.
+        turn_on(): Turn on the miner.
+        idle(): Put the miner in idle mode.
+        start_consoles(): Start the consoles on the miner.
+        scan_asteroid(): Scan an asteroid for resources.
+        start_mining_asteroid(target): Start mining an asteroid.
+        mine_asteroid(target): Mine an asteroid for resources.
     """
     def at_object_creation(self):
         super().at_object_creation()
+        self.cmdset.add_default(MinerCmdSet())
         self.db.ship_class = "Miner"
         self.db.exterior_desc = "Not the best mining ship, but it is the cheapest. WARNING: Basic Space is not responsible for death/damage caused by asteroids."
         self.db.health = 7200
         self.db.sheilds = 2500
-        self.db.orehold = 10000
+        self.db.max_orehold = 1500
+        self.db.orehold = 1500
         self.db.genhold = 50
         self.db.credit_value = 15000
     
@@ -190,37 +267,39 @@ class Miner(Ships):
 
 
     def mine_asteroid(self, target):
+        self.msg("Mining...")
         resources = target.db.resource_contents
-        print(f"Target Resources: {resources}")
+        print(resources)
         if resources:
-            resource = target.db.resource_contents.popitem()
-            #checks if hold is full
-            if self.db.orehold == 0:
+            mined = random.choice(list(resources.keys()))
+            rand = random.randint(0,resources[mined]) #creates a random number between 0 and the amount of available resources
+            if self.db.orehold <= 0:
                 self.msg("Your ore hold is full!")
                 return
-            self.db.orehold -= 1
-            #Spawns the resource in the ships contents
-            loot = evennia.create_object(typeclass="asteroids.Resource",
-                                         key = resource[0])
-            loot.quantity = resource[1]
-            if loot in self.search("Storage").contents:
-                loot.quantity += loot.quantity
+            self.db.orehold -= rand
+            if mined in self.db.cargo:
+                self.db.cargo[mined] += rand
+                target.db.resource_contents[mined] -= rand
+                if target.db.resource_contents[mined] <= 0:
+                    target.db.resource_contents.pop(mined)
             else:
-                loot.location = self.search("Storage")
-            self.msg(f"You mine {resource} from the asteroid.")
-            if not target.db.resource_contents:
+                self.db.cargo[mined] = rand
+                if target.db.resource_contents <= 0:
+                    target.db.resource_contents.pop(mined)
+            self.msg(f"You mine {rand} {mined} from the asteroid.")
+        if not target.db.resource_contents:
                 #Removes depleted asteroids
-                self.stop_mining()
+            self.msg("The asteroid is empty.")
+            self.stop_mining()
+            target.delete()
 
-            else:
-                self.msg("The asteroid is empty.")
-                self.stop_mining()
 
 
     def stop_mining(self):
-        script = self.search("mine_script")
-        print(script)
-        script.delete()
+        script = self.scripts.get("mine_script")
+        if script:
+            script[0].stop()
+            self.msg("You stop mining.")
 
 class Fighter(Ships):
 

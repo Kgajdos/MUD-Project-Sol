@@ -94,13 +94,37 @@ class Script(DefaultScript):
 class AsteroidMiningScript(Script):
     """
     A script that fires the mine_asteroid function every 5 seconds.
+
+    Attributes:
+        key (str): The key or name of the script.
+        desc (str): A description of the script's purpose.
+        interval (int): The time interval in seconds between script repetitions.
+        db_persistent (bool): Indicates whether the script persists after server restarts.
+
+    Methods:
+        at_script_creation(): Called when the script is first created.
+        at_repeat(): Called every self.interval seconds.
+        stop(): Stop the script.
     """
     def at_script_creation(self):
-        self.key = "mining_script"
+        """
+        Called when the script is first created.
+        """
+        self.key = "mine_script"
         self.desc = "Fires the mine_asteroid function every 5 seconds."
         self.interval = 5  # every 5 seconds
+        self.db_persistent = False
 
     def at_repeat(self):
-        "called every self.interval seconds."
+        """
+        Called every self.interval seconds.
+        """
         # Assuming self.obj refers to the object containing the mine_asteroid function
         self.obj.mine_asteroid(self.obj.db.target)
+    
+    def stop(self):
+        """
+        Stop the script.
+        """
+        self.delete()
+

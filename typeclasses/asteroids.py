@@ -20,6 +20,7 @@ class Resource(Object):
         remove_quantity(amount): Remove from the quantity of the resource.
         display(): Return a string representation of the resource.
     """
+
     def at_object_creation(self):
         """
         Called when the resource is first created.
@@ -115,12 +116,24 @@ class Asteroid(Object):
         """
         Generate the contents of the asteroid.
         """
-        contents = {}
-        for resource_name, quantity_range in resource_ranges.items():
-            resource_quantity = random.randint(quantity_range[0], quantity_range[1])
-            contents[resource_name] = resource_quantity
-        self.db.resource_contents = contents
-    
+        for rarity in self.resource_rarities.values():
+            if rarity not in self.resources:
+                continue
+
+            selected_resources = random.sample(self.resources[rarity],
+                                               k = random.randint(1, len(self.resources[rarity])))
+            for resource in selected_resources:
+                #Add quantity based on rarity
+                if rarity == "common":
+                    quantity = random.randint(resource_ranges["common"][50], resource_ranges["common"][100])
+                elif rarity == "uncommon":
+                    quantity = random.randint(resource_ranges["uncommon"][25], resource_ranges["uncommon"][55])
+                elif rarity == "rare":
+                    quantity = random.randint(resource_ranges["rare"][10], resource_ranges["rare"][20])
+                
+                self.add_resource((resource, quantity), rarity)
+
+
     @classmethod
     def generate_asteroid(self, resource_quantities):
         """

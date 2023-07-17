@@ -102,6 +102,10 @@ class SpaceRoom(Room):
         player.move_to(existing_room)
 
 class ShipStorageRoom(Room):
+
+    def at_object_creation(self):
+        self.db.cargo = {}
+
     def return_room_contents(self):
         contents = {}
         for obj in self.db.contents:
@@ -109,9 +113,4 @@ class ShipStorageRoom(Room):
             quantity = obj.db.quantity
             contents[key] = quantity
         return contents
-
-class CorporateStorageRoom(Room):
-    """
-    A storage room unique to each player. All items not stored on a ship are stored here.
-    """
-    pass
+    
