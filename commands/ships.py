@@ -86,19 +86,24 @@ class Target(Command):
         self.obj.target(target)
 
 class UnloadCargo(Command):
+    """
+    Command to unload all cargo to the hanger.
+    """
     key = "unload"
     locks = "cmd:commandinstorage()"
     help_category = "Ship"
 
-    def parse(self):
-      self.args = self.args.strip()
-      if not self.args:
-          self.caller.msg("Unload what?")
-          raise InterruptCommand
-        
     def func(self):
-        #TODO: Implement ship functions that check inventory
-        pass
+        cargo_dict = {}
+        for item, quantity in self.caller.db.cargo.items():
+            cargo_dict[item] = quantity
+        self.obj.location.db.cargo = cargo_dict
+        self.caller.db.cargo = {}
+        self.caller.msg("Unload successful.")
+        if self.caller.contents:
+            for item in self.caller.contents:
+                if not item.destination and not item.location:
+                  item.move_to(self.obj.location)
 
 class StopPiloting(Command):
     """
@@ -124,4 +129,5 @@ class ShipCmdSet(CmdSet):
         self.add(Scan())
         self.add(Target())
         self.add(CmdLook())
+        self.add(UnloadCargo())
         

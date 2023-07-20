@@ -43,7 +43,7 @@ class SpaceRoom(Room):
         Notes:
             - It generates a random number of asteroids (1-10) and adds them to the room.
         """
-        TICKER_HANDLER.add(60 * 60, self.check_and_add_asteroid) #makes a check every hours worth of seconds the ticker has run
+        TICKER_HANDLER.add(60 * 3, self.check_and_add_asteroid) #makes a check every hours worth of seconds the ticker has run
         asteroid_count = random.randint(1, 10)
         for _ in range(asteroid_count):
             self.add_asteroid()
@@ -82,14 +82,8 @@ class SpaceRoom(Room):
             - It generates random resource quantities for the asteroid and sets its location to the room.
             - It also sends a message to all characters in the room about the newly added asteroid.
         """
-        resource_quantities = {
-                "Nickle": random.randint(15, 50),
-                "Silver": random.randint(5,15),
-                "Gold": random.randint(0,5),
-                "Silicate": random.randint(0,5),
-                "Platinum": random.randint(0,5)
-            }
-        asteroid = Asteroid.generate_asteroid(resource_quantities)
+        #resource_dict = {resource.value for resource in Resource}
+        asteroid = Asteroid.generate_asteroid()
         asteroid.location = self
         self.msg_contents("An asteroid drifts into view.")
 

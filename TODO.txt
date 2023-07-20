@@ -34,7 +34,6 @@ class CmdPutAway(Command):
         self.obj.add(item)
 
 *CombatHandler Script will endlessly repeat ending message
-*Mine command does not work
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
 BOOK(menu) ----> PAGE(text, pg#)

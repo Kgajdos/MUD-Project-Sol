@@ -1,6 +1,6 @@
 from typing import Self
 import evennia
-from evennia import InterruptCommand
+from evennia import InterruptCommand, utils
 from commands.minercommands import MinerCmdSet
 import typeclasses
 from typeclasses.accounts import Account
@@ -201,6 +201,9 @@ class Ships(Object):
         self.msg(f"Targetting {target}")
         self.db.target = target   
 
+                
+
+
     
 
 ##Definitions for Miner, Fighter, Freighter, and Researcher
@@ -228,7 +231,7 @@ class Miner(Ships):
     """
     def at_object_creation(self):
         super().at_object_creation()
-        self.cmdset.add_default(MinerCmdSet())
+        self.cmdset.add(MinerCmdSet, persistent = True)
         self.db.ship_class = "Miner"
         self.db.exterior_desc = "Not the best mining ship, but it is the cheapest. WARNING: Basic Space is not responsible for death/damage caused by asteroids."
         self.db.health = 7200
@@ -269,10 +272,10 @@ class Miner(Ships):
     def mine_asteroid(self, target):
         self.msg("Mining...")
         resources = target.db.resource_contents
-        print(resources)
         if resources:
-            mined = random.choice(list(resources.keys()))
+            mined = random.choice(list(resources))
             rand = random.randint(0,resources[mined]) #creates a random number between 0 and the amount of available resources
+            print(rand)
             if self.db.orehold <= 0:
                 self.msg("Your ore hold is full!")
                 return
@@ -284,7 +287,7 @@ class Miner(Ships):
                     target.db.resource_contents.pop(mined)
             else:
                 self.db.cargo[mined] = rand
-                if target.db.resource_contents <= 0:
+                if target.db.resource_contents[mined] <= 0:
                     target.db.resource_contents.pop(mined)
             self.msg(f"You mine {rand} {mined} from the asteroid.")
         if not target.db.resource_contents:
