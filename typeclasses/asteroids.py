@@ -2,6 +2,7 @@ from evennia import create_object
 from evennia import DefaultObject
 from typeclasses.objects import ProjectSolObject, Object
 import random
+from data.resources import minerals
 from evennia import DefaultObject
 
 
@@ -20,6 +21,7 @@ class Resource(Object):
         remove_quantity(amount): Remove from the quantity of the resource.
         display(): Return a string representation of the resource.
     """
+
     def at_object_creation(self):
         """
         Called when the resource is first created.
@@ -78,16 +80,6 @@ class Asteroid(Object):
         mine_asteroid(mining_skill): Mine the asteroid and retrieve resources based on the mining skill.
     """
 
-    resource_rarities = {
-        "Iron": "common",
-        "Nickle": "common",
-        "Clay": "common",
-        "Silver": "uncommon",
-        "Gold": "rare",
-        "Platinum": "rare",
-        "Silicate": "rare"
-    }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.resources = {}
@@ -95,46 +87,53 @@ class Asteroid(Object):
     def at_object_creation(self):
         self.tags.add("Resource")
 
-    def add_resource(self, resource, rarity):
-        if rarity not in self.resources:
-            self.resources[rarity] = []
-        self.resources[rarity].append(resource)
+    def add_resource(self, resource, quantity):
+        """
+        Add a resource to the asteroid.
 
-    def get_random_resource(self):
-        all_resources = []
+        Args:
+            resource (Resource): The resource enum.
+            rarity (str): The rarity level of the resource.
 
-        for rarity in self.resources:
-            all_resources.extend(self.resources[rarity])
+        Notes:
+            This method stores the resource and its quantity in the asteroid's resource_contents dictionary.
+        """
+        if self.db.resource_contents is None:
+            self.db.resource_contents = {}
+        self.db.resource_contents[resource] = quantity
 
-        if not all_resources:
-            return None
-        
-        return random.choice(all_resources)
-    
-    def generate_asteroid_contents(self, resource_ranges):
+
+
+    def generate_asteroid_contents(self):
         """
         Generate the contents of the asteroid.
         """
-        contents = {}
-        for resource_name, quantity_range in resource_ranges.items():
-            resource_quantity = random.randint(quantity_range[0], quantity_range[1])
-            contents[resource_name] = resource_quantity
-        self.db.resource_contents = contents
-    
-    @classmethod
-    def generate_asteroid(self, resource_quantities):
-        """
-        Generate the asteroid with the specified resource quantities.
+        selected_resources = random.sample(list(minerals.keys()), k = 8)
+        tempdict = {}
+        for item in selected_resources:
+            tempdict[item] = minerals[item]
+        for resource, rarity in tempdict.items():
+            #Add quantity based on rarity
+            resource_name = resource
+            if rarity == "common":
+                quantity = random.randint(50, 100)
+            elif rarity == "uncommon":
+                quantity = random.randint(25, 55)
+            elif rarity == "rare":
+                quantity = random.randint(10, 20)
+            self.add_resource(resource_name, quantity)
 
-        Args:
-            resource_quantities (dict): A dictionary of resource quantities, where the keys are the resource names
-                                    and the values are the quantities.
+
+    @classmethod
+    def generate_asteroid(cls):
+        """
+        Generate a new asteroid with random resource contents.
 
         Returns:
-            Asteroid(resource_quantities)
+            Asteroid: The newly generated asteroid object.
         """
-        asteroid = create_object("typeclasses.asteroids.Asteroid", key="Asteroid")
-        asteroid.db.resource_contents = resource_quantities
+        asteroid = create_object(typeclass = "typeclasses.asteroids.Asteroid", key="Asteroid")
+        asteroid.generate_asteroid_contents()
         return asteroid
     
     def display_resource_contents(self):

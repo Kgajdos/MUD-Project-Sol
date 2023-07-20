@@ -54,7 +54,7 @@ def cmdinside(accessing_obj, accessed_obj, *args, **kwargs):
     Used to lock commands and only allows access if the command is defined on 
     an object which accessing_obj is inside of
     """
-    return accessed_obj.obj == accessing_obj.location
+    return accessed_obj.location == accessing_obj.location
 
 def cmdarmed(accessing_obj, accessed_obj, *args, **kwargs):
     return accessed_obj.location == accessing_obj.contents
@@ -77,3 +77,9 @@ def cmdismoving(accessing_ojb, accessed_obj, *args, **kwargs):
         is_not_moving = True
 
     return is_not_moving
+
+def cmdinstorage(accessing_obj, accessed_obj, *args, **kwargs):
+    """
+    
+    """
+    accessing_obj.location == "Hanger" 

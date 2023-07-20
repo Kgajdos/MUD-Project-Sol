@@ -1,5 +1,6 @@
 import datetime
 import time
+from evennia import utils
 from evennia.utils import delay
 from typeclasses import ships
 from typeclasses.objects import Object
@@ -304,6 +305,9 @@ def menonode_read_log(caller, raw_string, **kwargs):
     }
     return text, options
 
+def menunode_store_cargo(caller, raw_string, **kwargs):
+    text = f"Store cargo in your "
+
 def menunode_ship_rename(caller, raw_string, **kwargs):
     text = f"""Type in a new name for your ship and press enter. 
 |rWARNING: You will not be notified of this change!|n"""
@@ -342,12 +346,27 @@ def menunode_end(caller, raw_string, **kwargs):
 class ShipConsole(Object):
 
     def at_object_creation(self):
+        """
+            Called when the object is created. Adds default console commands and initializes object properties.
+
+            Notes:
+                - This method is automatically called by Evennia during object creation.
+
+        """
         super().at_object_creation()
         self.cmdset.add_default(ConsoleCmdSet())
         self.db.desc = "This is the main computer of the ship. Here is where you can access things like your Captain's log, or take a look at your ship stats."
         self.db.logs = []
 
     def start_consoles(self, player, session):
+        """
+        Start the ship console's main menu.
+
+        Args:
+            player (Player): The player using the console.
+            session (Session): The session through which the player is interacting.
+
+        """
         menunodes = {
             "menunode_start": menunode_start,
             "_ship_stats": _ship_stats,
@@ -365,13 +384,30 @@ class ShipConsole(Object):
                consolename = consolename, ai = self, console = self.contents, session = session)
         
     def set_new_name(self, player, new_name):
+        """
+        Set a new name for the ship.
+
+        Args:
+            player (Player): The player who is renaming the ship.
+            new_name (str): The new name for the ship.
+
+        """
         player.db.active_ship = new_name
         ship = self.location.location
         ship.key = new_name
         ship.name = new_name
 
     def ship_sheet(self,player):
-        '''Using the EvForm shipform for creation'''
+        """
+        Generate and return the ship's information as an EvForm for creation.
+
+        Args:
+            player (Player): The player requesting the ship information.
+
+        Returns:
+            str: The ship's information as an EvForm.
+
+        """
         ship = self.location.location
         form = EvForm("typeclasses.shipform-1")
         form.map(cells={
@@ -381,15 +417,18 @@ class ShipConsole(Object):
             4: ship.db.ship_id
         })
         table = EvTable("CARGO", border="incols")
-        storage = self.search("Storage", candidates = ship.contents)
-        for cargo in storage.contents:
-            if not cargo.is_typeclass("typeclasses.exits.Exit"):
-                table.add_row(f"{cargo.key}: {cargo.quantity}")         
+        storage = ship.db.cargo
+        print(storage)
+        if not storage:
+            table.add_row("No cargo")
+        else:
+            for i, (cargo, quantity) in enumerate(storage.items()):
+                if i == 8 and len(storage) > 10:
+                    table.add_row("etc...")
+                    break
+                table.add_row(f"{cargo}: {quantity}")       
         custom_mapping = {"v&": "v2"}
         form.map(tables={"A": table}, literals = custom_mapping)
 
         return str(form)
 
-    def store_cargo(self, cargo, player):
-        cargo.move_to(self)
-        player.msg(f"You store {cargo.key} in your ship.")

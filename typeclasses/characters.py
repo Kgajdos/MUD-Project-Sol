@@ -12,6 +12,7 @@ from evennia.utils import utils, lazy_property, create
 from evennia import DefaultCharacter, AttributeProperty, EvForm, EvTable, scripts
 from typeclasses.equipment import EquipmentHandler
 from typeclasses.bags import Bag, BagCmdSet
+from typeclasses import playerclass
 import random
 from enums import Ability
 from rules import dice
@@ -116,8 +117,25 @@ class Character(LivingMixin, DefaultCharacter):
 
 
     def at_object_creation(self):     
-        pass
-        
+        self.set_player_class()
+
+    def set_player_class(self):
+        #Determine the player class based on chargen choices
+        player_class = self.db.player_class
+
+        # Create an instance of the specific player class based on the value
+        if player_class == "Miner":
+            playerclass.Miner(self)
+        elif player_class == "Freighter":
+            playerclass.Freighter(self)
+        elif player_class == "Researcher":
+            playerclass.Researcher(self)
+        elif player_class == "Fighter":
+            playerclass.Fighter(self)
+        else:
+            # Handle unknown or invalid player classes
+            pass
+
     @lazy_property
     def equipment(self):
         return EquipmentHandler(self)

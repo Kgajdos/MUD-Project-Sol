@@ -34,7 +34,6 @@ class CmdPutAway(Command):
         self.obj.add(item)
 
 *CombatHandler Script will endlessly repeat ending message
-*Mine command does not work
 ----------------------------------------------------------------------------------------------------------------------------------------------
 Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
 BOOK(menu) ----> PAGE(text, pg#)
@@ -67,3 +66,4 @@ ship and mines the asteroid alongside their ship. This only works on massive ast
 *Researcher: Tutorial on their ship's unique research room and all it's fixin's. Provide beginner contracts to allow the player
 to build up their relevant skills.
 ------------------------------------------------------------------------------------------------------------------------------------------------------
+Need to make major changes to the ship command file! Split it up between the classes!

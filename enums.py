@@ -54,20 +54,8 @@ class ToolQuality(Enum):
     GREAT = 0.20
     EXTRORDINARY = 0.25
 
-class Resource(Enum):
-    IRON = ("iron", "common")
-    NICKLE = ("nickle", "common")
-    CLAY = ("clay", "common")
-    HYDROGEN = ("hydrogen", "common")
 
-    SILVER = ("silver", "uncommon")
-    WOOD = ("woord", "uncommon")
-    HELIUM = ("helium", "uncommon")
 
-    GOLD = ("gold", "rare")
-    PLATINUM = ("platinum", "rare")
-    SILICATE = ("silicate", "rare")
-    PLASMA = ("plasma", "rare")
 
 class SHIP(Enum):
     MAIN_GUN = "main_gun"
