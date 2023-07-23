@@ -7,6 +7,29 @@ class CmdLook(default_cmds.CmdLook):
         # get regular look, followed by a combat summary
         super().func()
 
+class Warp(Command):
+    """
+    Command class to initiate a warp to a specified location.
+
+    Usage:
+        warp <destination>
+
+    Example:
+        warp Sector A9
+
+    Notes:
+        - This command allows the player to initiate a warp to a specified destination.
+        - The destination must be a valid location within the game world.
+        - The actual warp behavior is implemented in the `warp` method of the target object.
+    """
+    def parse(self):
+        self.args = self.args.strip()
+        if not self.args:
+            self.msg("Warp to where?")
+            raise InterruptCommand
+        
+        def func(self):
+            self.obj.warp(self.args)
 class Scan(Command):
     """
     Scan command for scanning the resource contents of a target object.
