@@ -56,7 +56,7 @@ These act as percentages.
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 Start seperating player roles/jobs based on their chosen class.
 All pilots will need a tutorial on basic movement, commands, and ship commands.
-*Miner: Tutorial on finding asteroids, landing or attaching (what the difference is), and beginning mining
+*Miner: Tutorial on finding asteroids, landing or attaching (what the difference is), and beginning mining -- FUTURE FEATURE!
 	**If they find an asteroid large enough to land on, have a tutorial on space mining where the player leaves the comfort of the
 ship and mines the asteroid alongside their ship. This only works on massive asteroids that are at least ten times the size of the ship.
 *Fighter: Tutorial on getting contracts, fulfilling them, and general space travel
@@ -67,3 +67,25 @@ ship and mines the asteroid alongside their ship. This only works on massive ast
 to build up their relevant skills.
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 Need to make major changes to the ship command file! Split it up between the classes!
+******************************************************************************************************************************************
+FUTURE FEATURES:
+
+Corporations:
+-Split leaders up into CEO, COO, CFO
+-Create building projects
+
+Projects:
+-create a barebones class that defines what the project is and what resources/research is required
+
+Exploration System:
+-Procedurally generated points of interest
+ *Celetial phenomenon:
+	-Solar Flares: bursts of radiation from stars (Sun) affects coms and power grids
+	-Comets: cosmic snowballs of iced dust and gas orbitting the Sun (when they approach the sun/star they heat up and create the glowing tail)
+	-SuperNovae: explosions that occur at the end of a star's life cycle. Releases an immense amount of energy and can be seen from distant places.
+	-Black Holes: regions of space where gravity is stronger than light. Time dilations are present the closer you get to a black hole.
+	-Gravitational Waves: Ripples in the fabric of space-time caused by the acceleration of massive objects (In game, barges will create gravitational waves)
+	-Asteroid Belts: regions in space that contain a large amount of asteroids
+	-Nebulae: vast clouds of dust and gas, often illuminated by other stars. May be the "birthing grounds" for new stars
+
+----------------------------------------------------------------------------------------------------------------------------------

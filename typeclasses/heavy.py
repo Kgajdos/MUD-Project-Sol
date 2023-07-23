@@ -10,6 +10,3 @@ class Heavy(DefaultObjects):
            # this, you'd have to look at the code of the 'get' command to
            # find out).
         self.db.get_err_msg = "This is too heavy to pick up."
-
-    def return_appearance(self):
-        

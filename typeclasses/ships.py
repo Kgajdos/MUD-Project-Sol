@@ -1,10 +1,8 @@
-from typing import Self
 import evennia
 from evennia import InterruptCommand, utils
 from commands.minercommands import MinerCmdSet
 import typeclasses
 from typeclasses.accounts import Account
-#from typeclasses import scripts
 from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
@@ -74,10 +72,11 @@ class Ships(Object):
         self.db.cargo = {}
         self.db.targeting = None
         self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
-        #creates the 4 rooms attached to the ship (all rooms must move too)
-        # Create the rooms
+        bridge = self.search("Bridge")
+        if not bridge:
+            self.create_rooms()
 
-
+    def create_rooms(self):
         bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
 #       #this doesn't work, it doesn't effect the look command
         bridge_room.db.desc = "You stand at the bridge of your ship. The space is cozy and intimate, with room for only three people to comfortably stand. A soft leather Captain's chair sits in front of you, and an older console hums quietly in the background."
@@ -97,7 +96,6 @@ class Ships(Object):
         create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
         create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
         create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
-
 
     def get_display_desc(self, looker, **kwargs):
         """
@@ -144,25 +142,15 @@ class Ships(Object):
 
     def ship_idle(self):
         print(f"{self.key} is iddling.")
-
-    #This doesn't work
-    def delete(self):
-        room_names = ["Bridge", "Storage", "Quarters"]
-        room_list = list()
-        for room_name in room_names:
-            room = self.search(room_name, candidates=self.contents)
-            if room:
-                room_list.append(room)
-
-        for room in room_list:
-            room.delete()
-
-        super().delete()
     
     def store_cargo(self, destination):
         if self.db.cargo:
             for items in self.db.cargo.items():
                 destination.db.cargo += items
+
+    def warp(self, location):
+        room = self.search(location)
+        self.move_to(room)
 
     def warp_to_space(self):
         """
@@ -330,8 +318,31 @@ class Fighter(Ships):
 
 
 class Freighter(Ships):
-    
+    """
+    Represents a freighter ship in the game.
+
+    Attributes:
+        exterior_desc (str): Description of the freighter's exterior, including a warning about slow travel.
+        health (int): The health points of the freighter, indicating its durability.
+        shields (int): The shield points of the freighter, providing additional protection.
+        fragilehold (int): The fragile hold capacity of the freighter, representing its sensitivity to certain cargos.
+        genhold (int): The general cargo hold capacity of the freighter.
+        credit_value (int): The value of the freighter in credits.
+
+    Methods:
+        at_object_creation(): Called when the freighter object is first created, initializes its attributes.
+        turn_on(): Turns on the freighter's systems, calling the base class method and displaying a message.
+        idle(): Sets the freighter to idle mode, calling the base class method and displaying a message.
+        load_container(cargo_container): Loads a cargo container onto the freighter.
+    """
     def at_object_creation(self):
+        """
+        Called when the freighter object is first created. Initializes its attributes.
+
+        Notes:
+            - Calls the at_object_creation method of the base class (Ships) to set up common ship attributes.
+            - Sets the exterior description, health, shields, fragilehold, genhold, and credit_value attributes.
+        """
         super().at_object_creation()
         self.db.exterior_desc = "Basic Space has created a luxurious tank, so you ran rest well knowing the pirates wont even leave a scratch! WARNING: Basic Space is not responsible for any hardship as a result of slow travel."
         self.db.health = 5700
@@ -347,6 +358,42 @@ class Freighter(Ships):
     def idle(self):
         super().ship_idle()
         print(f"{self.key} rumbles noisly.")
+
+    def check_manifest(self):
+        """
+        Generates and displays a shipping manifest for the cargo container.
+
+        Notes:
+            - The method iterates through the cargo container's contents and consolidates the quantities of each item.
+            - The resulting shipping manifest is displayed to the caller.
+        """
+        temp_dict = {}
+        for item, quantity in self.db.contents.items():
+            temp_dict[item] += quantity
+        self.msg(f"Shipping Manifest: {temp_dict}")
+
+    def load_container(self, cargo_container):
+        """
+        Loads a cargo container onto the freighter.
+
+        Args:
+            cargo_container (Object): The cargo container to be loaded.
+
+        Notes:
+            - Moves the cargo container to the freighter's location.
+            - Assumes that the cargo container is compatible with the freighter's hold capacity.
+            - If the freighter's hold capacity is exceeded, the cargo container will not be loaded.
+        """
+        if self.db.general_hold_capacity - cargo_container.size >= 0:
+            cargo_container.move_to(self)
+            self.db.general_hold_capacity -= cargo_container.size
+            print(f"{cargo_container.key} loaded onto {self.key}.")
+        else:
+            print(f"Cannot load {cargo_container.key}. Not enough hold capacity.")
+
+    def unload_container(self, cargo_container, location):
+        cargo_container.move_to(location)
+    
 
 
 class Researcher(Ships):
