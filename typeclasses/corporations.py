@@ -30,6 +30,12 @@ class Corporation(DefaultObject):
         self.db.reserves = {}
         self.db.employee = {}
 
+    def create_corporation(self, corpname, ceo):
+        self.at_object_creation()
+        self.db.name = corpname
+        self.db.leaders[ceo] = "CEO"
+        ceo.add(CorpoCmdSet())
+
     def add_to_reserves(self, resource):
         """
         Adds resources to the corporation's reserves.

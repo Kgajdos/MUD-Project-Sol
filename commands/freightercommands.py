@@ -1,7 +1,20 @@
 from commands.command import Command
 from evennia import default_cmds, CmdSet, InterruptCommand
 
-class CmdTakeContract(Command):
+class CmdContracts(Command):
+    key = "contract"
+    help_category = "Freight"
+
+    contract_switches = ("accept", "cancel", "check")
+
+    def func(self):
+        try:
+            if self.contract_switches:
+                return self.do_contract_switches()
+        except:
+            self.msg("Something went wrong, try again.")
+
+    def do_contract_switches(self):
 
 class CmdCheckManifest(Command):
     """

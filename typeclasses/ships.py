@@ -97,6 +97,23 @@ class Ships(Object):
         create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
         create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
 
+    #has not been tested yet
+    def create_ship_id(self):
+        """
+        Creates a randomized ship id in the form of AA-00-BB-11
+
+        Checks against the database to ensure the number is unique.
+        """
+        letter_set_a = random.choice() + random.choice()
+        letter_set_b = random.choice() + random.choice()
+        number_set_0 = random.randint() + random.randint()
+        number_set_1 = random.randint() + random.randint()
+        ship_id = letter_set_a.upper() + "-" + number_set_0 + "-" + letter_set_b.upper() + "-" + number_set_1
+        print(ship_id)
+        #self.db.shipid = ship_id 
+
+            
+
     def get_display_desc(self, looker, **kwargs):
         """
         Get the description of the ship as it appears to a player.

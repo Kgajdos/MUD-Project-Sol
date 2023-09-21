@@ -12,6 +12,9 @@ class TestCorporations(BaseEvenniaTest):
     def test_hire_employee(self):
         self.corporation.hire_employee(self.employee, "Fighter")
 
+    def test_pay_employee(self):
+        self.corporation.pay_employee(self.employee, 1000)
+
     def test_fire_employee(self):
         self.corporation.fire_employee(self.employee)
 
