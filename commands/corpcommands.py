@@ -20,19 +20,25 @@ class CmdPayEmployee(Command):
     key = "pay"
     help_category = "Corporation"
     def parse(self):
-        self.args = self.args.split()
+        self.args = self.args.split(" ")
+        pay = int(self.args[2])
         if not self.args:
             self.msg("Give how much to who?")
             raise InterruptCommand
-        if not isinstance(int, self.args[1]):
-            self.msg("Pay how much?")
+        if len(self.args) < 3:
+            self.msg("Please specify an amount.")
             raise InterruptCommand
-        if self.args[1] < 0:
+        if not pay:
+            self.msg("Must specify a number.")
+            raise InterruptCommand
+        if pay < 0:
             self.msg("You cannot take money away from the player!")
             raise InterruptCommand
         
     def func(self):
-        self.pay_employee(self.args[0], self.args[1])
+        #need to figure out how to call corporation
+        corp = self.caller.db.corporation
+        corp.pay_employee(self.args[1], self.args[2])
 
 class CmdLoadFreight(Command):
     """

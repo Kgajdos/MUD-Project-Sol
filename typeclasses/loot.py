@@ -20,7 +20,7 @@ class AmmoCrate(Loot):
 		else:
 			box.move_to(self.contents)
 
-	def unload_ammo_crate(self, box, location)
+	def unload_ammo_crate(self, box, location):
 		box.move_to(location.contents)
 
 class AmmoBox(Loot):
@@ -29,7 +29,7 @@ class AmmoBox(Loot):
 		self.db.desc = "A dark brown ammo box with Universal Alliance stamped on the side. It can hold 1000 rounds."
 		self.db.ammo_count = 1000
 
-	def unload_ammo(self, ammo, caller)
+	def unload_ammo(self, ammo, caller):
 		ammo.move_to(caller.contents)
 		if self.db.ammo_count == 0:
 			self.delete()
@@ -37,5 +37,5 @@ class AmmoBox(Loot):
 
 class Ammo(Loot):
 	def at_object_creation(self):
-		super().at_object_creation():
+		super().at_object_creation()
 		self.db.desc = "A common round designed for use with any weapons platform."

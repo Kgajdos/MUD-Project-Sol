@@ -22,7 +22,6 @@ class TestCorporations(BaseEvenniaTest):
         self.corporation.show_employees()
 
     def test_add_to_reserves(self):
-        self.corporation.reserves = {}
         temp_dict = {"iron": 20, "copper": 100}
         self.corporation.add_to_reserves(temp_dict)
 

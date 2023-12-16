@@ -11,6 +11,8 @@ from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
 from commands.ships import ShipCmdSet
+from evennia.utils.utils import lazy_property
+from handler.freight_contract_handler import FreightContractHandler
 import random
 
 #exists as a way to spawn ships in for the player
@@ -367,6 +369,10 @@ class Freighter(Ships):
         self.db.fragilehold = 100
         self.db.genhold = 1000
         self.db.credit_value = 15000    
+
+    @lazy_property
+    def contracts(self):
+        return FreightContractHandler(self)
 
     def turn_on(self):
         super().ship_turn_on()

@@ -9,6 +9,29 @@ from evennia import InterruptCommand
 from commands.wearables import CmdSetWear
 from typeclasses.equipment import EquipmentHandler
 from typeclasses.ships import Ships
+from typeclasses import corporations
+from evennia.contrib.game_systems import barter
+
+
+class CmdCreateCorp(Command):
+    """
+    Create a corporation
+
+    Usage:
+        corporation <corp name>
+    """
+    key = "corporation"
+    locks = "perm(builder)"
+    help_category = "Building"
+    
+
+    def parse(self):
+        self.args = self.args.strip()
+        if not self.args:
+            self.msg("Your corp needs a name.")
+            raise InterruptCommand
+    def func(self):
+        corporations.create_corporation(self.args, self.caller)
 
 class CmdLook(Command):
     """
@@ -287,6 +310,8 @@ class MyCharCmdSet(CmdSet):
         self.add(ShipCmdSet())
         self.add(CmdWeild())
         self.add(CmdPutAway())
+        self.add(CmdCreateCorp())
+        self.add(barter.CmdsetTrade)
 
 class MyAccountCmdSet(CmdSet):
 

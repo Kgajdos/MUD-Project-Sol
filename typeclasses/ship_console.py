@@ -119,7 +119,7 @@ class CmdLoadCargo(Command):
         load <cargo>
     """
     key = "load"
-    locks = "cmd:cmdinside()"#Add more locks in by adding a ; inside the string after cmdinside()
+    locks = "cmd:cmdinside()"
     help_category = "Ship"
 
     def parse(self):
@@ -213,7 +213,7 @@ Every ship comes with a Captain's log for your convienence.
 
 To make things simpler, your options are color coded:
 |cCyan|n: This means you are about to interact with or modify your ship. (example: new Captain's log.)
-|gGreen|n: This means you are revieving information about your ship.
+|gGreen|n: This means you are recieving information about your ship.
 |yYellow|n: This refers to basic screen options."""
         
     options = {

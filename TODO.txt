@@ -89,3 +89,7 @@ Exploration System:
 	-Nebulae: vast clouds of dust and gas, often illuminated by other stars. May be the "birthing grounds" for new stars
 
 ----------------------------------------------------------------------------------------------------------------------------------
+CURRENTLY WORKING ON:
+
+*Creating a corporate computer that allows players to sell cargo to their corp and take on contracts.
+*Setting values to minerals on data/minerals.py
