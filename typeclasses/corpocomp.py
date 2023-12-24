@@ -57,4 +57,7 @@ def menunode_start(caller):
     options = [{
         "desc": f"|cSell Cargo|c", "goto": "menunode_sell"
     }]
-    
+    return text, options
+
+def menunode_sell(caller):
+    text = f""
