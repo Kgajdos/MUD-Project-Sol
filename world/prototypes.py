@@ -57,6 +57,7 @@ import evennia
 BS_HELMET = {
     "prototype_key": "BS_HELMET",
     "key": "BS Helmet",
+    "value": 100,
     "typeclass": "typeclasses.wearables.Armor",
     "aliases": ["helmet"],
     "attrs": [("desc", "A helmet made by Basic Space. Are those dents?"),("armor_slot", "head")],
@@ -64,6 +65,7 @@ BS_HELMET = {
 BS_SUIT = {
     "prototype_key": "BS_SUIT",
     "key": "BS Suit",
+    "value": 100,
     "typeclass": "typeclasses.wearables.Armor",
     "aliases": ["suit"],
     "attrs": [("desc", "A space suit designed by Basic Space. I'm sure that's not a stain."),("armor_slot", "body")],
@@ -71,6 +73,7 @@ BS_SUIT = {
 BS_GLOVES = {
     "prototype_key": "BS_GLOVES",
     "key": "BS Gloves",
+    "value": 100,
     "typeclass": "typeclasses.wearables.Armor",
     "aliases": ["gloves"],
     "attrs": [("desc", "Gloves made by Basic Space, hopefully your fingers wont freeze out there."),("armor_slot", "arms")],
@@ -78,6 +81,7 @@ BS_GLOVES = {
 BS_BOOTS = {
     "prototype_key": "BS_BOOTS",
     "key": "BS Boots",
+    "value": 100,
     "typeclass": "typeclasses.wearables.Armor",
     "aliases": ["gloves"],
     "attrs": [("desc", "Boots designed by Basic Space. They don't look very comfortable."),("armor_slot", "feet")],
@@ -94,6 +98,7 @@ ROOM_BRIDGE = {
 BS_RIFFLE = {
     "prototype_key": "BS_RIFFLE",
     "key": "BS Riffle",
+    "value": 100,
     "typeclass": "typeclasses.weapons.Gun",
     "attrs": [("desc", "A riffle designed by Basic Space. It seems kind of light and flimsy."), ("armor_slot", "hands")]
 }

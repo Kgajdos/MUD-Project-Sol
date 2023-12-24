@@ -1,6 +1,5 @@
 class Miner():
     def __init__(self, character):
-        # Initialize the Miner class attributes and functionality
         character.mining_level = 1
         character.mining_experience = 0
         character.mining_experience_required = 100

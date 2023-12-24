@@ -11,6 +11,8 @@ from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
 from commands.ships import ShipCmdSet
+from evennia.utils.utils import lazy_property
+from handler.freight_contract_handler import FreightContractHandler
 import random
 
 #exists as a way to spawn ships in for the player
@@ -96,6 +98,23 @@ class Ships(Object):
         create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
         create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
         create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
+
+    #has not been tested yet
+    def create_ship_id(self):
+        """
+        Creates a randomized ship id in the form of AA-00-BB-11
+
+        Checks against the database to ensure the number is unique.
+        """
+        letter_set_a = random.choice() + random.choice()
+        letter_set_b = random.choice() + random.choice()
+        number_set_0 = random.randint() + random.randint()
+        number_set_1 = random.randint() + random.randint()
+        ship_id = letter_set_a.upper() + "-" + number_set_0 + "-" + letter_set_b.upper() + "-" + number_set_1
+        print(ship_id)
+        #self.db.shipid = ship_id 
+
+            
 
     def get_display_desc(self, looker, **kwargs):
         """
@@ -350,6 +369,10 @@ class Freighter(Ships):
         self.db.fragilehold = 100
         self.db.genhold = 1000
         self.db.credit_value = 15000    
+
+    @lazy_property
+    def contracts(self):
+        return FreightContractHandler(self)
 
     def turn_on(self):
         super().ship_turn_on()

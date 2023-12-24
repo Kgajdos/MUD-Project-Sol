@@ -1,0 +1,1 @@
+from evennia import create_script

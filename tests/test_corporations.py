@@ -12,6 +12,9 @@ class TestCorporations(BaseEvenniaTest):
     def test_hire_employee(self):
         self.corporation.hire_employee(self.employee, "Fighter")
 
+    def test_pay_employee(self):
+        self.corporation.pay_employee(self.employee, 1000)
+
     def test_fire_employee(self):
         self.corporation.fire_employee(self.employee)
 
@@ -19,7 +22,6 @@ class TestCorporations(BaseEvenniaTest):
         self.corporation.show_employees()
 
     def test_add_to_reserves(self):
-        self.corporation.reserves = {}
         temp_dict = {"iron": 20, "copper": 100}
         self.corporation.add_to_reserves(temp_dict)
 

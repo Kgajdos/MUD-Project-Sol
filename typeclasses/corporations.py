@@ -2,6 +2,18 @@ import evennia
 from evennia import DefaultObject, create_object
 from commands.corpcommands import CorpoCmdSet
 
+def create_corporation(name, leader):
+    # create a new corporation, with the key as the name.
+    new_corp = create_object(Corporation, key=name, location = None)
+    new_corp.db.employees[leader] = "CEO"
+    # set the leader as ceo and add cmdset to player.
+    new_corp.db.leaders[leader] = "CEO"
+    leader.db.corporation = new_corp
+    leader.cmdset.add(CorpoCmdSet())
+
+    # return the new corp.
+    return new_corp
+
 class Corporation(DefaultObject):
     """
     Represents a corporation in the game world.
@@ -11,7 +23,6 @@ class Corporation(DefaultObject):
             and the values are the quantities.
 
     Methods:
-        at_object_creation(): Called when the corporation is first created, sets up the initial resource reserves.
         add_to_reserves(resource): Adds resources to the corporation's reserves.
         take_from_reserves(resource): Takes resources from the corporation's reserves.
         pay_employee(employee, credits): Pays an employee with credits.
@@ -22,13 +33,12 @@ class Corporation(DefaultObject):
         demote(employee): Demotes an employee from a leadership position.
         create_cargo_crate(resources, object): Creates a cargo crate and adds resources or an object to it.
     """
+    
     def at_object_creation(self):
-        """
-        Called when the corporation is first created. Sets up the initial resource reserves as an empty dictionary.
-        """
+        super().at_object_creation()
         self.db.leaders = {}
+        self.db.employees = {}
         self.db.reserves = {}
-        self.db.employee = {}
 
     def add_to_reserves(self, resource):
         """
@@ -86,7 +96,7 @@ class Corporation(DefaultObject):
             - The specified amount of credits is added to the employee's db.credits attribute.
             - If the employee is not a member of this corporation, an error message is sent to the caller.
         """
-        if employee in self.db.employee.items():
+        if employee in self.db.employees.values():
             employee.db.credits += credits
         else:
             self.caller.msg(f"{employee} is not a member of this corporation")
@@ -103,8 +113,8 @@ class Corporation(DefaultObject):
             - If the employee is not already in the corporation's employee dictionary, they are added with the specified player class.
             - If the employee is already in the dictionary, their player class is updated to the new value.
         """
-        if employee not in self.db.employee:
-            self.db.employee[employee] = player_class
+        if employee not in self.db.employees:
+            self.db.employees[employee] = player_class
 
     def fire_employee(self, employee):
         """
@@ -117,8 +127,8 @@ class Corporation(DefaultObject):
             - If the employee is in the corporation's employee dictionary, they are removed from the dictionary.
             - If the employee is not found in the dictionary, nothing happens.
         """
-        if employee in self.db.employee:
-            self.db.employee[employee].pop()
+        if employee in self.db.employees:
+            self.db.employees[employee].pop()
 
     def show_employees(self):
         """
@@ -128,7 +138,7 @@ class Corporation(DefaultObject):
             - Iterates through the corporation's employee dictionary and sends a message to the corporation object (self) for each entry.
             - Each message shows the employee and their assigned player class.
         """
-        for item, player_class in self.db.employee.items():
+        for item, player_class in self.db.employees.items():
             self.msg(f"{item} is employed and is a {player_class}.")
 
     def promote(self, employee, title):
