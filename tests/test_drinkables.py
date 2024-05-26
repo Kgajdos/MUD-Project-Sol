@@ -6,7 +6,7 @@ from typeclasses.drinkables import Drinkables
 class TestDrinkables(BaseEvenniaTest):
     def setUp(self):
         super().setUp()
-        self.drink = create.create_object(Drinkables, "Cup of Water", None)
+        self.drink = create.create_object("typeclasses.drinkables.Drinkables", "Cup of Water", None)
 
     def test_drink(self):
         print(self.drink.name)

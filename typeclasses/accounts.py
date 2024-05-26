@@ -21,7 +21,7 @@ possibility to connect with a guest account. The setting file accepts
 several more options for customizing the Guest account system.
 
 """
-
+from evennia import Command, CmdSet
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.contrib.rpg.character_creator.character_creator import ContribChargenAccount
 
@@ -93,10 +93,8 @@ class Account(ContribChargenAccount):
 
     """
     def at_init(self):
-        self.msg(f"Welcome {self.key}! Stay awhile and chat in the public channel.\nWhen you're ready to jump in type: login <character_name>")
+        self.msg(f"Welcome {self.key}! Stay awhile and chat in the public channel.")
         self.msg(b"If you're new here, why not type in tutorial to get started!")
-
-        pass
     
     pass
 

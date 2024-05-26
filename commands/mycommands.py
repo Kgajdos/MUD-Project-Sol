@@ -1,7 +1,6 @@
 # in mygame/commands/mycommands.py
 from evennia import DefaultCharacter, AttributeProperty, create_object
 from typeclasses.characters import Character
-from typeclasses.accounts import DefaultAccount
 from commands.command import Command
 from evennia import default_cmds
 from evennia import CmdSet
@@ -93,37 +92,6 @@ class CmdWeild(Command):
         if not weapon:
             return
         weapon.do_wear(self.caller, weapon)
-
-
-
-class CmdLogin(Command):
-    """
-    The login command
-
-    Usage:
-        login <character_name>
-
-    """
-    key = "login"
-    alias = ["Login", "LOGIN", "l", "L"]
-    help_category = "Account"
-
-    def parse(self):
-        self.args = self.args.strip()
-        if not self.args:
-            self.caller.msg("Login to who?")
-            raise InterruptCommand
-
-    def func(self):
-        #Error with not finding whatever this returns
-        #login = self.caller.search(self.args)
-        login = Character.objects.filter(db_key=self.args)
-        if not login:
-            return
-        try:
-            self.caller.puppet_object(self.session, login)
-        except AttributeError:
-            self.caller.msg("You can't login to that.")
 
         
 
@@ -237,7 +205,6 @@ class CmdEnterShip(Command):
         self.caller.msg("You board the ship.")
         self.caller.move_to(ship)
 
-#This will need to be revisited! -- OUTDATED COMMAND
 class CmdPutAway(Command):
     """
     Puts an item into the bag
@@ -251,21 +218,28 @@ class CmdPutAway(Command):
         self.args = self.args.strip()
         item, *container = self.args.split(" in ", 1)
         self.item = item.strip()
-        if container: #sets the container if there is one specified
-            self.container = container[0].strip()
-        else:
-            self.container = "" #defaults to no container
+        self.container = container[0].strip() if container else None
 
     def func(self):
-        items = self.caller.search(self.item)
-        if items:
-            item = items
-        else:
-            self.caller.msg(f"You do not have {items} in your hand.")
+        if not self.item:
+            self.caller.msg("You must specify an item to store.")
             return
 
-        item = self.caller.search(items)
-        self.caller.equipment.add(item)
+        item = self.caller.search(self.item)
+        if not item:
+            self.caller.msg(f"You do not have {self.item} in your hand.")
+            return
+
+        if self.container:
+            container = self.caller.search(self.container)
+            if not container:
+                self.caller.msg(f"Storage container '{self.container}' not found.")
+                return
+            container.add(item)
+            self.caller.msg(f"You store {item} in {container}.")
+        else:
+            self.caller.msg("You must specify a storage container.")
+
 
 
 class CmdLeaveShip(Command):
@@ -312,8 +286,3 @@ class MyCharCmdSet(CmdSet):
         self.add(CmdPutAway())
         self.add(CmdCreateCorp())
         self.add(barter.CmdsetTrade)
-
-class MyAccountCmdSet(CmdSet):
-
-    def at_cmdset_creation(self):
-        self.add(CmdLogin())

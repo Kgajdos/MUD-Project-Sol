@@ -2,3 +2,37 @@ all wearables must be created with a armor_slot attribute set before distributio
 ------------------------------------------------------------
 *Books must be made as objects (book objects) and their pages must also be made as objects. 
 	**page.db.desc is where the text content of the pages is stored and must be called from.
+------------------------------------------------------------
+SPACE HAZARDS: 
+Micro-Meteoroids and Space Debris:
+
+Small, high-speed particles and debris left over from asteroid collisions, satellite fragments, or spacecraft components.
+Hazards include punctures or damage to ship hulls, potential impact damage to sensitive equipment or crew, and increased risk of collisions during navigation.
+Solar Radiation and Flares:
+
+Intense radiation emitted by stars, particularly during solar flares or coronal mass ejections (CMEs).
+Exposure to high levels of solar radiation can damage ship electronics, disrupt communications systems, and pose health risks to crew members if not adequately shielded.
+Gravitational Anomalies:
+
+Variations in gravitational fields caused by celestial bodies, such as planets, moons, or black holes.
+Hazards include gravitational tidal forces that can disrupt ship trajectories, gravitational lensing that distorts sensor readings, and potential gravitational slingshots that alter course trajectories unexpectedly.
+Ionizing Radiation from Cosmic Rays:
+
+High-energy particles originating from outside the solar system, such as cosmic rays.
+Exposure to cosmic radiation can pose long-term health risks to crew members and degrade sensitive electronics over time if not adequately shielded.
+Electromagnetic Interference (EMI):
+
+Interference caused by electromagnetic radiation emitted by nearby electronic devices, power sources, or natural phenomena.
+EMI can disrupt ship communications, navigation systems, and sensor readings, leading to navigation errors, loss of situational awareness, and increased vulnerability to hostile threats.
+Space Weather Events:
+
+Geomagnetic storms and other space weather phenomena caused by interactions between solar wind and planetary magnetic fields.
+Hazards include magnetic disturbances that affect ship compasses and navigation systems, increased atmospheric drag that alters orbital trajectories, and auroral displays that interfere with sensor readings.
+Fuel and Resource Limitations:
+
+Finite supplies of fuel, life support resources, and consumables required for long-duration space travel.
+Hazards include fuel leaks or depletion, oxygen and water shortages, and limited availability of spare parts or repair materials, requiring careful resource management and planning to avoid critical failures.
+Communication Blackouts:
+
+Periods of interrupted or degraded communication links between spacecraft and ground control stations.
+Hazards include loss of real-time telemetry data, inability to receive navigation updates or emergency assistance, and increased reliance on onboard systems for autonomous decision-making.

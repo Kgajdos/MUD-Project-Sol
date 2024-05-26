@@ -60,4 +60,14 @@ def menunode_start(caller):
     return text, options
 
 def menunode_sell(caller):
-    text = f""
+    ship = caller.db.ship
+    cargo = ship.db.cargo
+    for item, value in cargo:
+        caller.msg(f"{item}: Sells for {value} credits.")
+    ##Figure out how to allow the player to input an item name
+    options = [{
+        "desc": f"|cSell <Item Name>|c", "goto": "_confirm_sale"
+    }]
+
+def _confirm_sale(caller, **kwargs):
+    pass

@@ -54,38 +54,7 @@ See the `spawn` command and `evennia.prototypes.spawner.spawn` for more info.
 import evennia
 
 #BS Armor line - for use as beginner equipment
-BS_HELMET = {
-    "prototype_key": "BS_HELMET",
-    "key": "BS Helmet",
-    "value": 100,
-    "typeclass": "typeclasses.wearables.Armor",
-    "aliases": ["helmet"],
-    "attrs": [("desc", "A helmet made by Basic Space. Are those dents?"),("armor_slot", "head")],
-    }
-BS_SUIT = {
-    "prototype_key": "BS_SUIT",
-    "key": "BS Suit",
-    "value": 100,
-    "typeclass": "typeclasses.wearables.Armor",
-    "aliases": ["suit"],
-    "attrs": [("desc", "A space suit designed by Basic Space. I'm sure that's not a stain."),("armor_slot", "body")],
-    }
-BS_GLOVES = {
-    "prototype_key": "BS_GLOVES",
-    "key": "BS Gloves",
-    "value": 100,
-    "typeclass": "typeclasses.wearables.Armor",
-    "aliases": ["gloves"],
-    "attrs": [("desc", "Gloves made by Basic Space, hopefully your fingers wont freeze out there."),("armor_slot", "arms")],
-    }
-BS_BOOTS = {
-    "prototype_key": "BS_BOOTS",
-    "key": "BS Boots",
-    "value": 100,
-    "typeclass": "typeclasses.wearables.Armor",
-    "aliases": ["gloves"],
-    "attrs": [("desc", "Boots designed by Basic Space. They don't look very comfortable."),("armor_slot", "feet")],
-    }
+
 
 
 ROOM_BRIDGE = {
@@ -95,13 +64,7 @@ ROOM_BRIDGE = {
     "attrs": [("desc","You stand at the bridge of your ship. It is only large enough for around three people to comfortably be in. There is a Captain's chair made of soft leather and an older console in front of you.")]
     }
 
-BS_RIFFLE = {
-    "prototype_key": "BS_RIFFLE",
-    "key": "BS Riffle",
-    "value": 100,
-    "typeclass": "typeclasses.weapons.Gun",
-    "attrs": [("desc", "A riffle designed by Basic Space. It seems kind of light and flimsy."), ("armor_slot", "hands")]
-}
+
 
 RAT_ENEMY = {
     "prototype_key": "RAT_ENEMY",
@@ -140,39 +103,3 @@ BED = {
     "tags": [("furniture")]
 
 }
-# from random import randint
-#
-# GOBLIN = {
-# "key": "goblin grunt",
-# "health": lambda: randint(20,30),
-# "resists": ["cold", "poison"],
-# "attacks": ["fists"],
-# "weaknesses": ["fire", "light"],
-# "tags": = [("greenskin", "monster"), ("humanoid", "monster")]
-# }
-#
-# GOBLIN_WIZARD = {
-# "prototype_parent": "GOBLIN",
-# "key": "goblin wizard",
-# "spells": ["fire ball", "lighting bolt"]
-# }
-#
-# GOBLIN_ARCHER = {
-# "prototype_parent": "GOBLIN",
-# "key": "goblin archer",
-# "attacks": ["short bow"]
-# }
-#
-# This is an example of a prototype without a prototype
-# (nor key) of its own, so it should normally only be
-# used as a mix-in, as in the example of the goblin
-# archwizard below.
-# ARCHWIZARD_MIXIN = {
-# "attacks": ["archwizard staff"],
-# "spells": ["greater fire ball", "greater lighting"]
-# }
-#
-# GOBLIN_ARCHWIZARD = {
-# "key": "goblin archwizard",
-# "prototype_parent" : ("GOBLIN_WIZARD", "ARCHWIZARD_MIXIN")
-# }

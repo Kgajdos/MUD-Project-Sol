@@ -15,10 +15,9 @@ class CmdLoadWeapon(Command):
     Loads the weapon currently in the player's hands. 
     
     Usage:
-        load_weapon
+        reload
     """
-    #Fix this eventually, this is not what I want
-    key = "load_weapon"
+    key = "reload"
     locks = "cmd:cmdarmed()"
     help_category = "Combat"
 

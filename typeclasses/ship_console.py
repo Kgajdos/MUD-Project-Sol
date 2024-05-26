@@ -392,10 +392,8 @@ class ShipConsole(Object):
             new_name (str): The new name for the ship.
 
         """
-        player.db.active_ship = new_name
-        ship = self.location.location
+        ship = player.db.active_ship
         ship.key = new_name
-        ship.name = new_name
 
     def ship_sheet(self,player):
         """

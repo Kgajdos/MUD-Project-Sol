@@ -1,0 +1,83 @@
+Developer Notes
+KNOWN BUGS
+Renaming a Ship
+
+Issue: Renaming a ship breaks its connection to the room, causing it to no longer appear under "You see: _____".
+Action: Investigate and resolve the disconnection issue, ensuring the ship's reference updates correctly within the room's context.
+Character Stats
+
+Issue: Significant difficulties with character stats, possibly related to improper usage of enums.
+Action: Review the character stats system, check enum implementation, and refactor as needed to ensure proper functionality.
+CmdPutAway Command
+
+Issue: The CmdPutAway command is outdated and non-functional.
+Action: Update the CmdPutAway command to reflect current game mechanics and inventory handling.
+CombatHandler Script
+
+Issue: The CombatHandler script endlessly repeats the ending message.
+Action: Debug and fix the loop to ensure the ending message only triggers once.
+NEW FEATURES AND IMPROVEMENTS
+Wearable Items Enhancement
+
+Objective: Enhance wearable items with quality attributes.
+Action: Implement a ToolQuality enum and assign poor quality to all wearable items.
+Object Quality
+
+Objective: Define quality attributes for various game objects.
+Action: Add quality attributes to objects to reflect their condition (e.g., poor, low, medium, good, etc.).
+Item Inventory Management
+
+Objective: Improve item inventory management and interaction.
+Action: Update items' do_wear and do_remove methods to handle inventory changes properly.
+NEW ITEMS AND OBJECTS
+Basic Space Equipment
+
+Helmet: Provides basic head protection. [Poor Quality]
+Suit: Standard space suit. [Poor Quality]
+Gloves: Protective gloves for space work. [Poor Quality]
+Boots: Space boots for extra grip. [Poor Quality]
+Rifle: Basic space rifle for defense. [Poor Quality]
+Drink: Boosts focus but tastes awful. [Poor Quality]
+Stew: Provides health benefits. [Poor Quality]
+Tools and Furniture
+
+Multitool: Versatile tool for various tasks. [Poor Quality]
+Table: Simple metal table. [Poor Quality]
+Chair: Basic metal chair. [Poor Quality]
+PLAYER ROLE TUTORIALS
+Pilot
+
+Tutorial on basic movement and ship commands.
+Miner
+
+Tutorial on finding asteroids and beginning mining.
+Fighter
+
+Tutorial on getting contracts and space combat.
+Freighter
+
+Tutorial on cargo management and deep-space travel.
+Researcher
+
+Tutorial on ship's research facilities and beginner contracts.
+SHIP COMMAND FILE
+Reorganization
+Objective: Split ship commands based on player classes.
+Action: Refactor ship commands to improve organization and usability for different player roles.
+FUTURE FEATURES
+Corporations
+
+Implement CEO, COO, CFO roles and building projects.
+Projects
+
+Define class for projects and required resources.
+Exploration System
+
+Procedurally generate points of interest and celestial phenomena.
+CURRENTLY WORKING ON
+Corporate Computer System
+
+Allow players to sell cargo and take contracts within corporations.
+Mineral Values
+
+Set values for minerals in data/minerals.py.
