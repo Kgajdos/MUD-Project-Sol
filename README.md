@@ -1,5 +1,6 @@
 # MUD Project Sol
 
+
 ## Overview
 **Project Sol** is a sci-fi based Multi-User Dungeon (MUD) set in the future. This immersive text-based game allows players to explore space, engage in combat, mine asteroids, and more.
 
@@ -179,3 +180,4 @@ limitation commercial, advertising or promotional purposes (the
 "License"). The License shall be deemed effective as of the date CC0 was
 applied by Affirmer to the Work. Should any part of the License for any
 reason be judged
+
