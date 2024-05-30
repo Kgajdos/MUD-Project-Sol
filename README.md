@@ -80,7 +80,7 @@ To contribute to Project Sol, please follow these guidelines:
 - **Player Commands for Eating and Drinking**: Allow the player to eat and drink with effects modifying their attributes.
 
 ## Contact
-For questions or support, please contact us at [your email address].
+For questions or support, please contact us at [kgajdos71@gmail.com].
 
 ## License
 This project is licensed under the Creative Commons CC0 1.0 Universal (CC0 1.0) Public Domain Dedication.
