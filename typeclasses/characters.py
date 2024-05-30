@@ -146,12 +146,12 @@ class Character(LivingMixin, DefaultCharacter):
         """
         text = super().return_appearance(looker)
         #Below we need to add the modifiers for how the armor itself looks
+        return text
 
     
         
     #Belo is functions that set a new ship to the player based on their class
-    def set_ship_by_pc_class(self):
-        ship = evennia.create_object(f"typeclasses.ships.{self.db.player_class}", key = "Ship", location = self.location, attributes = [("class", f"{self.db.player_class}")])
+    def set_active_ship(self, ship):
         self.db.active_ship = ship
 
     #Outdated, do not use, will delete when can

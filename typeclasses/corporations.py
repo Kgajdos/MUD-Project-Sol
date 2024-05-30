@@ -1,7 +1,8 @@
 import evennia
 from evennia import DefaultObject, create_object
 from commands.corpcommands import CorpoCmdSet
-##from contract import ContractHandler
+from data.tech_tree import TECH_TREE
+from typeclasses.contract import ContractHandler
 
 def create_corporation(name, leader):
     new_corp = create_object(Corporation, key=name, location=None)
@@ -15,9 +16,11 @@ def create_corporation(name, leader):
 class Corporation(DefaultObject):
     def at_object_creation(self):
         super().at_object_creation()
-        self.db.leaders = {}
-        self.db.employees = {}
-        self.db.reserves = {}
+        self.db.leaders = []
+        self.db.employees = []
+        self.db.reserves = []
+        self.db.research = []
+        self.db.owned_tech = []
         self.db.jobs = []
         self.db.contracts = []
 
@@ -215,3 +218,21 @@ class Corporation(DefaultObject):
         else:
             self.msg("Contract could not be completed.")
 
+    def buy_tech(self, caller, tech_name):
+        owned_tech = self.db.owned_tech
+        if tech_name in owned_tech:
+            caller.msg(f"{self.key} already owns that tech.")
+            return
+        tech_data = TECH_TREE.get(tech_name)
+        if not tech_data:
+            caller.msg("Invalid tech.")
+            return
+        if self.db.research < tech_data['research']:
+            caller.msg(f"{self.key} can't afford that.")
+            return
+        if not all(r in owned_tech for r in tech_name['requirements'] ):
+            caller.msg(f"{self.key} is missing {tech_name['requirements']}.")
+            return
+        self.db.research -= tech_data['research']
+        self.db.owned_tech.append(tech_name)
+        caller.msg(f"{tech_name} upgrade purchased.")

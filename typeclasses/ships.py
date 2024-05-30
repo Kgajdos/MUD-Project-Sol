@@ -15,7 +15,7 @@ from commands import sittables
 from commands.ships import ShipCmdSet
 from evennia.utils.utils import lazy_property
 import random
-from handler.freight_contract_handler import FreightContractHandler
+from typeclasses.contract import ContractHandler
 
 #exists as a way to spawn ships in for the player
 class ShipManager:
@@ -72,7 +72,9 @@ class Ships(Object):
     """
     def at_object_creation(self):
         super().at_object_creation()
+        self.locks.add("call:false()")
         self.cmdset.add_default(ShipCmdSet())
+        self.db.pilot = None
         self.db.name = ""
         self.db.desc = ""
         self.db.cargo = {}
@@ -410,7 +412,7 @@ class Freighter(Ships):
             return False
 
         # Attempt to accept the contract
-        result = FreightContractHandler.accept_freight_contract(contract, self)
+        result = ContractHandler.accept_contract(contract)
         self.caller.msg(result)
         return True
     

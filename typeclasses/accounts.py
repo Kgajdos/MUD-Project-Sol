@@ -98,6 +98,10 @@ class Account(ContribChargenAccount):
     
     pass
 
+    def puppet_object(self, session, obj):
+        print(obj)
+        return super().puppet_object(session, obj)
+
 
 class Guest(DefaultGuest):
     """

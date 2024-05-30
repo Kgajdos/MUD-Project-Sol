@@ -51,13 +51,13 @@ def menunode_ship(caller, raw_string, **kwargs):
 
 
 
-class GeneralNPC(Character):
+class NPC(Character):
     def at_object_creation(self):
         super().at_object_creation()
         self.cmdset.add_default(NPCCommandSet())
 
     def at_char_entered(self, character):
-        self.execute_cmd(f"say Greetings, {character}. How can I assist you?")
+        character.msg(f"Greetings, {character.key}. How can I assist you?")
 
 class MechanicCommandSet(CmdSet):
     key = "mechaniccmdset"

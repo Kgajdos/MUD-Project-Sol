@@ -1,83 +1,136 @@
-Developer Notes
-KNOWN BUGS
-Renaming a Ship
+*********************************************PROJECT OVERVIEW*********************************************
+The project has made significant progress with the addition of multiple prototypes. Currently, the primary focus is on stabilizing the core functionalities and addressing known bugs. Several new features and improvements are planned to enhance gameplay, including wearable item enhancements, quality attributes for objects, and improved inventory management. Tutorials for various player roles are being developed to guide new players. Upcoming features include corporate roles and an exploration system.
 
-Issue: Renaming a ship breaks its connection to the room, causing it to no longer appear under "You see: _____".
-Action: Investigate and resolve the disconnection issue, ensuring the ship's reference updates correctly within the room's context.
-Character Stats
+*********************************************KNOWN BUGS*********************************************
+1. **Renaming a Ship**
+   - **Issue**: Renaming a ship breaks its connection to the room, causing it to no longer appear under "You see: _____".
+   - **Action**: Investigate and resolve the disconnection issue, ensuring the ship's reference updates correctly within the room's context.
+   - **Priority**: High
+   - **Status**: Fixed - Temp, need to make sure player.db.active_ship is set 
 
-Issue: Significant difficulties with character stats, possibly related to improper usage of enums.
-Action: Review the character stats system, check enum implementation, and refactor as needed to ensure proper functionality.
-CmdPutAway Command
+2. **Character Stats**
+   - **Issue**: Significant difficulties with character stats, possibly related to improper usage of enums.
+   - **Action**: Review the character stats system, check enum implementation, and refactor as needed to ensure proper functionality.
+   - **Priority**: Medium
+   - **Status**: In-Progress
 
-Issue: The CmdPutAway command is outdated and non-functional.
-Action: Update the CmdPutAway command to reflect current game mechanics and inventory handling.
-CombatHandler Script
+3. **CmdPutAway Command**
+   - **Issue**: The CmdPutAway command is outdated and non-functional.
+   - **Action**: Update the CmdPutAway command to reflect current game mechanics and inventory handling.
+   - **Priority**: Medium
+   - **Status**: To-Do
 
-Issue: The CombatHandler script endlessly repeats the ending message.
-Action: Debug and fix the loop to ensure the ending message only triggers once.
-NEW FEATURES AND IMPROVEMENTS
-Wearable Items Enhancement
+4. **CombatHandler Script**
+   - **Issue**: The CombatHandler script endlessly repeats the ending message.
+   - **Action**: Debug and fix the loop to ensure the ending message only triggers once.
+   - **Priority**: High
+   - **Status**: To-Do
 
-Objective: Enhance wearable items with quality attributes.
-Action: Implement a ToolQuality enum and assign poor quality to all wearable items.
-Object Quality
+   - **Issue**: Multiple prototypes are not properly implemented and will result in an error when trying to spawn.
+   - **Action**: Systematically debug all prototypes until they can properly be spawned in.
+   - **Priority**: High
+   - **Status**: To-Do
 
-Objective: Define quality attributes for various game objects.
-Action: Add quality attributes to objects to reflect their condition (e.g., poor, low, medium, good, etc.).
-Item Inventory Management
+   - **Issue**: Multiple look commands when in the same room as a ship.
+   - **Action**: Add a lock to the ship's look command to ensure it's only called when the ship is puppeted and by the puppeteer.
+   - **Priority**: Low
+   - **Status**: Fixed
 
-Objective: Improve item inventory management and interaction.
-Action: Update items' do_wear and do_remove methods to handle inventory changes properly.
-NEW ITEMS AND OBJECTS
-Basic Space Equipment
+   - **Issue**: Anyone can board and fly anyone's ship.
+   - **Action**: Add locks and possibly hacking features to allow some level of safety for players. For simplicity, start by locking the boarding and console commands behind self.db.pilot == caller.
+   - **Priority**: Medium
+   - **Status**: In-Progress
 
-Helmet: Provides basic head protection. [Poor Quality]
-Suit: Standard space suit. [Poor Quality]
-Gloves: Protective gloves for space work. [Poor Quality]
-Boots: Space boots for extra grip. [Poor Quality]
-Rifle: Basic space rifle for defense. [Poor Quality]
-Drink: Boosts focus but tastes awful. [Poor Quality]
-Stew: Provides health benefits. [Poor Quality]
-Tools and Furniture
+   - **Issue**: Command console creates this error: 
+     ```plaintext
+     console
+     Traceback (most recent call last):
+       File "C:\Users\Veteran\AppData\Local\Programs\Python\Python311\Lib\site
+     -packages\evennia\commands\cmdhandler.py", line 628, in _run_command
+         ret = cmd.func()
+               ^^^^^^^^^^
+       File "C:\Games\MUD-Project-Sol\typeclasses\ship_console.py", line 28, in func
+         self.obj.start_consoles(self.caller, self.session)
+         ^^^^^^^^^^^^^^^^^^^^^^^
+     AttributeError: 'NoneType' object has no attribute 'start_consoles'
+     ```
+   - **Action**: Figure out why console is spawning as a NoneType object.
+   - **Priority**: High
+   - **Status**: Temporary Fix
 
-Multitool: Versatile tool for various tasks. [Poor Quality]
-Table: Simple metal table. [Poor Quality]
-Chair: Basic metal chair. [Poor Quality]
-PLAYER ROLE TUTORIALS
-Pilot
+5. ##NPC Greet Upon Room Entry**
+   - **Issue**: NPC's wont greet characters upon entering the room.
+   - **Action**: Continue testing to see where program is failing to execute.
+   - **Priority**: Low
+   - **Status**: To-Do
 
-Tutorial on basic movement and ship commands.
-Miner
+*********************************************NEW FEATURES AND IMPROVEMENTS*********************************************
+1. **Wearable Items Enhancement**
+   - **Objective**: Enhance wearable items with quality attributes.
+   - **Action**: Implement a ToolQuality enum and assign poor quality to all wearable items.
+   - **Priority**: Medium
+   - **Status**: In-Progress
 
-Tutorial on finding asteroids and beginning mining.
-Fighter
+2. **Object Quality**
+   - **Objective**: Define quality attributes for various game objects.
+   - **Action**: Add quality attributes to objects to reflect their condition (e.g., poor, low, medium, good, etc.).
+   - **Priority**: Medium
+   - **Status**: To-Do
 
-Tutorial on getting contracts and space combat.
-Freighter
+3. **Item Inventory Management**
+   - **Objective**: Improve item inventory management and interaction.
+   - **Action**: Update items' do_wear and do_remove methods to handle inventory changes properly.
+   - **Priority**: Medium
+   - **Status**: To-Do
 
-Tutorial on cargo management and deep-space travel.
-Researcher
+4. **Create Drinks with Effects**
+   - **Objective**: Create drinks with their given effects.
+   - **Action**: Test to ensure that the prototype is creating drinks and utilizing their add_effects().
+   - **Priority**: Medium
+   - **Status**: To-Do
 
-Tutorial on ship's research facilities and beginner contracts.
-SHIP COMMAND FILE
-Reorganization
-Objective: Split ship commands based on player classes.
-Action: Refactor ship commands to improve organization and usability for different player roles.
-FUTURE FEATURES
-Corporations
+5. **Player Commands for Eating and Drinking**
+   - **Objective**: Create commands to allow the player to eat and drink.
+   - **Action**: Test to ensure the effects are modifying the players' attributes properly. Later add timer mechanics that allow some modifiers to wear off.
+   - **Priority**: Low
+   - **Status**: To-Do
 
-Implement CEO, COO, CFO roles and building projects.
-Projects
+*********************************************NEW ITEMS AND OBJECTS*********************************************
+- **Basic Space Equipment**
+  - Helmet: Provides basic head protection. [Poor Quality]
+  - Suit: Standard space suit. [Poor Quality]
+  - Gloves: Protective gloves for space work. [Poor Quality]
+  - Boots: Space boots for extra grip. [Poor Quality]
+  - Rifle: Basic space rifle for defense. [Poor Quality]
+  - Drink: Boosts focus but tastes awful. [Poor Quality]
+  - Stew: Provides health benefits. [Poor Quality]
 
-Define class for projects and required resources.
-Exploration System
+- **Tools and Furniture**
+  - Multitool: Versatile tool for various tasks. [Poor Quality]
+  - Table: Simple metal table. [Poor Quality]
+  - Chair: Basic metal chair. [Poor Quality]
 
-Procedurally generate points of interest and celestial phenomena.
-CURRENTLY WORKING ON
-Corporate Computer System
+*********************************************PLAYER ROLE TUTORIALS*********************************************
+- **Pilot**: Tutorial on basic movement and ship commands.
+- **Miner**: Tutorial on finding asteroids and beginning mining.
+- **Fighter**: Tutorial on getting contracts and space combat.
+- **Freighter**: Tutorial on cargo management and deep-space travel.
+- **Researcher**: Tutorial on ship's research facilities and beginner contracts.
 
-Allow players to sell cargo and take contracts within corporations.
-Mineral Values
+*********************************************SHIP COMMAND FILE*********************************************
+- **Reorganization**
+  - **Objective**: Split ship commands based on player classes.
+  - **Action**: Refactor ship commands to improve organization and usability for different player roles.
 
-Set values for minerals in data/minerals.py.
+*********************************************FUTURE FEATURES*********************************************
+- **Implement CEO, COO, CFO roles and building projects.**
+  - **Projects**
+    - Define class for projects and required resources.
+
+- **Exploration System**
+  - Procedurally generate points of interest and celestial phenomena.
+
+*********************************************CURRENTLY WORKING ON*********************************************
+- **Corporate Computer System**
+- **Mineral Values**
+  - Set values for minerals in data/minerals.py.
