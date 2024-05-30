@@ -1,0 +1,3 @@
+prototype_key,key,value,typeclasses,aliases,attrs
+TABLE,Table,10,typeclasses.objects.Object,None,"desc, A simple metal table of poor quality. It looks like it will fall apart soon. ,  quality, poor"
+CHAIR,Chair,10,typeclasses.objects.Object,None,"desc, A simple metal chair of poor quality. Can it even handle my weight?, quality, poor"

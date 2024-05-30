@@ -1,5 +1,7 @@
 import evennia
 from evennia import InterruptCommand, utils
+import evennia.prototypes
+import evennia.prototypes.spawner
 from commands.minercommands import MinerCmdSet
 import typeclasses
 from typeclasses.accounts import Account
@@ -12,8 +14,8 @@ from evennia import Command, CmdSet, create_object, create_script, search_object
 from commands import sittables
 from commands.ships import ShipCmdSet
 from evennia.utils.utils import lazy_property
-from handler.freight_contract_handler import FreightContractHandler
 import random
+from typeclasses.contract import ContractHandler
 
 #exists as a way to spawn ships in for the player
 class ShipManager:
@@ -30,13 +32,13 @@ class ShipManager:
         """
         ship = None
         if ship_class == "Miner":
-            ship = Miner()
+            ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")
         elif ship_class == "Fighter":
-            ship = Fighter()
+            ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")
         elif ship_class == "Freighter":
-            ship = Freighter()
+            ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")
         elif ship_class == "Researcher":
-            ship = Researcher()
+            ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")
 
         if ship:
             ship.setup_rooms()
@@ -70,10 +72,15 @@ class Ships(Object):
     """
     def at_object_creation(self):
         super().at_object_creation()
+        self.locks.add("call:false()")
         self.cmdset.add_default(ShipCmdSet())
+        self.db.pilot = None
+        self.db.name = ""
+        self.db.desc = ""
         self.db.cargo = {}
         self.db.targeting = None
-        self.db.interior_desc = "You stand in the decompression chamber of your ship. This is where you can board and disembark your ship at will."
+        self.db.shipID = ""
+        self.db.contract = {}
         bridge = self.search("Bridge")
         if not bridge:
             self.create_rooms()
@@ -112,7 +119,7 @@ class Ships(Object):
         number_set_1 = random.randint() + random.randint()
         ship_id = letter_set_a.upper() + "-" + number_set_0 + "-" + letter_set_b.upper() + "-" + number_set_1
         print(ship_id)
-        #self.db.shipid = ship_id 
+        self.db.shipid = ship_id 
 
             
 
@@ -128,10 +135,7 @@ class Ships(Object):
         Returns:
             str: The description of the ship as it appears to a player.
         """
-        if looker.location == self:
-            return self.db.interior_desc
-        else:
-            return self.db.exterior_desc
+        return self.db.desc
         
     def get_display_name(self, looker=None, **kwargs):
         """
@@ -240,13 +244,12 @@ class Miner(Ships):
         super().at_object_creation()
         self.cmdset.add(MinerCmdSet, persistent = True)
         self.db.ship_class = "Miner"
-        self.db.exterior_desc = "Not the best mining ship, but it is the cheapest. WARNING: Basic Space is not responsible for death/damage caused by asteroids."
-        self.db.health = 7200
-        self.db.sheilds = 2500
-        self.db.max_orehold = 1500
-        self.db.orehold = 1500
-        self.db.genhold = 50
-        self.db.credit_value = 15000
+        self.db.health = 0
+        self.db.sheilds = 0
+        self.db.max_orehold = 0
+        self.db.orehold = 0
+        self.db.genhold = 0
+        self.db.credit_value = 0
     
     def turn_on(self):
         super().ship_turn_on()
@@ -311,30 +314,6 @@ class Miner(Ships):
             script[0].stop()
             self.msg("You stop mining.")
 
-class Fighter(Ships):
-
-
-    
-    def at_object_creation(self):
-        super().at_object_creation()
-        self.db.exterior_desc = "The Basic Space line has served as a low cost entry to space combat for generations. WARNING: Basic Space is not responisble for death of a pilot in the event of a firefight."
-        self.db.health = 1300
-        self.db.sheilds = 3500
-        self.db.ammohold = 100
-        self.db.genhold = 50
-        self.db.credit_value = 15000
-
-
-    def ship_define_stats(self, size, health, shields, speed, no_of_rooms):
-        super().ship_define_stats(size, health, shields, speed, no_of_rooms)
-    
-    def turn_on(self):
-        print(f"{self.key} turned on quietly.")
-
-    def idle(self):
-        super().ship_idle()
-        print("A quiet whir fills the air.")
-
 
 class Freighter(Ships):
     """
@@ -344,15 +323,17 @@ class Freighter(Ships):
         exterior_desc (str): Description of the freighter's exterior, including a warning about slow travel.
         health (int): The health points of the freighter, indicating its durability.
         shields (int): The shield points of the freighter, providing additional protection.
-        fragilehold (int): The fragile hold capacity of the freighter, representing its sensitivity to certain cargos.
-        genhold (int): The general cargo hold capacity of the freighter.
+        hold (int): The cargo hold capacity of the freighter.
         credit_value (int): The value of the freighter in credits.
 
     Methods:
-        at_object_creation(): Called when the freighter object is first created, initializes its attributes.
-        turn_on(): Turns on the freighter's systems, calling the base class method and displaying a message.
-        idle(): Sets the freighter to idle mode, calling the base class method and displaying a message.
+        at_object_creation(): Initializes the freighter's attributes when it is first created.
+        turn_on(): Turns on the freighter's systems.
+        idle(): Sets the freighter to idle mode.
+        check_manifest(): Generates and displays a shipping manifest for the cargo container.
         load_container(cargo_container): Loads a cargo container onto the freighter.
+        unload_container(cargo_container, weight, location): Unloads a cargo container from the freighter.
+        accept_contract(contract): Accepts a freight contract and loads the cargo onto the freighter.
     """
     def at_object_creation(self):
         """
@@ -363,24 +344,19 @@ class Freighter(Ships):
             - Sets the exterior description, health, shields, fragilehold, genhold, and credit_value attributes.
         """
         super().at_object_creation()
-        self.db.exterior_desc = "Basic Space has created a luxurious tank, so you ran rest well knowing the pirates wont even leave a scratch! WARNING: Basic Space is not responsible for any hardship as a result of slow travel."
-        self.db.health = 5700
-        self.db.sheilds = 10000
-        self.db.fragilehold = 100
-        self.db.genhold = 1000
-        self.db.credit_value = 15000    
-
-    @lazy_property
-    def contracts(self):
-        return FreightContractHandler(self)
+        self.db.desc = ""
+        self.db.health = 0
+        self.db.shields = 0
+        self.db.hold = 0
+        self.db.credit_value = 0 
 
     def turn_on(self):
         super().ship_turn_on()
-        print(f"{self.key} roared to life.")
+        self.caller.msg(f"{self.key} roared to life.")
 
     def idle(self):
         super().ship_idle()
-        print(f"{self.key} rumbles noisly.")
+        self.caller.msg(f"{self.key} rumbles noisly.")
 
     def check_manifest(self):
         """
@@ -407,15 +383,38 @@ class Freighter(Ships):
             - Assumes that the cargo container is compatible with the freighter's hold capacity.
             - If the freighter's hold capacity is exceeded, the cargo container will not be loaded.
         """
-        if self.db.general_hold_capacity - cargo_container.size >= 0:
+        if self.db.hold - cargo_container.size >= 0:
             cargo_container.move_to(self)
-            self.db.general_hold_capacity -= cargo_container.size
-            print(f"{cargo_container.key} loaded onto {self.key}.")
+            self.db.hold -= cargo_container.size
+            self.caller.msg(f"{cargo_container.key} loaded onto {self.key}.")
         else:
-            print(f"Cannot load {cargo_container.key}. Not enough hold capacity.")
+            self.caller.msg(f"Cannot load {cargo_container.key}. Not enough hold capacity.")
 
-    def unload_container(self, cargo_container, location):
+    def unload_container(self, cargo_container, weight, location):
         cargo_container.move_to(location)
+        self.db.hold += weight
+        
+
+    def accept_contract(self, contract):
+        """
+        Accepts a freight contract and loads the cargo onto the freighter.
+
+        Args:
+            contract (FreightContract): The freight contract to accept.
+
+        Returns:
+            bool: True if the contract is successfully accepted and cargo loaded, False otherwise.
+        """
+        # Check if the contract cargo can fit within the available cargo space
+        total_cargo_volume = sum(contract.cargo.values())
+        if self.db.hold - total_cargo_volume < 0:
+            self.caller.msg("Not enough cargo space to accept the contract.")
+            return False
+
+        # Attempt to accept the contract
+        result = ContractHandler.accept_contract(contract)
+        self.caller.msg(result)
+        return True
     
 
 
@@ -423,12 +422,12 @@ class Researcher(Ships):
 
     def at_object_creation(self):
         super().at_object_creation()
-        self.db.exterior_desc = "Let Basic Space take you to the corners of the galaxy. WARNING: Basic Space is not responsible for loss of life due to strandenment."
-        self.db.health = 1000
-        self.db.sheilds = 5000
-        self.db.voltilehold = 50
-        self.db.genhold = 500
-        self.db.credit_value = 15000
+        self.db.desc = ""
+        self.db.health = 0
+        self.db.sheilds = 0
+        self.db.voltilehold = 0
+        self.db.genhold = 0
+        self.db.credit_value = 0
     
     def turn_on(self):
         super().ship_turn_on()
@@ -437,3 +436,22 @@ class Researcher(Ships):
     def idle(self):
         super().ship_idle()
         print(f"{self.key} whirs and clicks randomly.")
+
+
+class Fighter(Ships):
+
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.desc = ""
+        self.db.health = 0
+        self.db.sheilds = 0
+        self.db.gunslots = 0
+        self.db.genhold = 0
+        self.db.ammohold = 0
+
+    def turn_on(self):
+        print(f"{self.key} turned on quietly.")
+
+    def idle(self):
+        super().ship_idle()
+        print("A quiet whir fills the air.")

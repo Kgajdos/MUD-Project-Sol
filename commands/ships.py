@@ -3,6 +3,8 @@ from evennia import default_cmds, CmdSet, InterruptCommand
 from evennia.utils import delay
 
 class CmdLook(default_cmds.CmdLook):
+    key = "look"
+    locks = "call:false()"
     def func(self):
         # get regular look, followed by a combat summary
         super().func()

@@ -1,6 +1,6 @@
 from commands.command import Command
 from evennia import default_cmds, CmdSet, InterruptCommand
-from typeclasses.freightcontracts import FreightContract
+from typeclasses.contract import FreightContract
 
 class CmdPayEmployee(Command):
     """

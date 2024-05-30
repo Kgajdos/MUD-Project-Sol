@@ -26,7 +26,6 @@ put secret game- or server-specific settings in secret_settings.py.
 
 # Use the defaults from Evennia unless explicitly overridden
 from evennia.settings_default import *
-import typeclasses.books
 
 ######################################################################
 # Evennia base server config
@@ -38,6 +37,7 @@ AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False
 AUTO_PUPPET_ON_LOGIN = False
 MAX_NR_CHARACTERS = 4
 CHARGEN_MENU = "world.chargen_menu"
+START_LOCATION = "#3"
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################

@@ -41,3 +41,40 @@ class Sittable(DefaultObject):
             self.db.sitter = None
             del stander.db.is_sitting
             stander.msg(f"You stand up from {self.key}.")
+
+class Layables(Sittable):
+        
+        def do_lay(self, player):
+            """
+            Called when trying to lay on this object.
+
+            Args:
+                player (Object): The one trying to lay down.
+            """
+            adjective = self.db.adjective or "on"
+            current = self.db.player
+            if current:
+                if current == player:
+                    player.msg(f"You are already laying {adjective} {self.key}.")
+                else:
+                    player.msg(f"You can't lay {adjective} {self.key} "
+                            f"- {current.key} is already laying there!")
+                return
+            self.db.player = player
+            player.db.is_sitting = self
+            player.msg(f"You lay {adjective} {self.key}.")
+
+        def do_stand(self, stander):
+            """
+            Called when trying to stand from this object.
+
+            Args:
+                stander (Object): The one trying to stand up.
+            """
+            current = self.db.player
+            if not stander == current:
+                stander.msg(f"You are not laying {self.db.adjective} {self.key}.")
+            else:
+                self.db.player = None
+                del stander.db.is_sitting
+                stander.msg(f"You stand up from {self.key}.")

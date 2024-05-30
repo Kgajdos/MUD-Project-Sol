@@ -1,44 +1,28 @@
 import evennia
 from evennia import DefaultObject, create_object
 from commands.corpcommands import CorpoCmdSet
+from data.tech_tree import TECH_TREE
+from typeclasses.contract import ContractHandler
 
 def create_corporation(name, leader):
-    # create a new corporation, with the key as the name.
-    new_corp = create_object(Corporation, key=name, location = None)
-    new_corp.db.employees[leader] = "CEO"
-    # set the leader as ceo and add cmdset to player.
-    new_corp.db.leaders[leader] = "CEO"
+    new_corp = create_object(Corporation, key=name, location=None)
+    new_corp.db.employees = {leader: "CEO"}
+    new_corp.db.leaders = {leader: "CEO"}
     leader.db.corporation = new_corp
     leader.cmdset.add(CorpoCmdSet())
 
-    # return the new corp.
     return new_corp
 
 class Corporation(DefaultObject):
-    """
-    Represents a corporation in the game world.
-
-    Attributes:
-        reserves (dict): A dictionary containing the corporation's resource reserves. The keys are the resource names,
-            and the values are the quantities.
-
-    Methods:
-        add_to_reserves(resource): Adds resources to the corporation's reserves.
-        take_from_reserves(resource): Takes resources from the corporation's reserves.
-        pay_employee(employee, credits): Pays an employee with credits.
-        hire_employee(employee, player_class): Hires an employee and assigns them a player class.
-        fire_employees(employee): Fires an employee and removes them from the corporation's employee list.
-        show_employees(): Displays a list of employed players and their assigned player classes.
-        promote(employee, title): Promotes an employee to a leadership position.
-        demote(employee): Demotes an employee from a leadership position.
-        create_cargo_crate(resources, object): Creates a cargo crate and adds resources or an object to it.
-    """
-    
     def at_object_creation(self):
         super().at_object_creation()
-        self.db.leaders = {}
-        self.db.employees = {}
-        self.db.reserves = {}
+        self.db.leaders = []
+        self.db.employees = []
+        self.db.reserves = []
+        self.db.research = []
+        self.db.owned_tech = []
+        self.db.jobs = []
+        self.db.contracts = []
 
     def add_to_reserves(self, resource):
         """
@@ -47,13 +31,9 @@ class Corporation(DefaultObject):
         Args:
             resource (dict): A dictionary containing the resources to add to the reserves. The keys are the resource
                 names, and the values are the quantities.
-
-        Notes:
-            - If a resource already exists in the reserves, its quantity is incremented.
-            - If a resource does not exist in the reserves, it is added with the specified quantity.
         """
         for item, quantity in resource.items():
-            if not item in self.db.reserves:
+            if item not in self.db.reserves:
                 self.db.reserves[item] = quantity
             else:
                 self.db.reserves[item] += quantity
@@ -65,24 +45,22 @@ class Corporation(DefaultObject):
         Args:
             resource (dict): A dictionary containing the resources to take from the reserves. The keys are the resource
                 names, and the values are the quantities.
-
-        Notes:
-            - If a resource exists in the reserves and the quantity requested is available, it is subtracted from the
-                reserves.
-            - If a resource does not exist in the reserves or the requested quantity is not available, no action is taken.
         """
         for item, quantity in resource.items():
-            if self.db.reserves[item]:
+            if item in self.db.reserves and self.db.reserves[item] >= quantity:
                 self.db.reserves[item] -= quantity
 
     def display_reserves(self):
+        """
+        Displays the current resource reserves of the corporation.
+        """
         temp_dict = {}
         for item, quantity in self.db.reserves.items():
             if item not in temp_dict:
                 temp_dict[item] = quantity
             else:
                 temp_dict[item] += quantity
-            self.msg(f"Corporate Reserves: {temp_dict}.")
+        self.msg(f"Corporate Reserves: {temp_dict}.")
 
     def pay_employee(self, employee, credits):
         """
@@ -91,12 +69,8 @@ class Corporation(DefaultObject):
         Args:
             employee (Object): The employee to be paid.
             credits (int): The amount of credits to pay the employee.
-
-        Notes:
-            - The specified amount of credits is added to the employee's db.credits attribute.
-            - If the employee is not a member of this corporation, an error message is sent to the caller.
         """
-        if employee in self.db.employees.values():
+        if employee in self.db.employees:
             employee.db.credits += credits
         else:
             self.caller.msg(f"{employee} is not a member of this corporation")
@@ -108,13 +82,8 @@ class Corporation(DefaultObject):
         Args:
             employee (Object): The object representing the employee to be hired.
             player_class (str): The player class to be assigned to the employee.
-
-        Notes:
-            - If the employee is not already in the corporation's employee dictionary, they are added with the specified player class.
-            - If the employee is already in the dictionary, their player class is updated to the new value.
         """
-        if employee not in self.db.employees:
-            self.db.employees[employee] = player_class
+        self.db.employees[employee] = player_class
 
     def fire_employee(self, employee):
         """
@@ -122,24 +91,16 @@ class Corporation(DefaultObject):
 
         Args:
             employee (Object): The object representing the employee to be fired.
-
-        Notes:
-            - If the employee is in the corporation's employee dictionary, they are removed from the dictionary.
-            - If the employee is not found in the dictionary, nothing happens.
         """
         if employee in self.db.employees:
-            self.db.employees[employee].pop()
+            del self.db.employees[employee]
 
     def show_employees(self):
         """
         Displays a list of employed players and their assigned player classes.
-
-        Notes:
-            - Iterates through the corporation's employee dictionary and sends a message to the corporation object (self) for each entry.
-            - Each message shows the employee and their assigned player class.
         """
-        for item, player_class in self.db.employees.items():
-            self.msg(f"{item} is employed and is a {player_class}.")
+        for employee, player_class in self.db.employees.items():
+            self.msg(f"{employee} is employed as a {player_class}.")
 
     def promote(self, employee, title):
         """
@@ -148,16 +109,9 @@ class Corporation(DefaultObject):
         Args:
             employee (Object): The object representing the employee to be promoted.
             title (str): The title or position to be assigned to the employee as a leader.
-
-        Notes:
-            - If the specified title does not already exist in the corporation's leaders dictionary,
-              the employee is assigned to that title.
-            - The employee is granted access to the Corporation Command Set (CorpoCmdSet).
         """
-        if not self.db.leaders[title]:
-            self.db.leaders[title] = employee
-
-        employee.add(CorpoCmdSet())
+        self.db.leaders[title] = employee
+        employee.cmdset.add(CorpoCmdSet())
 
     def demote(self, employee):
         """
@@ -165,17 +119,14 @@ class Corporation(DefaultObject):
 
         Args:
             employee (Object): The object representing the employee to be demoted.
-
-        Notes:
-            - If the employee is in the corporation's leaders dictionary, they are removed from the dictionary,
-              effectively demoting them from the leadership position.
-            - The employee loses access to the Corporation Command Set (CorpoCmdSet).
         """
-        if employee in self.db.leaders:
-            self.db.leaders[employee].pop()
-            employee.remove(CorpoCmdSet())
+        for title, leader in self.db.leaders.items():
+            if leader == employee:
+                del self.db.leaders[title]
+                break
+        employee.cmdset.remove(CorpoCmdSet())
 
-    def create_cargo_crate(self, resources, object):
+    def create_cargo_crate(self, resources=None, object=None):
         """
         Creates a cargo crate and adds resources or an object to it.
 
@@ -184,16 +135,14 @@ class Corporation(DefaultObject):
                 The keys are the resource names, and the values are the quantities.
             object (Object, optional): An object to add to the cargo crate.
 
-        Notes:
-            - If both resources and an object are provided, resources will be added first until the cargo crate is full.
-            - If the cargo crate becomes full before all resources are added, the remaining resources are not added.
-            - If the cargo crate becomes full before the object is added, the object will not be added.
+        Returns:
+            Object: The created cargo crate object.
         """
-        crate = create_object(typeclass = "typeclasses.cargocontainer.CargoContainer", key = "Crate", location = self.location)
+        crate = create_object("typeclasses.cargocontainer.CargoContainer", key="Crate", location=self.location)
         if resources:
-            crate.add_resource(resources)
+            crate.db.resources = resources
         elif object:
-            crate.add_object(object)
+            crate.db.object = object
         return crate
 
     def load_ship(self, crate, ship):
@@ -203,11 +152,8 @@ class Corporation(DefaultObject):
         Args:
             crate (Object): The cargo crate to be loaded into the ship.
             ship (Object): The ship into which the cargo crate will be loaded.
-
-        Notes:
-            - Moves the cargo crate to the contents of the ship, effectively loading it into the ship.
         """
-        self.move_crate(crate, ship.contents)
+        self.move_crate(crate, ship)
 
     def move_crate(self, crate, location):
         """
@@ -216,13 +162,77 @@ class Corporation(DefaultObject):
         Args:
             crate (Object): The cargo crate to be moved.
             location (Object): The location to which the cargo crate will be moved.
-
-        Notes:
-            - If the `crate` object is found in the caller's current location, it will be moved to the `location`.
-            - If the `crate` object is not found in the caller's current location, an error message will be displayed.
         """
-        try:
-            if self.search(crate):
-                crate.move_to(location)
-        except:
-            self.caller.msg(f"{crate} not found.")
+        if crate.location == self.location:
+            crate.move_to(location)
+        else:
+            self.msg(f"{crate} not found in the current location.")
+
+    def post_job(self, description, reward, task_details):
+        job = ContractHandler.create_job(description, reward, task_details)
+        self.db.jobs.append(job)
+        self.msg(f"Job posted: {description} for {reward} credits.")
+
+    def post_contract(self, sender, receiver, cargo, weight, destination, reward, expiry_date=None):
+        contract = ContractHandler.create_freight_contract(sender, receiver, cargo, weight, destination, reward, expiry_date)
+        self.db.contracts.append(contract)
+        self.msg(f"Contract posted: {contract.description} for {contract.reward} credits.")
+
+    def show_jobs(self):
+        if not self.db.jobs:
+            self.msg("No jobs available.")
+        for job in self.db.jobs:
+            self.msg(f"Job: {job.description}, Reward: {job.reward} credits, Task: {job.task_details}.")
+
+    def show_contracts(self):
+        if not self.db.contracts:
+            self.msg("No contracts available.")
+        for contract in self.db.contracts:
+            self.msg(f"Contract: {contract.description}, Reward: {contract.reward} credits, Cargo: {contract.cargo}.")
+
+    def complete_job(self, job, player):
+        """
+        Completes a job and pays the player.
+
+        Args:
+            job (Job): The job to be completed.
+            player (Object): The player who completed the job.
+        """
+        if job.complete(player):
+            self.db.jobs.remove(job)
+            self.msg(f"Job completed: {job.description}. {player.name} has been paid {job.reward} credits.")
+        else:
+            self.msg("Job could not be completed.")
+
+    def complete_contract(self, contract, player):
+        """
+        Completes a contract and pays the player.
+
+        Args:
+            contract (FreightContract): The contract to be completed.
+            player (Object): The player who completed the contract.
+        """
+        if contract.complete(player):
+            self.db.contracts.remove(contract)
+            self.msg(f"Contract completed: {contract.description}. {player.name} has been paid {contract.reward} credits.")
+        else:
+            self.msg("Contract could not be completed.")
+
+    def buy_tech(self, caller, tech_name):
+        owned_tech = self.db.owned_tech
+        if tech_name in owned_tech:
+            caller.msg(f"{self.key} already owns that tech.")
+            return
+        tech_data = TECH_TREE.get(tech_name)
+        if not tech_data:
+            caller.msg("Invalid tech.")
+            return
+        if self.db.research < tech_data['research']:
+            caller.msg(f"{self.key} can't afford that.")
+            return
+        if not all(r in owned_tech for r in tech_name['requirements'] ):
+            caller.msg(f"{self.key} is missing {tech_name['requirements']}.")
+            return
+        self.db.research -= tech_data['research']
+        self.db.owned_tech.append(tech_name)
+        caller.msg(f"{tech_name} upgrade purchased.")

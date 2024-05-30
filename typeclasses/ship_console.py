@@ -24,6 +24,10 @@ class CmdShipConsole(Command):
     locks = "cmd:not cmdinside()"
     help_category = "Ship"
 
+    def at_pre_cmd(self):
+        #this function will terminate the command if this function returns True. 
+        return self.db.pilot != self.caller
+
     def func(self):
         self.obj.start_consoles(self.caller, self.session)
 
@@ -392,10 +396,8 @@ class ShipConsole(Object):
             new_name (str): The new name for the ship.
 
         """
-        player.db.active_ship = new_name
-        ship = self.location.location
+        ship = player.db.active_ship
         ship.key = new_name
-        ship.name = new_name
 
     def ship_sheet(self,player):
         """

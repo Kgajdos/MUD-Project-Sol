@@ -69,7 +69,6 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        self.add(mycommands.MyAccountCmdSet())
         self.add(ContribCmdCharCreate())
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
