@@ -11,6 +11,7 @@ import evennia
 from evennia.utils import utils, lazy_property, create
 from evennia import DefaultCharacter, AttributeProperty, EvForm, EvTable, scripts
 from typeclasses.equipment import EquipmentHandler
+from missions.first_steps import mission_setup
 from typeclasses.bags import Bag, BagCmdSet
 from typeclasses import playerclass
 import random
@@ -118,6 +119,8 @@ class Character(LivingMixin, DefaultCharacter):
 
     def at_object_creation(self):     
         self.set_player_class()
+        self.set_char_description()
+        self.tags.add("newbie")
 
     def set_player_class(self):
         #Determine the player class based on chargen choices
@@ -135,6 +138,12 @@ class Character(LivingMixin, DefaultCharacter):
         else:
             # Handle unknown or invalid player classes
             pass
+
+    def at_pre_puppet(self, account, session=None, **kwargs):
+        if self.tags.has("newbie") and not self.tags.has("tutorial started"):
+            mission_setup(self)
+        
+        super().at_pre_puppet(account, session=session, **kwargs)
 
     @lazy_property
     def equipment(self):
@@ -180,7 +189,7 @@ class Character(LivingMixin, DefaultCharacter):
         else:
             pronoun = "they"
             adj = "are"
-        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {self.db.adjective} and {self.db.body_type}. \nThey have a {self.db.disposition} disposition."
+        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {self.db.adjective} and {self.db.body_type} with a {self.db.disposition} disposition."
 
     #To be called when a character learns a new skill for the first time
     def create_skill_set(self, raw_string):
@@ -208,7 +217,7 @@ class Character(LivingMixin, DefaultCharacter):
     def train_skill(self, skill_trained, amount):
         value = self.attributes.get(skill_trained) * amount
         self.attributes.add(skill_trained, value)
-        self.msg(f"You trained for {value}!")
+        self.msg(f"You trained {skill_trained} for {value} experience points!")
 
     #NEEDS THOUROUGH TESTING!!!!
     def player_sheet(self):
@@ -265,9 +274,6 @@ class Character(LivingMixin, DefaultCharacter):
     def at_object_leave(self, moved_object, destination, **kwargs):
         """Called by Evennia when object leaves the character"""
         self.equipment.remove(moved_object)
-
-    def add_char_experience(self, amount):
-        self.xp += amount
 
     """
     The Character defaults to reimplementing some of base Object's hook methods with the

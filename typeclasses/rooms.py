@@ -25,7 +25,6 @@ class Room(ObjectParent, DefaultRoom):
     """
     def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
         #this is checking if it is a PC
-        print(moved_obj.account)
         if moved_obj.account:
             #this is informing all npcs in the room
             for item in self.contents:

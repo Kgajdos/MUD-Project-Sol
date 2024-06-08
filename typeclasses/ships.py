@@ -15,7 +15,7 @@ from commands import sittables
 from commands.ships import ShipCmdSet
 from evennia.utils.utils import lazy_property
 import random
-from typeclasses.contract import ContractHandler
+from typeclasses.contract import ContractHandler, ContractBase
 
 #exists as a way to spawn ships in for the player
 class ShipManager:
@@ -32,20 +32,17 @@ class ShipManager:
         """
         ship = None
         if ship_class == "Miner":
-            ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")
+            ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")[0]
         elif ship_class == "Fighter":
-            ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")
+            ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")[0]
         elif ship_class == "Freighter":
-            ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")
+            ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")[0]
         elif ship_class == "Researcher":
-            ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")
+            ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
+        #86 is the ship hanger room #, change this as needed
+        ship.db.location = 86
 
-        if ship:
-            ship.setup_rooms()
-            ship.setup_exits()
-            return ship
-
-        return None
+        return ship
         
 
 ## Ship Class definitions only
@@ -212,7 +209,11 @@ class Ships(Object):
         self.msg(f"Targetting {target}")
         self.db.target = target   
 
-                
+    def display_work_pending(self):
+        player = self.db.pilot
+        if not player:
+            return
+        player.msg(ContractBase.get_list(self))
 
 
     
@@ -261,6 +262,7 @@ class Miner(Ships):
 
     def start_consoles(self):
         super().start_consoles()
+    
     
     def scan_asteroid(self):
         if self.db.target:

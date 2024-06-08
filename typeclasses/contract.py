@@ -4,7 +4,7 @@ class ContractBase:
     def __init__(self, description, reward, expiry_date=None):
         self.description = description
         self.reward = reward
-        self.expiry_date = expiry_date or datetime.now() + timedelta(days=7)
+        self.expiry_date = expiry_date
         self.status = "pending"
     
     def accept(self):
@@ -24,6 +24,16 @@ class ContractBase:
             self.status = "cancelled"
             return True
         return False
+    
+    #**kwargs: the ship where jobs are located
+    def get_list(self, **kwargs):
+        job_list = []
+        if not kwargs:
+            return job_list
+        for job in kwargs.items():
+            job_list.append(job)
+        return job_list
+
 
 class Job(ContractBase):
     def __init__(self, description, reward, task_details, expiry_date=None):
@@ -79,7 +89,7 @@ class ContractHandler:
 
         Args:
             description (str): The description of the job.
-            reward (int): Reward offered for completing the job.
+            reward (any): Reward offered for completing the job.
             task_details (str): Specific details about the job.
             expiry_date (datetime, optional): Expiry date of the job. Defaults to None.
 
