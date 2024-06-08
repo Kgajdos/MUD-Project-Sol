@@ -260,6 +260,7 @@ def menunode_category_options(caller, raw_string, category=None, **kwargs):
 def _set_category_opt(caller, raw_string, category, value, **kwargs):
     """Set the option for a category"""
     caller.new_char.attributes.add(category, value)
+    print(category, value)
 
     return "menunode_categories"
 

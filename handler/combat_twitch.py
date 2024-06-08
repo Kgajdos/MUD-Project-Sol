@@ -1,8 +1,6 @@
-from evennia.utils import inherits_from
+from evennia.utils import inherits_from, repeat, unrepeat, pad
 from typeclasses.characters import Character
 from evennia import AttributeProperty, Command, InterruptCommand, CmdSet, default_cmds
-from evennia.utils import repeat, unrepeat
-from evennia.utils import pad
 
 from .combat_base import (
    CombatActionAttack,

@@ -62,7 +62,7 @@ The project has made significant progress with the addition of multiple prototyp
    - **Issue**: NPC's wont greet characters upon entering the room.
    - **Action**: Continue testing to see where program is failing to execute.
    - **Priority**: Low
-   - **Status**: To-Do
+   - **Status**: Fixed
 
 *********************************************NEW FEATURES AND IMPROVEMENTS*********************************************
 1. **Wearable Items Enhancement**
@@ -134,3 +134,5 @@ The project has made significant progress with the addition of multiple prototyp
 - **Corporate Computer System**
 - **Mineral Values**
   - Set values for minerals in data/minerals.py.
+- **First Steps Tutorial**
+  - Creating a tutorial where the player says hi to civeil, she directs them to the hanger, when they get there they are rewarded a ship.

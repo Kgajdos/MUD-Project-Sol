@@ -1,5 +1,5 @@
 from evennia import DefaultScript, create_script, EvTable
-from evadventure.rules import dice
+from world.rules import dice
 
 class CombatFailure(RuntimeError):
     """If some error happens in combat"""

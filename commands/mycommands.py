@@ -194,7 +194,7 @@ class CmdEnterShip(Command):
         board ship
     """
     key = "board"
-    locks = "cmd:not cmdinside()"
+    locks = "cmd:not cmdinside();cmd: ispilot()"
     help_category = "Ship"
 
     def func(self):

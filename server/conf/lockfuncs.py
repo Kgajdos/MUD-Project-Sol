@@ -19,6 +19,13 @@ Lock functions in this module extend (and will overload same-named)
 lock functions from evennia.locks.lockfuncs.
 
 """
+
+def ispilot(accessing_obj, accessed_obj, *args, **kwargs):
+    """
+    True if accessing_obj is the pilot of accessed_obj
+    """
+    return accessed_obj.obj.db.pilot == accessing_obj
+
 def sitsonthis(accessing_obj, accessed_obj, *args, **kwargs):
     """
     True if accessing_obj is sitting on/in the accessed_obj.

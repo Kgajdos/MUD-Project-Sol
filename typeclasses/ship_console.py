@@ -26,7 +26,7 @@ class CmdShipConsole(Command):
 
     def at_pre_cmd(self):
         #this function will terminate the command if this function returns True. 
-        return self.db.pilot != self.caller
+        return self.obj.db.pilot != self.caller
 
     def func(self):
         self.obj.start_consoles(self.caller, self.session)
