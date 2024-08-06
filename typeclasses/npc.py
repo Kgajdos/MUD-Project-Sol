@@ -1,7 +1,6 @@
 from typeclasses.characters import Character
 from typeclasses.ships import ShipManager
-from typeclasses.objects import Object
-from evennia import Command, CmdSet, EvMenu, AttributeProperty
+from evennia import Command, CmdSet, EvMenu, AttributeProperty, create_object
 
 
 
@@ -36,34 +35,26 @@ class NPC(Character):
 
     is_pc = False
 
-
     def at_object_creation(self):
         super().at_object_creation()
-        self.cmdset.add_default(NPCCommandSet())
+        self.cmdset.add(NPCCommandSet, persistent=True)
 
-    def at_char_entered(self, character):
-        character.msg(f"Greetings, {character.key}. How can I assist you?")
-        if character.db.tutorial_complete == False:
-            #TODO: Launch first_steps.py or the quest
-            pass
-        else:
-            character.msg(f"How's the {character.active_ship.key} treating you?")
 
-    def at_heard_say(self, message, from_obj):
-        """
-        A simple listener and response. Makes polymorphism easier for different
-        subclasses to react differently.
-        """
-        # message will be on the form `<Person> says, "say_text"`
-        # we want to get only say_text without the quotes and any spaces
-        message = message.split('says, ')[1].strip('"')
 
-        #We'll make use of this in .msg()
-        return f"{from_obj} said: '{message}'"
-    
-    def msg(self, text=None, from_obj=None, **kwargs):
+class NPCCiveil(NPC):
+        def at_object_creation(self):
+            super().at_object_creation()
+
+        def at_char_entered(self, character):
+            if character.tags.has("captain"):
+                character.msg(f"{self.key} says: How's the {character.db.active_ship.key} treating you?")
+            else:
+                from missions.first_steps import mission_complete
+                mission_complete(character)
+                character.msg(f"{self.key} says: Greetings, {character.key}. Are you here for your ship?")
+
+        def msg(self, text=None, from_obj=None, **kwargs):
             "Custom msg() method reacting to say."
-
             if from_obj != self:
                 # make sure to not repeat what we ourselves said or we'll create a loop
                 try:
@@ -73,15 +64,18 @@ class NPC(Character):
                     is_say = False
                 if is_say:
                     # First get the response (if any)
-                    response = self.at_heard_say(say_text, from_obj)
+                    response = f"Ah hello {from_obj}! I've been waiting for you."
                     # If there is a response
                     if response != None:
                         # speak ourselves, using the return
                         self.execute_cmd(f"say {response}")   
+
         
             # this is needed if anyone ever puppets this NPC - without it you would never
             # get any feedback from the server (not even the results of look)
-            super().msg(text=text, from_obj=from_obj, **kwargs) 
+                super().msg(text=text, from_obj=from_obj, **kwargs) 
+
+        
 
 #This needs Fixed!!
 class MechanicNPC(NPC):

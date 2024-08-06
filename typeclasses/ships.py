@@ -39,8 +39,6 @@ class ShipManager:
             ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")[0]
         elif ship_class == "Researcher":
             ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
-        #86 is the ship hanger room #, change this as needed
-        ship.db.location = 86
 
         return ship
         
@@ -78,8 +76,7 @@ class Ships(Object):
         self.db.targeting = None
         self.db.shipID = ""
         self.db.contract = {}
-        bridge = self.search("Bridge")
-        if not bridge:
+        if not self.exits:
             self.create_rooms()
 
     def create_rooms(self):

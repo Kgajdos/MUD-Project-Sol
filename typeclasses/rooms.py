@@ -1,4 +1,4 @@
-from evennia import utils, TICKER_HANDLER
+from evennia import utils, TICKER_HANDLER, create_object
 from typeclasses.asteroids import Asteroid
 import random
 """
@@ -30,6 +30,28 @@ class Room(ObjectParent, DefaultRoom):
             for item in self.contents:
                 if utils.inherits_from(item, "typeclasses.npc.NPC"):
                     item.at_char_entered(moved_obj)
+
+class TutorialRoom(Room):
+    """
+    Only to be used for the spawning room! Needed to allow mission hook
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.desc = "This is the tutorial room. You can learn how to play the game here."
+
+        # Create some objects to interact with
+        map = create_object("typeclasses.objects.Object", key="Map", location=self, attributes=[("desc", "A map with directions pointing to the Hangers. It reads:\n")])
+        cup = create_object("typeclasses.objects.Object", key="Cup", location=self, attributes=[("desc", "A shiny red apple. Looks delicious.")])
+
+    def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
+        if moved_obj.account:
+            #this is informing all npcs in the room
+            for item in self.contents:
+                if utils.inherits_from(item, "typeclasses.npc.NPC"):
+                    item.at_char_entered(moved_obj)
+            from missions.first_steps import mission_setup
+            if not moved_obj.tags.has("captain"):
+                mission_setup(moved_obj)
 
 
 class SpaceRoom(Room):

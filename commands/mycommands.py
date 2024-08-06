@@ -9,6 +9,7 @@ from commands.wearables import CmdSetWear
 from typeclasses.equipment import EquipmentHandler
 from typeclasses.ships import Ships
 from typeclasses import corporations
+from world.combat_twitch import TwitchCombatCmdSet
 from evennia.contrib.game_systems import barter
 
 
@@ -276,6 +277,7 @@ class MyCmdGet(default_cmds.CmdGet):
 class MyCharCmdSet(CmdSet):
     
     def at_cmdset_creation(self):
+        self.add(TwitchCombatCmdSet())
         self.add(CmdEcho())
         self.add(CmdHit())
         self.add(CmdShowWallet())

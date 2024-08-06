@@ -26,7 +26,11 @@ class CmdShipConsole(Command):
 
     def at_pre_cmd(self):
         #this function will terminate the command if this function returns True. 
-        return self.obj.db.pilot != self.caller
+        if not self:
+            ship = self.obj.location.location
+            if ship.db.pilot != self.caller.key:
+                self.caller.msg("You are not authorized to access this console!")
+                raise InterruptCommand
 
     def func(self):
         self.obj.start_consoles(self.caller, self.session)

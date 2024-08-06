@@ -11,7 +11,7 @@ import evennia
 from evennia.utils import utils, lazy_property, create
 from evennia import DefaultCharacter, AttributeProperty, EvForm, EvTable, scripts
 from typeclasses.equipment import EquipmentHandler
-from missions.first_steps import mission_setup
+from missions.first_steps import mission_setup, mission_start
 from typeclasses.bags import Bag, BagCmdSet
 from typeclasses import playerclass
 import random
@@ -138,12 +138,6 @@ class Character(LivingMixin, DefaultCharacter):
         else:
             # Handle unknown or invalid player classes
             pass
-
-    def at_pre_puppet(self, account, session=None, **kwargs):
-        if self.tags.has("newbie") and not self.tags.has("tutorial started"):
-            mission_setup(self)
-        
-        super().at_pre_puppet(account, session=session, **kwargs)
 
     @lazy_property
     def equipment(self):
