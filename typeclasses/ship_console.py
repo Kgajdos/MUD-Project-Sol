@@ -6,6 +6,29 @@ from typeclasses import ships
 from typeclasses.objects import Object
 from evennia import InterruptCommand
 from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
+from typeclasses.rooms import SpaceRoom
+
+#******Logic for space exploration, likely will need to be refractored and moved******
+def get_all_space_rooms():
+    """
+    Retrieve all SpaceRoom instances.
+    
+    Returns:
+        QuerySet: A Django QuerySet of all SpaceRoom objects.
+    """
+    return SpaceRoom.objects.all()
+
+def get_all_space_room_identifiers():
+    """
+    Generate a list of all SpaceRoom identifiers.
+    
+    Returns:
+        list: A list of room identifiers.
+    """
+    space_rooms = get_all_space_rooms()
+    identifiers = [room.key for room in space_rooms]
+    return identifiers
+
 
 _SHIP_CONSOLE_DICT = []
    
@@ -211,6 +234,8 @@ def menunode_start(caller):
         {"desc": f"|gCaptain's Log|n", "goto": "menunode_captains_logs"},
         {"desc": f"|gShip Statistics|n", "goto": "_ship_stats"},
         {"desc": f"|gFly Ship|n", "goto": "menunode_fly_ship"},
+        {"desc": f"|cSet Destination|n", "goto": "menunode_set_destination"},
+        {"desc": f"|cChart New Course|n", "goto": "menunode_chart_course"},
         {"desc": f"|cRename Ship|n", "goto": "menunode_ship_rename"}
         ]
     return text, options
@@ -330,6 +355,41 @@ def _new_name(caller, raw_string, **kwargs):
 
     return "menunode_start"
 
+
+
+def menunode_set_destination(caller, raw_string, **kwargs):
+    """
+    Show a list of known destinations to the player.
+    """
+    identifiers = get_all_space_room_identifiers()
+    
+    text = "Choose a known destination or type coordinates for uncharted space."
+    
+    # Create menu options dynamically
+    options = [{"desc": f"|g{identifier}|n", "goto": ("menunode_confirm_travel", {"destination": identifier})}
+               for identifier in identifiers]
+    
+    options.append({"desc": f"|gChart New Course|n", "goto": "menunode_chart_course"})
+    options.append({"key": (f"|y(Back)|n", "back", "b"), "desc": "Back to home screen.", "goto": "menunode_start"})
+    
+    return text, options
+
+def menunode_chart_course(caller, raw_string, **kwargs):
+    """
+    Allows the player to chart a new course in uncharted space.
+    """
+    from typeclasses.rooms import create_new_room
+    new_room = create_new_room()  # Create a new room with a random type and description
+    
+    # Optionally, notify the player about the new room
+    caller.msg(f"You have charted a new course and discovered a new area: {new_room.key}.")
+    
+    # Optional: Move the player to the new room
+    ship = caller.location.location
+    ship.move_to(new_room)
+    
+    return "menunode_start"  # Return to the main menu or any other appropriate node
+
 def menunode_fly_ship(caller, raw_string, **kwargs):
     text = f"Begin flying your ship?"
 
@@ -385,7 +445,9 @@ class ShipConsole(Object):
             "menunode_read_log": menonode_read_log,
             "menunode_ship_rename": menunode_ship_rename,
             "menunode_fly_ship": menunode_fly_ship,
-            "menunode_end": menunode_end
+            "menunode_end": menunode_end,
+            "menunode_set_destination": menunode_set_destination, 
+            "menunode_chart_course": menunode_chart_course 
         }
         consolename = self.db.name or "Admin"
         EvMenu(player, menunodes, startnode = "menunode_start",
@@ -420,7 +482,7 @@ class ShipConsole(Object):
             1: ship.key,
             2: ship.db.pilot,
             3: ship.db.ship_class,
-            4: ship.db.ship_id
+            4: ship.db.shipID
         })
         table = EvTable("CARGO", border="incols")
         storage = ship.db.cargo

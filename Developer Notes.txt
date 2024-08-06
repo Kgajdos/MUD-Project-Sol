@@ -53,3 +53,22 @@ The project has made significant progress with the addition of multiple prototyp
          self.obj.start_consoles(self.caller, self.session)
          ^^^^^^^^^^^^^^^^^^^^^^^
      AttributeError: 'NoneType' object has no attribute 'start_c
+### Developer Notes - [6 AUG 2024]
+
+**Today's Updates and Fixes:**
+
+1. **Menu Node Error Fix:**
+   - Fixed the error with `menunode_set_destination` by ensuring it properly queries available destinations and uses `get_all_space_room_identifiers()`.
+
+2. **New Room Creation Logic:**
+   - Implemented `create_new_room()` to handle the creation of new rooms with random descriptions and types.
+   - Added functionality to randomly pick a room type and ensure the room description matches the type.
+   - Ensured newly created rooms have keys that match their descriptions and include default descriptions for various room types.
+
+3. **Error Handling:**
+   - Addressed issues with room type checking and corrected the handling of `no_default` parameter.
+   - Fixed errors related to setting room attributes and handling database-related exceptions.
+
+4. **Testing and Verification:**
+   - Verified the functionality by running tests to ensure new rooms are created correctly and menu nodes transition as expected.
+

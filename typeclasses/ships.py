@@ -1,4 +1,5 @@
 import evennia
+import string
 from evennia import InterruptCommand, utils
 import evennia.prototypes
 import evennia.prototypes.spawner
@@ -16,6 +17,7 @@ from commands.ships import ShipCmdSet
 from evennia.utils.utils import lazy_property
 import random
 from typeclasses.contract import ContractHandler, ContractBase
+from typeclasses.rooms import SpaceRoom
 
 #exists as a way to spawn ships in for the player
 class ShipManager:
@@ -74,7 +76,7 @@ class Ships(Object):
         self.db.desc = ""
         self.db.cargo = {}
         self.db.targeting = None
-        self.db.shipID = ""
+        self.db.shipID = self.create_ship_id()
         self.db.contract = {}
         if not self.exits:
             self.create_rooms()
@@ -104,17 +106,21 @@ class Ships(Object):
     def create_ship_id(self):
         """
         Creates a randomized ship id in the form of AA-00-BB-11
-
+        
         Checks against the database to ensure the number is unique.
         """
-        letter_set_a = random.choice() + random.choice()
-        letter_set_b = random.choice() + random.choice()
-        number_set_0 = random.randint() + random.randint()
-        number_set_1 = random.randint() + random.randint()
-        ship_id = letter_set_a.upper() + "-" + number_set_0 + "-" + letter_set_b.upper() + "-" + number_set_1
-        print(ship_id)
-        self.db.shipid = ship_id 
-
+        letter_set_a = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        letter_set_b = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        number_set_0 = str(random.randint(10, 99))
+        number_set_1 = str(random.randint(10, 99))
+        
+        ship_id = f"{letter_set_a}-{number_set_0}-{letter_set_b}-{number_set_1}"
+        
+        # Assuming there is a method to check uniqueness
+        # if not self.is_unique(ship_id):
+        #     return self.create_ship_id()
+        
+        return ship_id
             
 
     def get_display_desc(self, looker, **kwargs):
@@ -169,27 +175,16 @@ class Ships(Object):
         room = self.search(location)
         self.move_to(room)
 
-    def warp_to_space(self):
+    def warp_to_existing_room(self, identifier):
         """
-        Warp the ship into space.
-
-        Returns:
-            bool: True if the ship successfully warps into space, False otherwise.
+        Warp to a known destination room based on identifier.
         """
-        #dict of available rooms
-        rooms = {("#161", "#187", "#189", "#195", "#201", "#208", "#213", "#219", "#224")}
-        # Check if the ship is already in space
-        if self.location == "space":
-            return False
-        
-        # Check if the ship is in a valid location to warp from (e.g., a hangar)
-        if not self.location.is_hangar:
-            return False
-
-        # Move the ship to the space location
-        space = random.choice(rooms)
-        self.move_to(space)
-        return True
+        try:
+            destination_room = SpaceRoom.objects.get(key=identifier)
+            self.move_to(destination_room)
+            self.msg(f"Warping to {destination_room.key}.")
+        except SpaceRoom.DoesNotExist:
+            self.msg("Destination not found.")
 
     def scan(self, player, target):
         self.db.scan_results = []

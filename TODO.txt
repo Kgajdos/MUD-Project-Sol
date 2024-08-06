@@ -99,3 +99,25 @@ Currently Working On
 --------------------
 - Corporate computer: Allows players to sell cargo and take on contracts
 - Setting values to minerals: In data/minerals.py
+
+### To-Do List - [6 AUG 2024]
+
+1. **Further Testing:**
+   - Test `menunode_chart_course` and other related menu nodes extensively to ensure they handle all possible scenarios correctly.
+   - Validate that newly created rooms are correctly listed and navigated to.
+
+2. **Room Descriptions:**
+   - Consider expanding the list of pre-generated room descriptions to include a wider variety of scenarios.
+   - Implement additional descriptions or features if needed based on player feedback.
+
+3. **Player Experience:**
+   - Review and adjust the user experience to ensure players find it engaging and intuitive.
+   - Gather feedback on the new room creation and navigation process to make improvements.
+
+4. **Documentation:**
+   - Update developer notes to include details about the new room creation logic, menu node changes, and error handling improvements.
+   - Document the testing procedures and any specific changes made to the Evennia configurations.
+
+5. **Future Enhancements:**
+   - Explore adding more features or customization options for room creation and navigation.
+   - Consider implementing additional menu nodes or interactions based on future requirements.
