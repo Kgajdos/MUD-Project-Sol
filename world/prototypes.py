@@ -67,7 +67,7 @@ ROOM_BRIDGE = {
 NPC_CIVEIL = {
     "prototype_key": "NPC_CIVEIL",
     "key": "Civeil",
-    "typeclass": "typeclasses.npc.NPC",
+    "typeclass": "typeclasses.npc.NPCCiveil",
     "attrs": [("desc", "Before you stands a woman with advanced cybernetics to include eyes and an arm. Her hair is strikingly white. It is impossible to determine her age beyond 'older than you'. She stands in front of a computer ready to assist.")]
 }
 

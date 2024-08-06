@@ -1,6 +1,52 @@
-from evennia import utils, TICKER_HANDLER
+from evennia import utils, TICKER_HANDLER, create_object
 from typeclasses.asteroids import Asteroid
 import random
+
+def create_new_room():
+    # Define the possible room types
+    room_types = ["asteroid_field", "nebula", "planet", "anomaly"]
+    
+    # Define descriptions for each room type
+    DESCRIPTIONS = {
+        "asteroid_field": [
+            "A dense asteroid field surrounds you, with massive rocks floating ominously.",
+            "The ship navigates through a chaotic asteroid belt, with debris scattering around.",
+            "You are in the midst of a violent asteroid storm, with rocks tumbling past at high speed."
+        ],
+        "nebula": [
+            "A colorful nebula stretches across the void, with vibrant gases swirling in beautiful patterns.",
+            "The nebula is dense and mysterious, with light filtering through clouds of interstellar dust.",
+            "You drift through a vast nebula, with shimmering colors and ethereal light."
+        ],
+        "planet": [
+            "A distant planet looms ahead, its surface covered in swirling clouds.",
+            "You approach a planet with a striking blue hue, its surface teeming with mystery.",
+            "A rocky planet orbits here, with a barren landscape visible through the ship's viewports."
+        ],
+        "anomaly": [
+            "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns.",
+            "You encounter an enigmatic space anomaly, its nature defying easy explanation.",
+            "The anomaly creates unusual readings on your instruments, with space-time seemingly warped around it."
+        ]
+    }
+    
+    # Choose a random room type
+    room_type = random.choice(room_types)
+    
+    # Get the descriptions for the chosen room type
+    descriptions = DESCRIPTIONS.get(room_type, [])
+    
+    # Pick a random description
+    if descriptions:
+        description = random.choice(descriptions)
+    else:
+        description = "An unknown area of space."
+
+    # Create the new room with the selected description
+    new_room = create_object("typeclasses.rooms.SpaceRoom", key=room_type)
+    new_room.db.desc = description
+
+    return new_room
 """
 Room
 
@@ -30,6 +76,28 @@ class Room(ObjectParent, DefaultRoom):
             for item in self.contents:
                 if utils.inherits_from(item, "typeclasses.npc.NPC"):
                     item.at_char_entered(moved_obj)
+
+class TutorialRoom(Room):
+    """
+    Only to be used for the spawning room! Needed to allow mission hook
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.desc = "This is the tutorial room. You can learn how to play the game here."
+
+        # Create some objects to interact with
+        map = create_object("typeclasses.objects.Object", key="Map", location=self, attributes=[("desc", "A map with directions pointing to the Hangers. It reads:\n")])
+        cup = create_object("typeclasses.objects.Object", key="Cup", location=self, attributes=[("desc", "A shiny red apple. Looks delicious.")])
+
+    def at_object_receive(self, moved_obj, source_location, move_type="move", **kwargs):
+        if moved_obj.account:
+            #this is informing all npcs in the room
+            for item in self.contents:
+                if utils.inherits_from(item, "typeclasses.npc.NPC"):
+                    item.at_char_entered(moved_obj)
+            from missions.first_steps import mission_setup
+            if not moved_obj.tags.has("captain"):
+                mission_setup(moved_obj)
 
 
 class SpaceRoom(Room):

@@ -1,95 +1,123 @@
-KNOWN BUGS:
-*Renaming a ship breaks it's connection to the room - not sure why
-	**Ship will no longer show up under You see: _____
-*Immense difficulties with character stats
-	-Unsure if enums are being utilized
-*This command no longer works, needs to be updated:
-class CmdPutAway(Command):
-    """
-    Puts an item into the bag
+Known Bugs
+-----------
+Ship Issues
+- Renaming a ship breaks its connection to the room
+  - Ship will no longer show up under "You see: _____"
 
-    Usage:
-        store <item_name> in <storage container>
-    """
-    key = "store"
+Character Stats
+- Immense difficulties with character stats
+  - Unsure if enums are being utilized
 
-    def parse(self):
-        self.args = self.args.strip()
-        item, *container = self.args.split(" in ", 1)
-        self.item = item.strip()
-        if container: #sets the container if there is one specified
-            self.container = container[0].strip()
-        else:
-            self.container = "" #defaults to no container
+Command Issues
+- Command Update Needed: CmdPutAway
+  class CmdPutAway(Command):
+      """
+      Puts an item into the bag
 
-    def func(self):
-        items = self.caller.search(self.item)
-        if items:
-            item = items
-        else:
-            self.caller.msg(f"You do not have {items} in your hand.")
-            return
+      Usage:
+          store <item_name> in <storage container>
+      """
+      key = "store"
 
-        item = self.caller.search(items)
-        self.obj.add(item)
+      def parse(self):
+          self.args = self.args.strip()
+          item, *container = self.args.split(" in ", 1)
+          self.item = item.strip()
+          if container: #sets the container if there is one specified
+              self.container = container[0].strip()
+          else:
+              self.container = "" #defaults to no container
 
-*CombatHandler Script will endlessly repeat ending message
-----------------------------------------------------------------------------------------------------------------------------------------------
-Create book objects that have menu's and contents, every page is object with a number and text and is stored in book:
-BOOK(menu) ----> PAGE(text, pg#)
+      def func(self):
+          items = self.caller.search(self.item)
+          if items:
+              item = items
+          else:
+              self.caller.msg(f"You do not have {items} in your hand.")
+              return
 
-Books now have their own directory within the game as each book will have it's own file to define it
-	*is it the right answer? Probably not
------------------------------------------------------------------------
-Give wearables "stats" and make sure to document how to build the object in game - In progress
------------------------------------------------------------------------------------------------
-start considering how objects improve players life (this will be a long road). 
-Started:
-class ToolQuality(Enum):
-    POOR = 0.01
-    LOW = 0.05
-    MED = 0.10
-    GOOD = 0.15
-    GREAT = 0.20
-    EXTRORDINARY = 0.25
-These act as percentages.
-------------------------------------------------------------------------------------------------------------------------------------------------------
-Start seperating player roles/jobs based on their chosen class.
-All pilots will need a tutorial on basic movement, commands, and ship commands.
-*Miner: Tutorial on finding asteroids, landing or attaching (what the difference is), and beginning mining -- FUTURE FEATURE!
-	**If they find an asteroid large enough to land on, have a tutorial on space mining where the player leaves the comfort of the
-ship and mines the asteroid alongside their ship. This only works on massive asteroids that are at least ten times the size of the ship.
-*Fighter: Tutorial on getting contracts, fulfilling them, and general space travel
-	**Focus more on close combat space flight 
-*Freighter: Tutorial on getting contracts, fulling storage space, understanding economies, and deep-space travel.
-	**Encourage players to pick up a "Hobby" to pass the time
-*Researcher: Tutorial on their ship's unique research room and all it's fixin's. Provide beginner contracts to allow the player
-to build up their relevant skills.
-------------------------------------------------------------------------------------------------------------------------------------------------------
-Need to make major changes to the ship command file! Split it up between the classes!
-******************************************************************************************************************************************
-FUTURE FEATURES:
+          item = self.caller.search(items)
+          self.obj.add(item)
 
-Corporations:
--Split leaders up into CEO, COO, CFO
--Create building projects
+Script Issues
+- CombatHandler Script: Endlessly repeats the ending message
 
-Projects:
--create a barebones class that defines what the project is and what resources/research is required
 
-Exploration System:
--Procedurally generated points of interest
- *Celetial phenomenon:
-	-Solar Flares: bursts of radiation from stars (Sun) affects coms and power grids
-	-Comets: cosmic snowballs of iced dust and gas orbitting the Sun (when they approach the sun/star they heat up and create the glowing tail)
-	-SuperNovae: explosions that occur at the end of a star's life cycle. Releases an immense amount of energy and can be seen from distant places.
-	-Black Holes: regions of space where gravity is stronger than light. Time dilations are present the closer you get to a black hole.
-	-Gravitational Waves: Ripples in the fabric of space-time caused by the acceleration of massive objects (In game, barges will create gravitational waves)
-	-Asteroid Belts: regions in space that contain a large amount of asteroids
-	-Nebulae: vast clouds of dust and gas, often illuminated by other stars. May be the "birthing grounds" for new stars
+Development Tasks
+-----------------
+Books
+- Create book objects with menus and contents
+  - Every page is an object with a number and text stored in the book
+  - Directory for books, each with its own defining file
 
-----------------------------------------------------------------------------------------------------------------------------------
-CURRENTLY WORKING ON:
+Wearables
+- Add stats to wearables
+  - Document how to build the object in-game
+  - Example:
+  class ToolQuality(Enum):
+      POOR = 0.01
+      LOW = 0.05
+      MED = 0.10
+      GOOD = 0.15
+      GREAT = 0.20
+      EXTRAORDINARY = 0.25
 
-*Creating a corporate computer that allows players to sell cargo to their corp and take on contracts.
-*Setting values to minerals on data/minerals.py
+Player Roles/Jobs
+- Separate player roles/jobs based on class
+  - Pilots: Tutorial on basic movement, commands, and ship commands
+  - Miner: Tutorial on finding asteroids, landing/attaching, and mining
+  - Fighter: Tutorial on contracts, combat, and space travel
+  - Freighter: Tutorial on contracts, storage, economies, and deep-space travel
+  - Researcher: Tutorial on research room, skills, and beginner contracts
+
+Ship Command File
+- Major changes needed: Split between classes
+
+
+Future Features
+---------------
+Corporations
+- Split leaders into CEO, COO, CFO
+- Create building projects
+
+Projects
+- Define a class for projects including required resources/research
+
+Exploration System
+- Procedurally generated points of interest:
+  - Celestial phenomenon:
+    - Solar Flares
+    - Comets
+    - Supernovae
+    - Black Holes
+    - Gravitational Waves
+    - Asteroid Belts
+    - Nebulae
+
+
+Currently Working On
+--------------------
+- Corporate computer: Allows players to sell cargo and take on contracts
+- Setting values to minerals: In data/minerals.py
+
+### To-Do List - [6 AUG 2024]
+
+1. **Further Testing:**
+   - Test `menunode_chart_course` and other related menu nodes extensively to ensure they handle all possible scenarios correctly.
+   - Validate that newly created rooms are correctly listed and navigated to.
+
+2. **Room Descriptions:**
+   - Consider expanding the list of pre-generated room descriptions to include a wider variety of scenarios.
+   - Implement additional descriptions or features if needed based on player feedback.
+
+3. **Player Experience:**
+   - Review and adjust the user experience to ensure players find it engaging and intuitive.
+   - Gather feedback on the new room creation and navigation process to make improvements.
+
+4. **Documentation:**
+   - Update developer notes to include details about the new room creation logic, menu node changes, and error handling improvements.
+   - Document the testing procedures and any specific changes made to the Evennia configurations.
+
+5. **Future Enhancements:**
+   - Explore adding more features or customization options for room creation and navigation.
+   - Consider implementing additional menu nodes or interactions based on future requirements.

@@ -40,6 +40,7 @@ class Job(ContractBase):
         super().__init__(description, reward, expiry_date)
         self.task_details = task_details  
 
+
     def complete(self, player):
         """
         Completes the job and pays the player.
@@ -158,3 +159,8 @@ class ContractHandler:
             bool: True if the contract is successfully accepted, False otherwise.
         """
         return contract.accept()
+    
+    @staticmethod
+    def complete_contract(contract):
+        return contract.complete()
+

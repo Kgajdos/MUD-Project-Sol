@@ -52,87 +52,23 @@ The project has made significant progress with the addition of multiple prototyp
        File "C:\Games\MUD-Project-Sol\typeclasses\ship_console.py", line 28, in func
          self.obj.start_consoles(self.caller, self.session)
          ^^^^^^^^^^^^^^^^^^^^^^^
-     AttributeError: 'NoneType' object has no attribute 'start_consoles'
-     ```
-   - **Action**: Figure out why console is spawning as a NoneType object.
-   - **Priority**: High
-   - **Status**: Temporary Fix
+     AttributeError: 'NoneType' object has no attribute 'start_c
+### Developer Notes - [6 AUG 2024]
 
-5. ##NPC Greet Upon Room Entry**
-   - **Issue**: NPC's wont greet characters upon entering the room.
-   - **Action**: Continue testing to see where program is failing to execute.
-   - **Priority**: Low
-   - **Status**: Fixed
+**Today's Updates and Fixes:**
 
-*********************************************NEW FEATURES AND IMPROVEMENTS*********************************************
-1. **Wearable Items Enhancement**
-   - **Objective**: Enhance wearable items with quality attributes.
-   - **Action**: Implement a ToolQuality enum and assign poor quality to all wearable items.
-   - **Priority**: Medium
-   - **Status**: In-Progress
+1. **Menu Node Error Fix:**
+   - Fixed the error with `menunode_set_destination` by ensuring it properly queries available destinations and uses `get_all_space_room_identifiers()`.
 
-2. **Object Quality**
-   - **Objective**: Define quality attributes for various game objects.
-   - **Action**: Add quality attributes to objects to reflect their condition (e.g., poor, low, medium, good, etc.).
-   - **Priority**: Medium
-   - **Status**: To-Do
+2. **New Room Creation Logic:**
+   - Implemented `create_new_room()` to handle the creation of new rooms with random descriptions and types.
+   - Added functionality to randomly pick a room type and ensure the room description matches the type.
+   - Ensured newly created rooms have keys that match their descriptions and include default descriptions for various room types.
 
-3. **Item Inventory Management**
-   - **Objective**: Improve item inventory management and interaction.
-   - **Action**: Update items' do_wear and do_remove methods to handle inventory changes properly.
-   - **Priority**: Medium
-   - **Status**: To-Do
+3. **Error Handling:**
+   - Addressed issues with room type checking and corrected the handling of `no_default` parameter.
+   - Fixed errors related to setting room attributes and handling database-related exceptions.
 
-4. **Create Drinks with Effects**
-   - **Objective**: Create drinks with their given effects.
-   - **Action**: Test to ensure that the prototype is creating drinks and utilizing their add_effects().
-   - **Priority**: Medium
-   - **Status**: To-Do
+4. **Testing and Verification:**
+   - Verified the functionality by running tests to ensure new rooms are created correctly and menu nodes transition as expected.
 
-5. **Player Commands for Eating and Drinking**
-   - **Objective**: Create commands to allow the player to eat and drink.
-   - **Action**: Test to ensure the effects are modifying the players' attributes properly. Later add timer mechanics that allow some modifiers to wear off.
-   - **Priority**: Low
-   - **Status**: To-Do
-
-*********************************************NEW ITEMS AND OBJECTS*********************************************
-- **Basic Space Equipment**
-  - Helmet: Provides basic head protection. [Poor Quality]
-  - Suit: Standard space suit. [Poor Quality]
-  - Gloves: Protective gloves for space work. [Poor Quality]
-  - Boots: Space boots for extra grip. [Poor Quality]
-  - Rifle: Basic space rifle for defense. [Poor Quality]
-  - Drink: Boosts focus but tastes awful. [Poor Quality]
-  - Stew: Provides health benefits. [Poor Quality]
-
-- **Tools and Furniture**
-  - Multitool: Versatile tool for various tasks. [Poor Quality]
-  - Table: Simple metal table. [Poor Quality]
-  - Chair: Basic metal chair. [Poor Quality]
-
-*********************************************PLAYER ROLE TUTORIALS*********************************************
-- **Pilot**: Tutorial on basic movement and ship commands.
-- **Miner**: Tutorial on finding asteroids and beginning mining.
-- **Fighter**: Tutorial on getting contracts and space combat.
-- **Freighter**: Tutorial on cargo management and deep-space travel.
-- **Researcher**: Tutorial on ship's research facilities and beginner contracts.
-
-*********************************************SHIP COMMAND FILE*********************************************
-- **Reorganization**
-  - **Objective**: Split ship commands based on player classes.
-  - **Action**: Refactor ship commands to improve organization and usability for different player roles.
-
-*********************************************FUTURE FEATURES*********************************************
-- **Implement CEO, COO, CFO roles and building projects.**
-  - **Projects**
-    - Define class for projects and required resources.
-
-- **Exploration System**
-  - Procedurally generate points of interest and celestial phenomena.
-
-*********************************************CURRENTLY WORKING ON*********************************************
-- **Corporate Computer System**
-- **Mineral Values**
-  - Set values for minerals in data/minerals.py.
-- **First Steps Tutorial**
-  - Creating a tutorial where the player says hi to civeil, she directs them to the hanger, when they get there they are rewarded a ship.

@@ -1,9 +1,8 @@
 import evennia
-from evennia.objects import Object
 from typeclasses.characters import Character
 import random
 
-class Enemy(Character, Object):
+class Enemy(Character):
     """
     As this is not a combat focused game yet, enemies will be very simple.
     """
