@@ -8,7 +8,7 @@ def mission_setup(player):
     player.tags.add("tutorial started")
     ship = ShipManager.spawn_ship(player_class)
     ship.move_to(player.search("#431")) #this needs to be changed based on wherever the space hanger is located!
-    player.set_active_ship(ship.db.shipID)
+    player.set_active_ship(ship.db.shipid)
     ship.db.pilot = player
     mission_start(player)
     

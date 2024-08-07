@@ -235,26 +235,25 @@ class Miner(Ships):
     """
     def at_object_creation(self):
         super().at_object_creation()
-        self.cmdset.add(MinerCmdSet, persistent = True)
+        self.cmdset.add(MinerCmdSet, persistent=True)
         self.db.ship_class = "Miner"
-        self.db.health = 0
-        self.db.sheilds = 0
-        self.db.max_orehold = 0
-        self.db.orehold = 0
-        self.db.genhold = 0
-        self.db.credit_value = 0
+        self.db.health = 100  # Set appropriate initial health
+        self.db.shields = 50  # Set appropriate initial shields
+        self.db.max_orehold = 1000  # Set appropriate max ore hold capacity
+        self.db.orehold = 0  # Set initial ore hold to 0
+        self.db.genhold = 500  # Set appropriate general cargo hold capacity
+        self.db.credit_value = 50000  # Set appropriate credit value
     
     def turn_on(self):
         super().ship_turn_on()
-        print("The ground rumbles.")
+        self.msg("The ground rumbles.")
 
     def idle(self):
         super().ship_idle()
-        print("")
+        self.msg("")
 
     def start_consoles(self):
         super().start_consoles()
-    
     
     def scan_asteroid(self):
         if self.db.target:
@@ -263,51 +262,51 @@ class Miner(Ships):
             resource_count = asteroid.db.resource_count
             self.msg(f"Scanning asteroid...")
             for resource, count in resources.items():
-                self.msg("f{resource}: {count}")
+                self.msg(f"{resource}: {count}")
             self.msg(f"Total resources: {resource_count}")
         else:
-            self.msg("You are not targetting any asteroid.")
+            self.msg("You are not targeting any asteroid.")
 
-    #Basic mining function, not very interesting....
     def start_mining_asteroid(self, target):
-        new_script = evennia.create_script(typeclass = "typeclasses.scripts.AsteroidMiningScript", obj = self, key = "mine_script")
-
+        new_script = evennia.create_script(typeclass="typeclasses.scripts.AsteroidMiningScript", obj=self, key="mine_script")
 
     def mine_asteroid(self, target):
         self.msg("Mining...")
         resources = target.db.resource_contents
         if resources:
-            mined = random.choice(list(resources))
-            rand = random.randint(0,resources[mined]) #creates a random number between 0 and the amount of available resources
-            print(rand)
-            if self.db.orehold <= 0:
+            mined = random.choice(list(resources.keys()))
+            rand = random.randint(0, resources[mined])  # creates a random number between 0 and the amount of available resources
+            
+            if self.db.orehold + rand > self.db.max_orehold:
                 self.msg("Your ore hold is full!")
                 return
-            self.db.orehold -= rand
+
+            self.db.orehold += rand
             if mined in self.db.cargo:
                 self.db.cargo[mined] += rand
-                target.db.resource_contents[mined] -= rand
-                if target.db.resource_contents[mined] <= 0:
-                    target.db.resource_contents.pop(mined)
             else:
                 self.db.cargo[mined] = rand
-                if target.db.resource_contents[mined] <= 0:
-                    target.db.resource_contents.pop(mined)
+
+            target.db.resource_contents[mined] -= rand
+            if target.db.resource_contents[mined] <= 0:
+                del target.db.resource_contents[mined]
+
             self.msg(f"You mine {rand} {mined} from the asteroid.")
-        if not target.db.resource_contents:
-                #Removes depleted asteroids
-            self.msg("The asteroid is empty.")
-            self.stop_mining()
-            target.delete()
-
-
+        
+            if not target.db.resource_contents:
+                # Removes depleted asteroids
+                self.msg("The asteroid is empty.")
+                self.stop_mining()
+                target.delete()
 
     def stop_mining(self):
-        script = self.scripts.get("mine_script")
-        if script:
-            script[0].stop()
+        scripts = self.scripts.get("mine_script")
+        if scripts:
+            for script in scripts:
+                script.stop()
             self.msg("You stop mining.")
-
+        else:
+            self.msg("No mining script found.")
 
 class Freighter(Ships):
     """

@@ -18,16 +18,52 @@ def get_all_space_rooms():
     """
     return SpaceRoom.objects.all()
 
-def get_all_space_room_identifiers():
+def get_all_specific_rooms(room_type):
     """
-    Generate a list of all SpaceRoom identifiers.
+    Retrieve all instances of a specific type of SpaceRoom.
+    
+    Args:
+        room_type (str): The type of room to filter by (e.g., 'AsteroidRoom').
     
     Returns:
-        list: A list of room identifiers.
+        QuerySet: A Django QuerySet of rooms of the specified type.
     """
-    space_rooms = get_all_space_rooms()
-    identifiers = [room.key for room in space_rooms]
-    return identifiers
+    return SpaceRoom.objects.filter(db_typeclass_path=f'typeclasses.rooms.{room_type}')
+
+def print_room_details():
+    """
+    Print details of all SpaceRoom instances.
+    """
+    rooms = get_all_space_rooms()
+    for room in rooms:
+        print(f"Room Name: {room.key}, Type: {room.db_typeclass_path}")
+
+def get_room_by_name(name):
+    """
+    Retrieve a SpaceRoom instance by its name.
+    
+    Args:
+        name (str): The name of the room to retrieve.
+    
+    Returns:
+        SpaceRoom: The room instance if found, or None if not.
+    """
+    try:
+        return SpaceRoom.objects.get(db_key=name)
+    except SpaceRoom.DoesNotExist:
+        print(f"Room with name {name} does not exist.")
+        return None
+
+
+def get_all_space_room_identifiers():
+    """
+    Retrieve all unique identifiers for space rooms.
+    """
+    # Use the correct field name
+    identifiers = SpaceRoom.objects.values_list('db_key', flat=True).distinct()
+    return list(identifiers)
+
+
 
 
 _SHIP_CONSOLE_DICT = []
@@ -355,41 +391,126 @@ def _new_name(caller, raw_string, **kwargs):
 
     return "menunode_start"
 
+def menunode_confirm_travel(caller, raw_string, **kwargs):
+    """
+    Confirm the travel to the chosen destination.
+    """
+    destination = kwargs.get("destination")
+    caller.msg(f"Debug: Destination is {destination}")
+
+    if not destination:
+        caller.msg("Invalid destination.")
+        return "menunode_set_destination"
+    
+    ship = caller.location.location
+    caller.msg(f"Debug: Ship is {ship}")
+
+    if not ship:
+        caller.msg("You are not on a ship.")
+        return "menunode_set_destination"
+
+    try:
+        destination_room = SpaceRoom.objects.get(db_key=destination)
+        caller.msg(f"Debug: Destination room found with key {destination_room.db_key}")
+    except SpaceRoom.DoesNotExist:
+        caller.msg("Destination not found.")
+        return "menunode_set_destination"
+    except SpaceRoom.MultipleObjectsReturned:
+        caller.msg("Multiple destinations found, something went wrong.")
+        return "menunode_set_destination"
+
+    ship.move_to(destination_room)
+    caller.msg(f"The ship is now traveling to {destination_room.key}.")
+
+    return "menunode_start"
 
 
-def menunode_set_destination(caller, raw_string, **kwargs):
+def menunode_travel(caller, raw_string, **kwargs):
     """
-    Show a list of known destinations to the player.
+    Move the ship to the selected room.
     """
+    destination_room = kwargs.get("destination_room")
+
+    if not destination_room:
+        caller.msg("An error occurred: destination room not found.")
+        return "menunode_set_destination"
+
+    # Assuming the player is on the ship's bridge and the ship is the location of the bridge's location
+    ship = caller.location.location
+
+    if not ship:
+        caller.msg("An error occurred: ship not found.")
+        return "menunode_start"
+
+    # Check if the destination room exists
+    if not SpaceRoom.objects.filter(key=destination_room.key).exists():
+        caller.msg("An error occurred: destination room does not exist.")
+        return "menunode_set_destination"
+
+    # Move the ship to the destination room
+    ship.msg_contents(f"The ship is now traveling to {destination_room.key}...")
+    ship.location = destination_room
+    ship.save()
+
+    # Notify the caller that the ship has arrived
+    caller.msg(f"The ship has arrived at {destination_room.key}.")
+
+    return "menunode_start"
+
+
+
+# Constants for pagination
+OPTIONS_PER_PAGE = 20
+
+def get_paginated_options(options, page):
+    """
+    Paginate the options for display.
+    
+    :param options: List of all options.
+    :param page: Current page number (1-based index).
+    :return: Paginated options for the current page.
+    """
+    start_index = (page - 1) * OPTIONS_PER_PAGE
+    end_index = start_index + OPTIONS_PER_PAGE
+    return options[start_index:end_index]
+
+def menunode_set_destination(caller, raw_string):
+    """
+    Set the ship's destination based on the user's input.
+    """
+    destination = raw_string.strip()  # Clean up the input
+    print(f"Debug: Destination is {destination}")
+    
+    # Retrieve all space room identifiers
     identifiers = get_all_space_room_identifiers()
-    
-    text = "Choose a known destination or type coordinates for uncharted space."
-    
-    # Create menu options dynamically
-    options = [{"desc": f"|g{identifier}|n", "goto": ("menunode_confirm_travel", {"destination": identifier})}
-               for identifier in identifiers]
-    
-    options.append({"desc": f"|gChart New Course|n", "goto": "menunode_chart_course"})
-    options.append({"key": (f"|y(Back)|n", "back", "b"), "desc": "Back to home screen.", "goto": "menunode_start"})
-    
-    return text, options
+    print(f"Debug: Available identifiers are {identifiers}")
+
+    if destination not in identifiers:
+        print(f"Destination not found: {destination}")
+        caller.msg("The destination could not be found.")
+        return
+
+    # Proceed with setting the destination
+    caller.msg(f"Destination {destination} is set.")
+
 
 def menunode_chart_course(caller, raw_string, **kwargs):
     """
-    Allows the player to chart a new course in uncharted space.
+    Menu node for charting a new course.
     """
     from typeclasses.rooms import create_new_room
     new_room = create_new_room()  # Create a new room with a random type and description
+    # Provide a description of the action to the player
+    text = f"You have charted a new course to {new_room.key}. Do you want to proceed?"
     
-    # Optionally, notify the player about the new room
-    caller.msg(f"You have charted a new course and discovered a new area: {new_room.key}.")
+    # Define the options for the player
+    options = [
+        {"desc": "Yes, confirm travel", "goto": ("menunode_confirm_travel", {"destination": new_room.db_key})},
+        {"desc": "No, choose another destination", "goto": "menunode_set_destination"}
+    ]
     
-    # Optional: Move the player to the new room
-    ship = caller.location.location
-    ship.move_to(new_room)
-    
-    return "menunode_start"  # Return to the main menu or any other appropriate node
-
+    # Return the text and options for the menu
+    return text, options
 def menunode_fly_ship(caller, raw_string, **kwargs):
     text = f"Begin flying your ship?"
 
@@ -409,6 +530,19 @@ def _puppet(caller, raw_string, **kwargs):
 
 def menunode_end(caller, raw_string, **kwargs):
     return None
+
+def create_unique_identifier(base_identifier):
+    """
+    Generate a unique identifier for a new room.
+    """
+    existing_identifiers = get_all_space_room_identifiers()
+    new_identifier = base_identifier
+    counter = 1
+    while new_identifier in existing_identifiers:
+        new_identifier = f"{base_identifier}_{counter}"
+        counter += 1
+    return new_identifier
+
 
 
 class ShipConsole(Object):
@@ -446,6 +580,8 @@ class ShipConsole(Object):
             "menunode_ship_rename": menunode_ship_rename,
             "menunode_fly_ship": menunode_fly_ship,
             "menunode_end": menunode_end,
+            "menunode_confirm_travel": menunode_confirm_travel,
+            "menunode_travel": menunode_travel,
             "menunode_set_destination": menunode_set_destination, 
             "menunode_chart_course": menunode_chart_course 
         }
