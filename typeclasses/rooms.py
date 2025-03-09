@@ -2,51 +2,60 @@ from evennia import utils, TICKER_HANDLER, create_object
 from typeclasses.asteroids import Asteroid
 import random
 
+def generate_room_name(room_type_prefix, unique_number):
+    """
+    Generate a unique room name with the format 'AA-NNN'.
+    
+    :param room_type_prefix: Two-letter prefix for the room type (e.g., 'PL' for Planet)
+    :param unique_number: Unique number for the room
+    :return: Formatted room name
+    """
+    unique_number_formatted = f"{unique_number:03}"  # Format number as a three-digit string
+    room_name = f"{room_type_prefix}-{unique_number_formatted}"
+    return room_name
+
 def create_new_room():
-    # Define the possible room types
-    room_types = ["asteroid_field", "nebula", "planet", "anomaly"]
-    
-    # Define descriptions for each room type
-    DESCRIPTIONS = {
-        "asteroid_field": [
-            "A dense asteroid field surrounds you, with massive rocks floating ominously.",
-            "The ship navigates through a chaotic asteroid belt, with debris scattering around.",
-            "You are in the midst of a violent asteroid storm, with rocks tumbling past at high speed."
-        ],
-        "nebula": [
-            "A colorful nebula stretches across the void, with vibrant gases swirling in beautiful patterns.",
-            "The nebula is dense and mysterious, with light filtering through clouds of interstellar dust.",
-            "You drift through a vast nebula, with shimmering colors and ethereal light."
-        ],
-        "planet": [
-            "A distant planet looms ahead, its surface covered in swirling clouds.",
-            "You approach a planet with a striking blue hue, its surface teeming with mystery.",
-            "A rocky planet orbits here, with a barren landscape visible through the ship's viewports."
-        ],
-        "anomaly": [
-            "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns.",
-            "You encounter an enigmatic space anomaly, its nature defying easy explanation.",
-            "The anomaly creates unusual readings on your instruments, with space-time seemingly warped around it."
-        ]
+    # Define the possible room types and their prefixes
+    room_types = {
+        "anomaly": "AN",
+        "asteroid_field": "AF",
+        "nebula": "NE",
+        "planet": "PL"
     }
-    
+
     # Choose a random room type
-    room_type = random.choice(room_types)
-    
-    # Get the descriptions for the chosen room type
-    descriptions = DESCRIPTIONS.get(room_type, [])
-    
-    # Pick a random description
-    if descriptions:
-        description = random.choice(descriptions)
-    else:
-        description = "An unknown area of space."
+    room_type_key = random.choice(list(room_types.keys()))
+    room_type_prefix = room_types[room_type_key]
 
-    # Create the new room with the selected description
-    new_room = create_object("typeclasses.rooms.SpaceRoom", key=room_type)
-    new_room.db.desc = description
+    # Generate a unique number for the room
+    unique_number = random.randint(1, 999)  # Random number between 1 and 999
 
+    # Generate a unique room name
+    room_name = generate_room_name(room_type_prefix, unique_number)
+
+    # Select the room class based on the type
+    room_class = {
+        "anomaly": AnomalyRoom,
+        "asteroid_field": AsteroidRoom,
+        "nebula": NebulaRoom,
+        "planet": PlanetRoom
+    }[room_type_key]
+
+    # Create the new room with the generated name
+    new_room = create_object(room_class, key=room_name)
+
+    # Debugging output
+    print(f"Debug: Created room '{new_room.key}' of type '{room_type_key}'")
+
+    # Verify if the room can be accessed
+    try:
+        room = SpaceRoom.objects.get(db_key=new_room.key)
+        print(f"Debug: Accessing room details: {room.__dict__}")
+    except SpaceRoom.DoesNotExist:
+        print("Debug: Room not found in SpaceRoom")
+    
     return new_room
+
 """
 Room
 
@@ -102,8 +111,12 @@ class TutorialRoom(Room):
 
 class SpaceRoom(Room):
     """
-    A specific room type in Project Sol where the majority of "gameplay" happens.
+    A specific room type in Project Sol where the majority of "gameplay" happens. This is the parent class,
+    add general functions as needed
     """
+    pass
+
+class AsteroidRoom(SpaceRoom):
     def at_object_creation(self):
         """
         This method is called when the room is created.
@@ -155,13 +168,38 @@ class SpaceRoom(Room):
         asteroid.location = self
         self.msg_contents("An asteroid drifts into view.")
 
-    def warp_player_to_random_room(self, player):
-        #Retrieve all existing rooms from the database
-        existing_rooms = Room.objects.all()
+class AnomalyRoom(SpaceRoom):
+    """
+    This is a room type representing an anomaly in space.
+    Anomalies might have special effects or dangers associated with them.
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.room_type = "anomaly"
+        self.db.desc = "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns."
+        # Add any anomaly-specific initialization here
 
-        #Choose a random existing room and move the player there
-        existing_room = random.choice(existing_rooms)
-        player.move_to(existing_room)
+class NebulaRoom(SpaceRoom):
+    """
+    This is a room type representing a nebula.
+    Nebulas might have special visual effects or hide certain objects.
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.room_type = "nebula"
+        self.db.desc = "A colorful nebula stretches across the void, with vibrant gases swirling in beautiful patterns."
+        # Add any nebula-specific initialization here
+
+class PlanetRoom(SpaceRoom):
+    """
+    This is a room type representing a planet.
+    Planets might have specific features or interactions.
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.room_type = "planet"
+        self.db.desc = "A distant planet looms ahead, its surface covered in swirling clouds."
+        # Add any planet-specific initialization here
 
 class ShipStorageRoom(Room):
 
