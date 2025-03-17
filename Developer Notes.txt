@@ -55,7 +55,7 @@ The project has made significant progress with the addition of multiple prototyp
      AttributeError: 'NoneType' object has no attribute 'start_c
 ### Developer Notes - [6 AUG 2024]
 
-**Today's Updates and Fixes:**
+**Past Updates and Fixes:**
 
 1. **Menu Node Error Fix:**
    - Fixed the error with `menunode_set_destination` by ensuring it properly queries available destinations and uses `get_all_space_room_identifiers()`.
@@ -72,3 +72,27 @@ The project has made significant progress with the addition of multiple prototyp
 4. **Testing and Verification:**
    - Verified the functionality by running tests to ensure new rooms are created correctly and menu nodes transition as expected.
 
+**12 March 2025:**
+1. **Tested Console:**
+   - Tested fly into uncharted space
+	- Testing reveals the room is created but cannot be found
+		- Likely a bug in how the function fetches the list of rooms
+   - Tested set destination
+	- Testing reveals that function is not implemented
+2. **Updates on First Steps Mission**
+   - Ongoing issues with calling the required mission start function
+   - No safeguards are implemented to include:
+	- Saving
+	- Checkpoints
+	- Player logging off could disrupt mission
+3. **Verified Bugs:**
+   - Console cannot be accessed until the server is restarted. 
+	- Find ways to update the ship without restarting the server
+   - Board currently lets the player puppet any player/character in the room
+	- Filter results to only allow the player's ship to be boarded
+		- Need to account for multiple ships owned by other players to be in the same room/hanger 
+**16 March 2025:**
+1. **Fixed tutorial mission not working with a new character**
+	- Works as intended
+2. **Attempted to fix ship name change from breaking**
+	- Bug where the ship.db.shipID is None before the server resets

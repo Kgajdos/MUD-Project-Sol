@@ -18,6 +18,8 @@ import random
 from enums import Ability
 from rules import dice
 from typeclasses.objects import ObjectParent
+from missions import first_steps
+
 
 class LivingMixin:
     #to make targeting pc easier
@@ -157,14 +159,12 @@ class Character(LivingMixin, DefaultCharacter):
     def set_active_ship(self, ship):
         self.db.active_ship = ship
 
-    #Outdated, do not use, will delete when can
-    def update_character_on_first_login(self):
-        #self.set_char_description()
-        #self.set_ship_by_pc_class()
-        self.set_stats()
         
 
-
+    def at_post_puppet(self,session=None):
+        print(self.key)
+        if self.tags.has("newbie") and not self.tags.has("tutorial started"):
+            first_steps.mission_setup(self)
 
 
     def get_display_desc(self, looker, **kwargs):

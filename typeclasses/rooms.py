@@ -51,8 +51,9 @@ def create_new_room():
     try:
         room = SpaceRoom.objects.get(db_key=new_room.key)
         print(f"Debug: Accessing room details: {room.__dict__}")
-    except SpaceRoom.DoesNotExist:
+    except:
         print("Debug: Room not found in SpaceRoom")
+        print(SpaceRoom.objects.filter(db_typeclass_path="typeclasses.rooms."))
     
     return new_room
 

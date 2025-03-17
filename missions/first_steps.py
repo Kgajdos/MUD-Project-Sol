@@ -3,13 +3,13 @@ from typeclasses.ships import ShipManager
 from evennia import utils
 
 def mission_setup(player):
-
     player_class = player.db.player_class
     player.tags.add("tutorial started")
     ship = ShipManager.spawn_ship(player_class)
-    ship.move_to(player.search("#431")) #this needs to be changed based on wherever the space hanger is located!
-    player.set_active_ship(ship.db.shipid)
-    ship.db.pilot = player
+    ship.move_to(player.search("#2")) #this needs to be changed based on wherever the space hanger is located!
+    player.set_active_ship(ship.db.shipID)
+    ship.db.pilot = player.db.key
+    ship.db.ship_class = player.db.player_class
     mission_start(player)
     
     if not isinstance(player.db.missions, list):

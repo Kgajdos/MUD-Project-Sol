@@ -7,6 +7,7 @@ from typeclasses.objects import Object
 from evennia import InterruptCommand
 from evennia import Command, CmdSet, create_object, search_object, EvMenu, EvForm, EvTable
 from typeclasses.rooms import SpaceRoom
+from evennia import logger
 
 #******Logic for space exploration, likely will need to be refractored and moved******
 def get_all_space_rooms():
@@ -85,14 +86,26 @@ class CmdShipConsole(Command):
 
     def at_pre_cmd(self):
         #this function will terminate the command if this function returns True. 
-        if not self:
-            ship = self.obj.location.location
-            if ship.db.pilot != self.caller.key:
-                self.caller.msg("You are not authorized to access this console!")
-                raise InterruptCommand
+        if not self.obj:
+            self.obj = self.caller.location
+
+        ship = self.obj.location.location
+        print(f"ship ID: {ship.db.shipID}")
+        print(f"player ship ID: {self.caller.db.active_ship}")
+
+        if ship.db.shipID != self.caller.db.active_ship:
+            self.caller.msg("You are not authorized to access this console!")
+            raise InterruptCommand
 
     def func(self):
-        self.obj.start_consoles(self.caller, self.session)
+        if not self.obj:
+            self.caller.mg("No console available to interact with")
+            return
+        
+        if hasattr(self.obj, 'start_consoles'):
+            self.obj.start_consoles(self.caller, self.session)
+        else:
+            self.caller.msg("The console is malfunctioning.")
 
 
 class CmdWarp(Command):
@@ -560,6 +573,7 @@ class ShipConsole(Object):
         self.db.desc = "This is the main computer of the ship. Here is where you can access things like your Captain's log, or take a look at your ship stats."
         self.db.logs = []
 
+
     def start_consoles(self, player, session):
         """
         Start the ship console's main menu.
@@ -598,8 +612,8 @@ class ShipConsole(Object):
             new_name (str): The new name for the ship.
 
         """
-        ship = player.db.active_ship
-        ship.key = new_name
+        ship = self.search(player.db.active_ship)
+        ship.db.key = new_name
 
     def ship_sheet(self,player):
         """

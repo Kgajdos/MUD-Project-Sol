@@ -25,7 +25,6 @@ from evennia import Command, CmdSet
 from evennia.accounts.accounts import DefaultAccount, DefaultGuest
 from evennia.contrib.rpg.character_creator.character_creator import ContribChargenAccount
 
-
 class Account(ContribChargenAccount):
     """
     This class describes the actual OOC account (i.e. the user connecting
@@ -95,12 +94,11 @@ class Account(ContribChargenAccount):
     def at_init(self):
         self.msg(f"Welcome {self.key}! Stay awhile and chat in the public channel.")
         self.msg(b"If you're new here, why not type in tutorial to get started!")
-    
     pass
 
     def puppet_object(self, session, obj):
-        print(obj)
         return super().puppet_object(session, obj)
+    
     
 
 class Guest(DefaultGuest):

@@ -5,7 +5,6 @@ import evennia.prototypes
 import evennia.prototypes.spawner
 from commands.minercommands import MinerCmdSet
 import typeclasses
-from typeclasses.accounts import Account
 from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
