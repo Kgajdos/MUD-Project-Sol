@@ -162,7 +162,6 @@ class Character(LivingMixin, DefaultCharacter):
         
 
     def at_post_puppet(self,session=None):
-        print(self.key)
         if self.tags.has("newbie") and not self.tags.has("tutorial started"):
             first_steps.mission_setup(self)
 

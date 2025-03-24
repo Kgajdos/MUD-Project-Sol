@@ -1,4 +1,4 @@
-from evennia import utils, TICKER_HANDLER, create_object
+from evennia import utils, TICKER_HANDLER, create_object, ObjectDB
 from typeclasses.asteroids import Asteroid
 import random
 
@@ -44,16 +44,6 @@ def create_new_room():
     # Create the new room with the generated name
     new_room = create_object(room_class, key=room_name)
 
-    # Debugging output
-    print(f"Debug: Created room '{new_room.key}' of type '{room_type_key}'")
-
-    # Verify if the room can be accessed
-    try:
-        room = SpaceRoom.objects.get(db_key=new_room.key)
-        print(f"Debug: Accessing room details: {room.__dict__}")
-    except:
-        print("Debug: Room not found in SpaceRoom")
-        print(SpaceRoom.objects.filter(db_typeclass_path="typeclasses.rooms."))
     
     return new_room
 

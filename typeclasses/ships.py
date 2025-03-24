@@ -34,12 +34,16 @@ class ShipManager:
         ship = None
         if ship_class == "Miner":
             ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")[0]
+            ship.save()
         elif ship_class == "Fighter":
             ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")[0]
+            ship.save()
         elif ship_class == "Freighter":
             ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")[0]
+            ship.save()
         elif ship_class == "Researcher":
             ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
+            ship.save()
 
         return ship
         
@@ -82,16 +86,17 @@ class Ships(Object):
 
     def create_rooms(self):
         bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-#       #this doesn't work, it doesn't effect the look command
-        bridge_room.db.desc = "You stand at the bridge of your ship. The space is cozy and intimate, with room for only three people to comfortably stand. A soft leather Captain's chair sits in front of you, and an older console hums quietly in the background."
         bridge_room.location = self
-        console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
-        chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
+        console = evennia.prototypes.spawner.spawn("CONSOLE")[0]
+        console.db.desc =  "The main terminal to the ship's computer. Here is where you can interact with your ship."
+        chair = evennia.prototypes.spawner.spawn("BS_CHAIR")[0]
+        chair.key = "Captains Chair"
         console.move_to(bridge_room)
         chair.move_to(bridge_room)
-        storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
-        quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
-
+        storage_room = evennia.prototypes.spawner.spawn("ROOM_STORAGE")[0]
+        quarters_room = evennia.prototypes.spawner.spawn("ROOM_QUARTERS")[0]
+        bed = evennia.prototypes.spawner.spawn("BS_BED")[0]
+        bed.move_to(quarters_room)
        
         # Create the exits between rooms
         create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
