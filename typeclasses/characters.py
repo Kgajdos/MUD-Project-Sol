@@ -173,16 +173,15 @@ class Character(LivingMixin, DefaultCharacter):
 ###########REWORK THIS ITS NOT RIGHT!!##########################
     #sets the char description
     def set_char_description(self):
-        sex = self.db.sex
-        adj = "is"
-        if sex == "male":
-            pronoun = "he"
-        elif sex == "female":
-            pronoun = "she"
-        else:
-            pronoun = "they"
-            adj = "are"
-        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {self.db.adjective} and {self.db.body_type} with a {self.db.disposition} disposition."
+        """Set character description dynamically based on attributes."""
+        sex = self.db.get("sex", "unspecified")
+        adjective = self.db.get("adjective", "average")
+        body_type = self.db.get("body_type", "undefined")
+        disposition = self.db.get("disposition", "neutral")
+
+        pronoun, adj = ("he", "is") if sex == "male" else ("she", "is") if sex == "female" else ("they", "are")
+        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {adjective} and {body_type} with a {disposition} disposition."
+
 
     #To be called when a character learns a new skill for the first time
     def create_skill_set(self, raw_string):
