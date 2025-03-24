@@ -71,55 +71,51 @@ class Ships(Object):
         self.locks.add("call:false()")
         self.cmdset.add_default(ShipCmdSet())
         self.db.pilot = None
-        self.db.name = ""
-        self.db.desc = ""
-        self.db.cargo = {}
-        self.db.targeting = None
         self.db.shipID = self.create_ship_id()
         self.db.contract = {}
+
+        # Common ship attributes
+        self.db.health = 100  
+        self.db.shields = 50  
+        self.db.cargo = {}  
+        self.db.max_hold = 500  # Generic cargo hold for all ships
+
         if not self.exits:
             self.create_rooms()
 
     def create_rooms(self):
-        bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-#       #this doesn't work, it doesn't effect the look command
-        bridge_room.db.desc = "You stand at the bridge of your ship. The space is cozy and intimate, with room for only three people to comfortably stand. A soft leather Captain's chair sits in front of you, and an older console hums quietly in the background."
-        bridge_room.location = self
-        console = create_object(typeclasses.ship_console.ShipConsole, key="Console", location = self, attributes = [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")])
-        chair = create_object(typeclasses.sittables.Sittable, key = "Captain's Chair", attributes = [("desc", "A soft leather chair.")])
-        console.move_to(bridge_room)
-        chair.move_to(bridge_room)
-        storage_room = create_object(rooms.Room, key = "Storage", location = self, attributes = [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")])
-        quarters_room = create_object(rooms.Room, key = "Quarters", location = self, attributes = [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")])
+        room_templates = {
+            "Bridge": "You stand at the bridge of your ship. The space is cozy...",
+            "Storage": "You stand in the main storage room of your ship...",
+            "Quarters": "You stand in your ship's quarters, there is a bed here...",
+        }
 
-       
-        # Create the exits between rooms
-        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
-        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
-        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
-        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
-        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
-        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
+        room_objects = {}  # Store created rooms
 
-    #has not been tested yet
+        # Create rooms dynamically
+        for room_name, room_desc in room_templates.items():
+            room = create_object(rooms.Room, key=room_name, location=self)
+            room.db.desc = room_desc
+            room_objects[room_name] = room  # Store reference
+
+        # Create exits dynamically
+        exits = [
+            ("Bridge", "Storage"),
+            ("Storage", "Bridge"),
+            ("Storage", "Quarters"),
+            ("Quarters", "Storage"),
+        ]
+
+        for exit_from, exit_to in exits:
+            create_object(exits.Exit, key=exit_to, location=room_objects[exit_from], destination=room_objects[exit_to])
+
+
     def create_ship_id(self):
-        """
-        Creates a randomized ship id in the form of AA-00-BB-11
-        
-        Checks against the database to ensure the number is unique.
-        """
-        letter_set_a = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        letter_set_b = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
-        number_set_0 = str(random.randint(10, 99))
-        number_set_1 = str(random.randint(10, 99))
-        
-        ship_id = f"{letter_set_a}-{number_set_0}-{letter_set_b}-{number_set_1}"
-        
-        # Assuming there is a method to check uniqueness
-        # if not self.is_unique(ship_id):
-        #     return self.create_ship_id()
-        
-        return ship_id
+        """Generate a unique ship ID"""
+        while True:
+            ship_id = f"{random.choice(string.ascii_uppercase)}{random.randint(10, 99)}-{random.choice(string.ascii_uppercase)}{random.randint(10, 99)}"
+            if not search_object(ship_id):  # Ensure uniqueness
+                return ship_id
             
 
     def get_display_desc(self, looker, **kwargs):
@@ -234,22 +230,18 @@ class Miner(Ships):
     """
     def at_object_creation(self):
         super().at_object_creation()
-        self.cmdset.add(MinerCmdSet, persistent=True)
         self.db.ship_class = "Miner"
-        self.db.health = 100  # Set appropriate initial health
-        self.db.shields = 50  # Set appropriate initial shields
-        self.db.max_orehold = 1000  # Set appropriate max ore hold capacity
-        self.db.orehold = 0  # Set initial ore hold to 0
-        self.db.genhold = 500  # Set appropriate general cargo hold capacity
-        self.db.credit_value = 50000  # Set appropriate credit value
+        self.db.max_orehold = 1000  
+        self.db.orehold = 0  
+        self.db.credit_value = 50000  
     
     def turn_on(self):
         super().ship_turn_on()
-        self.msg("The ground rumbles.")
+        self.msg("A deep rumble shakes the ship as the mining drills run a systems check. The dashboard flickers to life, displaying ore scan data.")
 
     def idle(self):
         super().ship_idle()
-        self.msg("")
+        self.msg("The ship vibrates faintly as the drills stay in standby mode. Occasional status updates blink on the console.")
 
     def start_consoles(self):
         super().start_consoles()
@@ -328,27 +320,19 @@ class Freighter(Ships):
         accept_contract(contract): Accepts a freight contract and loads the cargo onto the freighter.
     """
     def at_object_creation(self):
-        """
-        Called when the freighter object is first created. Initializes its attributes.
-
-        Notes:
-            - Calls the at_object_creation method of the base class (Ships) to set up common ship attributes.
-            - Sets the exterior description, health, shields, fragilehold, genhold, and credit_value attributes.
-        """
         super().at_object_creation()
-        self.db.desc = ""
-        self.db.health = 0
-        self.db.shields = 0
-        self.db.hold = 0
-        self.db.credit_value = 0 
+        self.db.ship_class = "Freighter"
+        self.db.max_cargohold = 1000  
+        self.db.cargohold = 0  
+        self.db.credit_value = 50000  
 
     def turn_on(self):
         super().ship_turn_on()
-        self.caller.msg(f"{self.key} roared to life.")
+        self.msg("The ship's systems boot up sluggishly, the low hum of cargo stabilizers filling the cabin. Status lights confirm the hull's integrity.")
 
     def idle(self):
         super().ship_idle()
-        self.caller.msg(f"{self.key} rumbles noisly.")
+        self.msg("The engines maintain a soft, steady rhythm. The distant clatter of shifting cargo reminds you of the weight you're carrying.")
 
     def check_manifest(self):
         """
@@ -414,36 +398,76 @@ class Researcher(Ships):
 
     def at_object_creation(self):
         super().at_object_creation()
-        self.db.desc = ""
-        self.db.health = 0
-        self.db.sheilds = 0
-        self.db.voltilehold = 0
-        self.db.genhold = 0
-        self.db.credit_value = 0
+        self.db.ship_class = "Researcher"
+        self.db.max_volatilehold = 1000  
+        self.db.volatilehold = 0  
+        self.db.credit_value = 50000  
     
     def turn_on(self):
         super().ship_turn_on()
-        print(f"{self.key} produced random sounds.")
+        self.msg("An array of analytical tools power on, screens filling with complex data streams. A faint sterilized scent fills the air as lab instruments calibrate.")
 
     def idle(self):
         super().ship_idle()
-        print(f"{self.key} whirs and clicks randomly.")
+        self.msg("The ship hums with quiet efficiency, sensors sweeping the environment. Occasionally, a robotic arm adjusts a delicate sample.")
 
 
 class Fighter(Ships):
+    """
+    Represents a fighter-class ship, designed for combat and tactical maneuvering.
+
+    Attributes:
+        health (int): Durability of the ship.
+        shields (int): Defensive energy shielding.
+        gunslots (int): Number of available weapon slots.
+        genhold (int): General cargo capacity.
+        ammohold (int): Storage space for ammunition.
+    """
 
     def at_object_creation(self):
+        """Initialize fighter ship attributes."""
         super().at_object_creation()
-        self.db.desc = ""
-        self.db.health = 0
-        self.db.sheilds = 0
-        self.db.gunslots = 0
-        self.db.genhold = 0
-        self.db.ammohold = 0
+        self.db.ship_class = "Fighter"
+        self.db.health = 150  # Fighters have more durability
+        self.db.shields = 100  # Higher shield capacity
+        self.db.gunslots = 4  # Can equip multiple weapons
+        self.db.ammohold = 500  # Stores ammunition
+        self.db.genhold = 250  # Less general cargo capacity
 
     def turn_on(self):
-        print(f"{self.key} turned on quietly.")
+        """Power up the ship."""
+        self.msg("The reactor core hums with restrained power. Targeting systems flicker online, displaying potential threats in the area.")
 
     def idle(self):
-        super().ship_idle()
-        print("A quiet whir fills the air.")
+        """Set the ship to idle mode."""
+        self.msg("The ship idles with a quiet, predatory patience. The targeting HUD occasionally flickers, tracking phantom signals.")
+
+    def fire_weapon(self, target):
+        """
+        Attack a target with an equipped weapon.
+
+        Args:
+            target (Object): The enemy or object being fired at.
+        """
+        if not target:
+            self.msg("You need to target something before firing!")
+            return
+
+        if self.db.ammohold <= 0:
+            self.msg("Out of ammo!")
+            return
+
+        # Deduct ammo and perform attack
+        self.db.ammohold -= 10  # Example ammo usage
+        target.msg(f"{self.key} fires at you!")
+        self.msg(f"You fire at {target.key}!")
+
+        # Placeholder for attack resolution
+        damage = random.randint(10, 30)
+        target.db.health = max(0, target.db.health - damage)
+        self.msg(f"You hit {target.key} for {damage} damage!")
+
+        # Check if the target is destroyed
+        if target.db.health <= 0:
+            target.msg(f"{target.key} is destroyed!")
+            target.delete()
