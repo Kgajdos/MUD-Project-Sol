@@ -162,28 +162,26 @@ class Character(LivingMixin, DefaultCharacter):
         
 
     def at_post_puppet(self,session=None):
-        print(self.key)
         if self.tags.has("newbie") and not self.tags.has("tutorial started"):
             first_steps.mission_setup(self)
 
+    def set_char_description(self):
+        pass
 
     def get_display_desc(self, looker, **kwargs):
-        return super().get_display_desc(looker, **kwargs)
 ################################################################
 ################################################################
 ###########REWORK THIS ITS NOT RIGHT!!##########################
-    #sets the char description
-    def set_char_description(self):
-        sex = self.db.sex
-        adj = "is"
-        if sex == "male":
-            pronoun = "he"
-        elif sex == "female":
-            pronoun = "she"
-        else:
-            pronoun = "they"
-            adj = "are"
-        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {self.db.adjective} and {self.db.body_type} with a {self.db.disposition} disposition."
+        """Set character description dynamically based on attributes."""
+        sex = self.attributes.get("sex", "unspecified")
+        adjective = self.attributes.get("adjective", "average")
+        body_type = self.attributes.get("body_type", "undefined")
+        disposition = self.attributes.get("disposition", "neutral")
+ 
+        pronoun, adj = ("he", "is") if sex == "male" else ("she", "is") if sex == "female" else ("they", "are")
+        self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {adjective} and {body_type} with a {disposition} disposition."
+
+        return super().get_display_desc(looker, **kwargs)
 
     #To be called when a character learns a new skill for the first time
     def create_skill_set(self, raw_string):

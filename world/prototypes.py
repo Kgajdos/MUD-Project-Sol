@@ -79,29 +79,35 @@ RAT_ENEMY = {
 }
 
 ROOM_QUARTERS = {
+    "prototype_key": "ROOM_QUARTERS",
     "key": "Quarters",
     "typeclass": "typeclasses.rooms.Room",
-    "contents": "bed_prototype"
+    "attrs": [("You stand in your ship's quarters, there is a bed here for you to sleep in.")]
 }
 
 ROOM_STORAGE = {
+    "prototype_key": "ROOM_STORAGE",
     "key": "Storage",
-    "typeclass": "typeclasses.rooms.Room"
+    "typeclass": "typeclasses.rooms.Room",
+    "attrs": [("You stand in the main storage room of your ship, there is space ehre for plenty of cargo.")]
 }
 
 
 CONSOLE = {
+    "prototype_key": "CONSOLE",
     "key": "Console",
-    "typeclass": "typeclasses.ships.ShipConsole"
+    "typeclass": "typeclasses.ship_console.ShipConsole"
 }
 
 CAPCHAIR = {
+    "prototype_key": "CAPCHAIR",
     "key": "Captain's Chair",
     "typeclass": "typeclasses.sittables.Sittable"
 }
 
 #TODO: Create a bed class, give it sittables cmds and layables/sleep commands
 BED = {
+    "prototype_key": "BED",
     "key": "Bed",
     "typeclass": "typeclasses.objects.Object",
     "attribute": {"desc": "A small, warm looking bed with soft sheets and a large blanket."},

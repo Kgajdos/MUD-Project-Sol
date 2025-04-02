@@ -1,5 +1,6 @@
 from evennia import utils, TICKER_HANDLER, create_object
 from typeclasses.asteroids import Asteroid
+from typeclasses.anomolies import Anomoly
 import random
 
 def generate_room_name(room_type_prefix, unique_number):
@@ -44,16 +45,6 @@ def create_new_room():
     # Create the new room with the generated name
     new_room = create_object(room_class, key=room_name)
 
-    # Debugging output
-    print(f"Debug: Created room '{new_room.key}' of type '{room_type_key}'")
-
-    # Verify if the room can be accessed
-    try:
-        room = SpaceRoom.objects.get(db_key=new_room.key)
-        print(f"Debug: Accessing room details: {room.__dict__}")
-    except:
-        print("Debug: Room not found in SpaceRoom")
-        print(SpaceRoom.objects.filter(db_typeclass_path="typeclasses.rooms."))
     
     return new_room
 
@@ -117,6 +108,14 @@ class SpaceRoom(Room):
     """
     pass
 
+class SpaceStation(SpaceRoom):
+    """
+    Parent class to all spacestation rooms. Must only be the station's hanger.
+    """
+    def at_object_creation(self):
+        super().at_object_creation()
+        self.db.desc = "A hanger for the space station."
+
 class AsteroidRoom(SpaceRoom):
     def at_object_creation(self):
         """
@@ -156,6 +155,42 @@ class AsteroidRoom(SpaceRoom):
         """
         return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
 
+    def add_anomoly(self):
+        """
+        Adds a new asteroid to the room.
+
+        Notes:
+            - It generates random resource quantities for the asteroid and sets its location to the room.
+            - It also sends a message to all characters in the room about the newly added asteroid.
+        """
+        #resource_dict = {resource.value for resource in Resource}
+        anomoly= Anomoly.generate_anomoly()
+        anomoly.location = self
+        self.msg_contents("An anomoly drifts into view.")
+
+    def check_and_add_anomoly(self):
+        """
+        Checks the number of asteroids in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        anomoly_count = self.get_asteroid_count()
+
+
+        if anomoly_count < 10:
+            # Add an asteroid to the room
+            self.add_anomoly()
+
+    def get_asteroid_count(self):
+        """
+        Counts the number of asteroids in the room.
+
+        Returns:
+            int: The count of asteroids in the room.
+        """
+        return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
+
     def add_asteroid(self):
         """
         Adds a new asteroid to the room.
@@ -169,6 +204,7 @@ class AsteroidRoom(SpaceRoom):
         asteroid.location = self
         self.msg_contents("An asteroid drifts into view.")
 
+
 class AnomalyRoom(SpaceRoom):
     """
     This is a room type representing an anomaly in space.
@@ -179,6 +215,10 @@ class AnomalyRoom(SpaceRoom):
         self.db.room_type = "anomaly"
         self.db.desc = "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns."
         # Add any anomaly-specific initialization here
+        TICKER_HANDLER.add(60 * 3, self.check_and_add_anomoly) #makes a check every hours worth of seconds the ticker has run
+        asteroid_count = random.randint(1, 10)
+        for _ in range(asteroid_count):
+            self.add_anomoly()
 
 class NebulaRoom(SpaceRoom):
     """
