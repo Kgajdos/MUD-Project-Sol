@@ -36,6 +36,7 @@ Player logging off could disrupt mission
 Verified Bugs:
 =======
 *********************************************KNOWN BUGS*********************************************
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 
 Console cannot be accessed until the server is restarted.
@@ -81,6 +82,8 @@ Fighter: Tutorial on contracts, combat, and space travel
 Freighter: Tutorial on contracts, storage, economies, and deep-space travel
 Researcher: Tutorial on research room, skills, and beginner contracts
 Ship Command File
+=======
+>>>>>>> Stashed changes
 
 Major changes needed: Split between classes
 FUTURE FEATURES

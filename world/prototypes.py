@@ -113,7 +113,11 @@ ROOM_QUARTERS = {
     "key": "Quarters",
     "typeclass": "typeclasses.rooms.Room",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "contents": "bed_prototype"
+=======
+    "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
+>>>>>>> Stashed changes
 =======
     "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
 >>>>>>> Stashed changes
@@ -126,6 +130,9 @@ ROOM_STORAGE = {
 =======
     "typeclass": "typeclasses.rooms.Room",
     "attrs": [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
 
@@ -133,7 +140,12 @@ ROOM_STORAGE = {
 CONSOLE = {
     "key": "Console",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "typeclass": "typeclasses.ships.ShipConsole"
+=======
+    "typeclass": "typeclasses.ship_console.ShipConsole",
+    "attribute": [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")]
+>>>>>>> Stashed changes
 =======
     "typeclass": "typeclasses.ship_console.ShipConsole",
     "attribute": [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")]

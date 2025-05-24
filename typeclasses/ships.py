@@ -72,7 +72,10 @@ class Ships(Object):
         self.cmdset.add_default(ShipCmdSet())
         self.db.pilot = None
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         self.db.desc = ""
         self.db.cargo = {}
         self.db.max_hold = 0
@@ -486,6 +489,25 @@ class Researcher(Ships):
         else:
             self.msg("You are not targeting any anomoly.")
 
+    def scan(self):
+        if self.db.target:
+            anomoly = self.db.target
+            point_count = anomoly.db.points
+            self.msg(f"Scanning anomoly...")
+
+            if self.db.cargo is None:
+                self.db.cargo = {}
+
+            if "research" not in self.db.cargo:
+                self.db.cargo["research"] = point_count
+            else:
+                self.db.cargo["research"] += point_count
+
+            anomoly.delete()
+            self.msg(f"{point_count} research points gained!")
+        else:
+            self.msg("You are not targeting any anomoly.")
+
 
 class Fighter(Ships):
     """
@@ -516,6 +538,9 @@ class Fighter(Ships):
         self.db.gunslots = 0
         self.db.hold = 0
         self.db.max_hold = 1000
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     def turn_on(self):

@@ -8,9 +8,12 @@ def mission_setup(player):
     ship = ShipManager.spawn_ship(player_class)
     ship.move_to(player.search("#2")) #this needs to be changed based on wherever the space hanger is located!
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     player.set_active_ship(ship.db.shipID)
     ship.db.pilot = player.db.key
 =======
+=======
+>>>>>>> Stashed changes
     player.set_active_ship(ship)
     ship.set_pilot(player)
 >>>>>>> Stashed changes

@@ -1,7 +1,10 @@
 from evennia import utils, TICKER_HANDLER, create_object
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from typeclasses.asteroids import Asteroid
 =======
+=======
+>>>>>>> Stashed changes
 import evennia.prototypes.spawner
 from typeclasses import exits
 from typeclasses.asteroids import Asteroid, Gas
@@ -164,7 +167,10 @@ class AsteroidRoom(SpaceRoom):
         return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     def add_asteroid(self):
         """
         Adds a new asteroid to the room.
@@ -232,6 +238,42 @@ class AnomalyRoom(SpaceRoom):
         for _ in range(anomoly_count):
             self.add_anomoly()
 >>>>>>> Stashed changes
+
+    def check_and_add_anomoly(self):
+        """
+        Checks the number of anomolies in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        anomoly_count = self.get_anomoly_count()
+
+
+        if anomoly_count < 10:
+            # Add an asteroid to the room
+            self.add_anomoly()
+
+    def get_anomoly_count(self):
+        """
+        Counts the number of anomolies in the room.
+
+        Returns:
+            int: The count of anomolies in the room.
+        """
+        return len([obj for obj in self.contents if obj.key.lower() == "anomoly"])
+    
+    def add_anomoly(self):
+        """
+        Adds a new anomoly to the room.
+
+        Notes:
+            - It generates random point amounts for the anomoly and sets its location to the room.
+            - It also sends a message to all characters in the room about the newly added anomoly.
+        """
+        #resource_dict = {resource.value for resource in Resource}
+        anomoly = Anomoly.generate_anomoly()
+        anomoly.location = self
+        self.msg_contents("An anomoly drifts into view.")
 
     def check_and_add_anomoly(self):
         """
