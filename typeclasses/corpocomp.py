@@ -1,8 +1,6 @@
-from evennia import DefaultObject, create_object
+from evennia import DefaultObject, create_object, EvMenu, search_object, Command, ObjectDB
 from evennia.commands.cmdset import CmdSet
-from evennia import EvMenu, search_object
 from evennia.utils.evmenu import EvMenuError
-from evennia import Command, ObjectDB
 from typeclasses.objects import Object
 from typeclasses.corporations import Corporation
 from evennia.utils import logger

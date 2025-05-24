@@ -168,7 +168,7 @@ class CmdShowWallet(Command):
 
     def func(self):
         caller = self.caller
-        caller.msg(f"You have {caller.db.credit or 'no' } credits.")
+        caller.msg(f"You have {caller.credits or 'no' } credits.")
 
 class CmdPlayerSheet(Command):
     """
@@ -195,6 +195,7 @@ class CmdEnterShip(Command):
         board ship
     """
     key = "board"
+    #Need to better understand lockfuncs before usage
     locks = "cmd:not cmdinside();cmd: ispilot()"
     help_category = "Ship"
 
@@ -287,4 +288,4 @@ class MyCharCmdSet(CmdSet):
         self.add(CmdWeild())
         self.add(CmdPutAway())
         self.add(CmdCreateCorp())
-        self.add(barter.CmdsetTrade)
+        #self.add(barter.CmdsetTrade)

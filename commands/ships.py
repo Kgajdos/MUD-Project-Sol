@@ -47,6 +47,7 @@ class Scan(Command):
     Examples:
       scan asteroid
       scan cargo_ship
+      scan anomoly
 
     Once the scan is initiated, a message will be displayed to the player indicating that
     the scanning process is taking place. After a short delay of 5 seconds, the results of
@@ -63,14 +64,15 @@ class Scan(Command):
 
     def parse(self):
         self.args = self.args.strip()
-        if not self.args:
-            self.caller.msg("Target what?")
-            raise InterruptCommand
 
     def func(self):
-        target = self.caller.search(self.args, candidates = self.caller.location.location)
-        self.caller.msg("Scanning...")
-        delay(5, self.obj.scan, self.caller, target)
+        target = self.obj.db.target
+        ship = self.obj
+        try:
+          ship.scan()
+        except Exception as e:
+            self.caller.msg("Scan failed")
+            print(f"Something Went Wrong: {e}")
 
 class Target(Command):
     """
@@ -141,10 +143,27 @@ class StopPiloting(Command):
     help_category = "Ship"
 
     def func(self):
-        player = self.obj.db.pilot
-        session = self.session 
-        account = self.account
-        account.puppet_object(session, player)
+      player = self.obj.db.pilot
+      session = self.session 
+      account = self.account
+      self.caller.msg("Disconnecting cybernetics...")
+      try:
+        delay(5, self.delayed_callback, account, session, player)
+        self.caller.msg("Cybernectics are disconnecting, please wait...")
+      except Exception as e:
+          print(f"Error with display: {e}")
+
+    def delayed_callback(self, account, session, player):
+        
+        try:
+            if account and player:
+              self.caller.msg("Returning to Body.")
+              account.puppet_object(session, player)
+            else:
+                self.caller.msg("Error: Could not return to body. Missing account or player.")
+        except Exception as e:
+            self.caller.msg(f"Error during callback: {e}")
+            
 
 class ShipCmdSet(CmdSet):
     key = "shipcmdset"

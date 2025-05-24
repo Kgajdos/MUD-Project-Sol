@@ -106,9 +106,18 @@ TECH_TREE = {
     "basic_outpost": {
         "name": "Basic Outpost",
         "research": 10000,
-        "requires": ["basic_medbay_tech", "basic_defac", "basic_living_quarters", ]
+        "requires": ["basic_medbay_tech", "basic_defac", "basic_living_quarters", "basic_hydroponics"]
     },
-
+    "advanced_outpost": {
+        "name": "Advanced Outpost",
+        "research": 50000,
+        "requires": ["advanced_medbay_tech", "advanced_defac", "advanced_living_quarters", "advanced_hydroponics"]
+    },
+    "City": {
+        "name": "City",
+        "research": 10000,
+        "requires": ["trauma_center", "canteen", "apartments", "greenhouse"]
+    },
     #Space Station
     "space_station": {
         "name": "Space Station",

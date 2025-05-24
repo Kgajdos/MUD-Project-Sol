@@ -56,6 +56,37 @@ import evennia
 #BS Armor line - for use as beginner equipment
 
 
+BOB_MERCHANT = {
+    "prototype_key": "BOB_MERCHANT",
+    "key": "Bob",
+    "typeclass": "typeclasses.merchants.NPCMerchant",
+    "attrs": [("desc", "It's a Bob!"),
+              ("corp", "Basic Space"), 
+              ("merchant_type", "General")]
+}
+SAL_RESEARCH_MERCHANT = {
+    "prototype_key": "SAL_RESEARCH_MERCHANT",
+    "key": "Sal",
+    "typeclass": "typeclasses.merchants.NPCResearchMerchant",
+    "attrs": [("desc", "It's a Sal!"),
+              ("corp", "Basic Space"),
+              ("merchant_type", "General")]
+}
+CHEF_BOY_MERCHANT = {
+    "prototype_key": "CHEF_BOY_MERCHANT",
+    "key": "ChefBoy",
+    "typeclass": "typeclasses.merchants.NPCMerchant",
+    "attrs": [("desc", "It's Chef Boy!"),
+              ("corp", "Basic Space"),
+              ("merchant_type", "FooDrink")]
+}
+
+ROOM_PLANET_STATION = {
+    "prototype_key": "ROOM_PLANET_STATION",
+    "key": "Planet Trade Station",
+    "typeclass": "typeclasses.rooms.HangerRoom",
+    "attrs": [("desc", "A large sation hovering above the planet. There's a place to dock here.")]
+}
 
 ROOM_BRIDGE = {
     "prototype_key": "ROOM_BRIDGE",
@@ -81,18 +112,32 @@ RAT_ENEMY = {
 ROOM_QUARTERS = {
     "key": "Quarters",
     "typeclass": "typeclasses.rooms.Room",
+<<<<<<< Updated upstream
     "contents": "bed_prototype"
+=======
+    "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
+>>>>>>> Stashed changes
 }
 
 ROOM_STORAGE = {
     "key": "Storage",
+<<<<<<< Updated upstream
     "typeclass": "typeclasses.rooms.Room"
+=======
+    "typeclass": "typeclasses.rooms.Room",
+    "attrs": [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")]
+>>>>>>> Stashed changes
 }
 
 
 CONSOLE = {
     "key": "Console",
+<<<<<<< Updated upstream
     "typeclass": "typeclasses.ships.ShipConsole"
+=======
+    "typeclass": "typeclasses.ship_console.ShipConsole",
+    "attribute": [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")]
+>>>>>>> Stashed changes
 }
 
 CAPCHAIR = {
@@ -104,7 +149,7 @@ CAPCHAIR = {
 BED = {
     "key": "Bed",
     "typeclass": "typeclasses.objects.Object",
-    "attribute": {"desc": "A small, warm looking bed with soft sheets and a large blanket."},
+    "attribute": [("desc", "A small, warm looking bed with soft sheets and a large blanket.")],
     "tags": [("furniture")]
 
 }
@@ -164,9 +209,9 @@ BS_RIFLE = {
               ("quality", 'POOR')],
 }
 
-BS_DRINK = {
-    "prototype_key": "BS_DRINK",
-    "key": "BS Drink",
+BASIC_DRINK = {
+    "prototype_key": "BASIC_DRINK",
+    "key": "Basic Drink",
     "value": 10,
     "typeclass": "typeclasses.drinkables.Drinkables",
     "attrs": [("desc", "A drink designed by Basic Space. The taste is awful, but promises improved focus!"),
@@ -174,11 +219,11 @@ BS_DRINK = {
               ("effects", {"mental": 0.01})],
 }
 
-BS_STEW = {
-    "prototype_key": "BS_STEW",
-    "key": "BS Stew",
+BASIC_STEW = {
+    "prototype_key": "BASIC_STEW",
+    "key": "Basic Stew",
     "value": 10,
-    "typeclass": "typeclasses.eatables.Eatable",
+    "typeclass": "typeclasses.objects.Object",
     "attrs": [("desc", "A stew designed by Basic Space. It has an odd smell, but promises good health!"),
               ("quality", 'POOR'),
               ("effects", "health")],
@@ -190,7 +235,8 @@ BS_MULTITOOL = {
     "value": 100,
     "typeclasses": "typeclasses.tools.Tools",
     "attrs": [("desc", "A tool designed to handle multiple jobs. Using one increases working efficiency."),
-              ("quality", 'POOR')],
+              ("ToolQuality", "Poor"),
+              ("modifier", .01)],
 }
 
 BS_TABLE = {
@@ -264,3 +310,38 @@ BS_FIGHTER_CRICKET = {
                ("genhold", 100),
                ("ammohold", 1500)]
 }
+
+#Merchant stockable items based on type <--- May be unneeded!
+MERCHANT_TYPES =[
+    "General",
+    #Food and Drink
+    "FooDrink",
+    "Armorer",
+    "Ships"
+]
+
+GENERAL_MERCHANT_WARES = [
+    ("BED"),
+    ("BS_MULTITOOL"),
+    ("BS_TABLE"),
+    ("BS_CHAIR"),
+    ("BS_BED")
+]
+
+FOODRINK_MERCHANT_WARES = [
+    ("BASIC_STEW"),
+    ("BASIC_DRINK"),
+
+]
+
+ARMORER_MERCHANT_WARES = [
+    ("BS_HELMET"),
+    ("BS_SUIT"),
+    ("BS_GLOVES"),
+    ("BS_BOOTS"),
+    ("BS_RIFLE")
+]
+
+SHIPS_MERCHANT_WARES = [
+
+]
