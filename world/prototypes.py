@@ -112,44 +112,26 @@ RAT_ENEMY = {
 ROOM_QUARTERS = {
     "key": "Quarters",
     "typeclass": "typeclasses.rooms.Room",
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    "contents": "bed_prototype"
-=======
+    "contents": "bed_prototype",
     "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
->>>>>>> Stashed changes
-=======
-    "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
->>>>>>> Stashed changes
+
 }
 
 ROOM_STORAGE = {
     "key": "Storage",
-<<<<<<< Updated upstream
-    "typeclass": "typeclasses.rooms.Room"
-=======
+
     "typeclass": "typeclasses.rooms.Room",
+
     "attrs": [("desc", "You stand in the main storage room of your ship, there is space here for plenty of cargo.")]
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 }
 
 
 CONSOLE = {
     "key": "Console",
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    "typeclass": "typeclasses.ships.ShipConsole"
-=======
+
     "typeclass": "typeclasses.ship_console.ShipConsole",
     "attribute": [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")]
->>>>>>> Stashed changes
-=======
-    "typeclass": "typeclasses.ship_console.ShipConsole",
-    "attribute": [("desc", "The main terminal to the ship's computer. Here is where you can interact with your ship.")]
->>>>>>> Stashed changes
 }
 
 CAPCHAIR = {
@@ -283,6 +265,7 @@ BS_MINER_ROCKSKIPPER =  {
     "key": "BS Miner RockSkipper",
     "value": 15000,
     "typeclass": "typeclasses.ships.Miner",
+    "location": "1",
     "attrs": [("desc", "Not the best mining ship, but it is the cheapest. WARNING: Basic Space is not responsible for death/damage caused by asteroids."),
               ("health", 7200),
               ("sheilds", 2500),
@@ -343,6 +326,7 @@ GENERAL_MERCHANT_WARES = [
 FOODRINK_MERCHANT_WARES = [
     ("BASIC_STEW"),
     ("BASIC_DRINK"),
+    ("Martian Ale"),
 
 ]
 
@@ -351,7 +335,7 @@ ARMORER_MERCHANT_WARES = [
     ("BS_SUIT"),
     ("BS_GLOVES"),
     ("BS_BOOTS"),
-    ("BS_RIFLE")
+    ("BS_RIFLE"),
 ]
 
 SHIPS_MERCHANT_WARES = [

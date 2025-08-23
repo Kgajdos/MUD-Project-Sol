@@ -1,14 +1,8 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 import datetime
 import time
 from evennia import utils
-=======
-=======
->>>>>>> Stashed changes
 import datetime, math, time
 from evennia import utils, search_object
->>>>>>> Stashed changes
 from evennia.utils import delay
 from typeclasses import ships
 from typeclasses.objects import Object
@@ -93,31 +87,30 @@ class CmdShipConsole(Command):
     help_category = "Ship"
 
     def at_pre_cmd(self):
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         #this function will terminate the command if this function returns True. 
         if not self.obj:
             self.obj = self.caller.location
 
         ship = self.obj.location.location
-        print(f"ship ID: {ship.db.shipID}")
-        print(f"player ship ID: {self.caller.db.active_ship}")
+        print(f"ship ID: {ship.db.shipID} ({type(ship.db.shipID)})")
+        print(f"player ship ID: {self.caller.db.active_ship} ({type(self.caller.db.active_ship)})")
+
 
         if ship.db.shipID != self.caller.db.active_ship:
-=======
-        print(f"Checking self.obj: {self.obj}")
-        ship = self.obj.location.location
-        print(f"Checking ship: {ship}")
+
+            print(f"Checking self.obj: {self.obj}")
+            ship = self.obj.location.location
+            print(f"Checking ship: {ship}")
 
         if ship.db.pilot != self.caller:
->>>>>>> Stashed changes
-=======
-        print(f"Checking self.obj: {self.obj}")
-        ship = self.obj.location.location
-        print(f"Checking ship: {ship}")
+
+            print(f"Checking self.obj: {self.obj}")
+            ship = self.obj.location.location
+            print(f"Checking ship: {ship}")
 
         if ship.db.pilot != self.caller:
->>>>>>> Stashed changes
+
             self.caller.msg("You are not authorized to access this console!")
             raise InterruptCommand
 
@@ -438,8 +431,7 @@ def menunode_confirm_travel(caller, raw_string, **kwargs):
     ship = caller.location.location
     caller.msg(f"Debug: Ship is {ship}")
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
     if not ship:
         caller.msg("You are not on a ship.")
         return "menunode_set_destination"
@@ -458,9 +450,7 @@ def menunode_confirm_travel(caller, raw_string, **kwargs):
     caller.msg(f"The ship is now traveling to {destination_room.key}.")
 
     return "menunode_start"
-=======
-=======
->>>>>>> Stashed changes
+
     choices = [{
         "key": (f"Yes"),
         "desc": f"Confirm Travel",
@@ -472,26 +462,19 @@ def menunode_confirm_travel(caller, raw_string, **kwargs):
         "goto": "menunode_set_destination"
         }
      ]
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 
 def menunode_travel(caller, raw_string, **kwargs):
     """
     Move the ship to the selected room.
     """
-<<<<<<< Updated upstream
+
     destination_room = kwargs.get("destination_room")
-=======
+
     destination_room = caller.db.travel_destination
     destination_name = search_object(destination_room)
     text = f"Arrived at {destination_name}!"
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 
     if not destination_room:
         caller.msg("An error occurred: destination room not found.")
@@ -504,7 +487,7 @@ def menunode_travel(caller, raw_string, **kwargs):
         caller.msg("An error occurred: ship not found.")
         return "menunode_start"
 
-<<<<<<< Updated upstream
+
     # Check if the destination room exists
     if not SpaceRoom.objects.filter(key=destination_room.key).exists():
         caller.msg("An error occurred: destination room does not exist.")
@@ -518,8 +501,7 @@ def menunode_travel(caller, raw_string, **kwargs):
     # Notify the caller that the ship has arrived
     caller.msg(f"The ship has arrived at {destination_room.key}.")
 
-=======
->>>>>>> Stashed changes
+
     return 
 
 
@@ -539,15 +521,10 @@ def get_paginated_options(options, page):
     end_index = start_index + OPTIONS_PER_PAGE
     return options[start_index:end_index]
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-def menunode_set_destination(caller, raw_string):
-=======
+
+
 def menunode_set_destination(caller, raw_string, **kwargs):
->>>>>>> Stashed changes
-=======
-def menunode_set_destination(caller, raw_string, **kwargs):
->>>>>>> Stashed changes
+
     """
     Set the ship's destination based on the user's input.
     """
@@ -564,10 +541,10 @@ def menunode_set_destination(caller, raw_string, **kwargs):
         caller.msg("The destination could not be found.")
         return
 
-<<<<<<< Updated upstream
+
     # Proceed with setting the destination
     caller.msg(f"Destination {destination} is set.")
-=======
+
     total_pages = (len(identifiers) + OPTIONS_PER_PAGE - 1) // OPTIONS_PER_PAGE
  
     option_text = "\n".join([f"{index + 1}.{destination}" for index, destination in enumerate(paginated_options)])
@@ -632,7 +609,7 @@ def handle_pagination(caller, raw_string):
             caller.msg("Invalid choice. Please select a valid number.")
     else:
         caller.msg("Invalid input. Please type a number to select a destination or 'next' / 'prev' to navigate pages.")
->>>>>>> Stashed changes
+
 
 
 def menunode_chart_course(caller, raw_string, **kwargs):
@@ -745,17 +722,14 @@ class ShipConsole(Object):
             new_name (str): The new name for the ship.
 
         """
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         ship = self.search(player.db.active_ship)
         ship.db.key = new_name
-=======
-=======
->>>>>>> Stashed changes
+
         ship = self.location.location
         ship.key = new_name
         ship.save()
->>>>>>> Stashed changes
+
 
     def ship_sheet(self,player):
         """

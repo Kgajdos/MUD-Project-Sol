@@ -1,0 +1,68 @@
+#=== STATION OVERVIEW ===
+name: 
+station_type:
+location:
+orbit_or_coords: #optional
+founded:
+owner: Basic Space #default unless another is defined
+backstory:
+
+#=== CORE ATTRIBUTES ===
+status:
+    operational: true
+    locked_modules: [] #list of module names/types that are initially locked
+    public_access: true #if false, only corp members or crew can dock
+    
+environment:
+    terrain:
+    gravity:
+    breathable: false
+
+economy:
+    production_focus:
+    exports:
+    imports:
+    wealth_rating:
+    
+#=== MODULES ===
+modules:
+    type:
+    name:
+    description:
+    features:
+    locked: false
+
+    #continue as needed
+    
+#=== NPCS ===
+npcs:
+    name:
+    role:
+    module:
+    description:
+    traits:
+    
+    #continue as needed
+    
+#=== SECURITY ===
+security:
+    threat_level:
+    patrols:
+        frequency:
+        personnel:
+    criminal_presence:
+    last_incident:
+    
+#=== FACTIONS (LOCAL INFLUENCE) ===
+factions:
+    name:
+    influence:
+    reputation:
+    description:
+    
+    #contintue as needed
+    
+#=== OPTIONAL HOOKS ===
+rumors:
+
+quests:

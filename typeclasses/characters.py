@@ -181,10 +181,10 @@ class Character(LivingMixin, DefaultCharacter):
     #sets the char description
     def set_char_description(self):
         """Set character description dynamically based on attributes."""
-        sex = self.db.get("sex", "unspecified")
-        adjective = self.db.get("adjective", "average")
-        body_type = self.db.get("body_type", "undefined")
-        disposition = self.db.get("disposition", "neutral")
+        sex = self.db.sex or "unspecified"
+        adjective = self.db.adjective or "average"
+        body_type = self.db.body_type or "average"
+        disposition = self.db.disposition or "nuetral"
 
         pronoun, adj = ("he", "is") if sex == "male" else ("she", "is") if sex == "female" else ("they", "are")
         self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {adjective} and {body_type} with a {disposition} disposition."

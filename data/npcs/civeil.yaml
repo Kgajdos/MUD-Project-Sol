@@ -1,0 +1,93 @@
+- id: supervisor_civeil
+  name: Supervisor Civeil
+  role: Corp Jobs Dispatcher
+  location: central_hub
+  traits:
+    demeanor: intense, calm under stress, professional
+    friendly: true
+    loyal_to: Basic Space
+    cybernetic_upgrades: true
+    war_veteran: true
+  description: >
+    Before you stands a woman with advanced cybernetics including her eyes and an arm. Her hair is strikingly white, and it's impossible to tell her age beyond 'older than you.' She stands in front of a console, calm and ready to assist.
+
+
+  dialog:
+    intro:
+      text: >
+        Welcome aboard, {player}. I’m Supervisor Civeil. Here to help you get settled and ready for the tasks ahead.
+      conditions:
+        - not has_met
+
+    mission_offer:
+      text: >
+        Basic Space has great ambitions — especially with terraforming one of Jupiter's moons.
+        You interested in helping us get there? I have tasks if you’re ready.
+      conditions:
+        - has_met
+        - not mission_active
+
+    mission_in_progress:
+      text: >
+        Focus on your current mission, {player}. We depend on your success.
+      conditions:
+        - mission_active
+
+    mission_complete:
+      text: >
+        Well done, {player}. You’re proving yourself valuable to Basic Space.
+      conditions:
+        - mission_completed
+
+    discuss_terra:
+      text: >
+        Terraforming Jupiter’s moons isn’t just a dream. It’s the future. If we pull this off, it’ll be a society unlike any other.
+      conditions:
+        - has_met
+
+    disdain_pirates:
+      text: >
+        Pirates and criminals... They’re a threat to everything we’ve built. Talking about them makes my blood boil.
+      conditions:
+        - has_met
+
+    fallback:
+      text: >
+        I don’t have time for that. Stick to what matters.
+      conditions: []
+
+  warning:
+    text: >
+      You’ve already asked me that. Stay focused.
+    conditions:
+      - has_met
+      - asked_mission_offer
+
+  job_list:
+    text: >
+      Here are the jobs currently open:
+      - Drone Repair
+      - Salvage Mapping
+      - Ore Relay
+      Pick one to get started.
+    conditions:
+      - has_met
+      - mission_active: false
+
+  job_lock:
+    text: >
+      That job isn’t really suited for your role. Focus on what you’re best at.
+    conditions:
+      - has_met
+
+  job_accept:
+    text: >
+      Good. I’m counting on you to do well.
+    conditions:
+      - has_met
+
+  job_decline:
+    text: >
+      Suit yourself. Let me know if you change your mind.
+    conditions:
+      - has_met

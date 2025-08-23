@@ -1,0 +1,91 @@
+id: kupier_station
+name: Kupier Station
+type: orbital_station
+location: orbit_of_neptune
+faction: Basic Space
+status: active
+description: >
+  Kupier Station is a mid-tier orbital facility operated by Basic Space. It serves as a logistics hub for 
+  outer system mining efforts and low-risk new-hire onboarding. The station hums with subdued activity, 
+  its corridors bright and new.
+
+atmosphere: thin
+gravity: artificial
+population: low
+security_level: medium
+danger_level: low
+
+starting_point: true
+spawn_room: cryo_room
+
+rooms:
+  - id: cryo_room
+    name: CryoRoom
+    description: >
+      A cold, mechanical room where other frozen pods are present.
+    exits:
+      - to: central_hub
+        direction: west
+
+  - id: central_hub
+    name: Central Hub
+    description: >
+      The heart of Kupier Station. Bright banners hang from the ceiling, and a large holographic map 
+      flickers above a welcome kiosk.
+    exits:
+      - to: cryo_room
+        direction: east
+      - to: dorms
+        direction: north
+      - to: operations
+        direction: west
+      - to: hangar
+        direction: south
+
+  - id: operations
+    name: Operations
+    description: >
+      Monitors buzz with mining data and transit schedules. A bored operations officer sips synthetic 
+      coffee behind thick glass.
+    exits:
+      - to: central_hub
+        direction: east
+
+  - id: hangar
+    name: Hangar
+    description: >
+      The room roars with the noise of dozens of ships landing or taking off.
+      There's an acrid smell here. You spot your ship among the others.
+    exits:
+      - to: central_hub
+        direction: north
+
+    # add more here as needed
+
+npcs:
+  - id: chief_lira
+    name: Chief Lira
+    role: Station Admin
+    location: operations
+    dialog: welcome_new_hire
+    traits:
+      demeanor: stern
+      helpful: true
+    description: >
+      A sharp-eyed woman with a clipped tone and zero tolerance for slackers.
+      She's the main point of contact on Kupier.
+
+  - id: supervisor_civeil
+    name: Supervisor Civeil
+    role: Corp Jobs Dispatcher
+    location: central_hub
+    traits:
+      demeanor: calm
+      helpful: true
+    description: >
+      Before you stands a woman with advanced cybernetics to include 
+      eyes and an arm. Her hair is strikingly white. 
+      It is impossible to determine her age beyond 'older than you'. 
+      She stands in front of a computer ready to assist.
+
+  # add more as needed

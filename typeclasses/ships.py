@@ -8,7 +8,7 @@ import typeclasses
 from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
-from typeclasses import rooms, exits, ships
+from typeclasses import rooms, exits
 from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
@@ -71,17 +71,13 @@ class Ships(Object):
         self.locks.add("call:false()")
         self.cmdset.add_default(ShipCmdSet())
         self.db.pilot = None
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
+
         self.db.desc = ""
         self.db.cargo = {}
         self.db.max_hold = 0
         self.db.hold = 0
         self.db.targeting = None
->>>>>>> Stashed changes
+
         self.db.shipID = self.create_ship_id()
         self.db.contract = {}
 
@@ -95,7 +91,7 @@ class Ships(Object):
             self.create_rooms()
 
     def create_rooms(self):
-<<<<<<< Updated upstream
+
         room_templates = {
             "Bridge": "You stand at the bridge of your ship. The space is cozy...",
             "Storage": "You stand in the main storage room of your ship...",
@@ -119,31 +115,9 @@ class Ships(Object):
         ]
 
         for exit_from, exit_to in exits:
-            create_object(exits.Exit, key=exit_to, location=room_objects[exit_from], destination=room_objects[exit_to])
+            create_object(typeclass="typeclasses.exits.Exit", key=exit_to, location=room_objects[exit_from], destination=room_objects[exit_to])
 
-=======
-        bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-        bridge_room.move_to(self)
-        console = evennia.prototypes.spawner.spawn("CONSOLE")[0]
-        chair = evennia.prototypes.spawner.spawn("BS_CHAIR")[0]
-        chair.key = "Captains Chair"
-        console.move_to(bridge_room)
-        chair.move_to(bridge_room)
-        storage_room = evennia.prototypes.spawner.spawn("ROOM_STORAGE")[0]
-        quarters_room = evennia.prototypes.spawner.spawn("ROOM_QUARTERS")[0]
-        storage_room.move_to(self)
-        quarters_room.move_to(self)
-        bed = evennia.prototypes.spawner.spawn("BS_BED")[0]
-        bed.move_to(quarters_room)
-        
-        # Create the exits between rooms
-        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
-        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
-        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
-        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
-        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
-        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
->>>>>>> Stashed changes
+
 
     def create_ship_id(self):
         """Generate a unique ship ID"""
@@ -266,17 +240,17 @@ class Miner(Ships):
     def at_object_creation(self):
         super().at_object_creation()
         self.db.ship_class = "Miner"
-<<<<<<< Updated upstream
+
         self.db.max_orehold = 1000  
         self.db.orehold = 0  
         self.db.credit_value = 50000  
-=======
+
         self.db.health = 100  # Set appropriate initial health
         self.db.shields = 50  # Set appropriate initial shields
         self.db.max_hold = 5000  # Set appropriate max ore hold capacity
         self.db.hold = 0  # Set initial ore hold to 0
         self.db.credit_value = 50000  # Set appropriate credit value
->>>>>>> Stashed changes
+
     
     def turn_on(self):
         super().ship_turn_on()
@@ -361,19 +335,19 @@ class Freighter(Ships):
     """
     def at_object_creation(self):
         super().at_object_creation()
-<<<<<<< Updated upstream
+
         self.db.ship_class = "Freighter"
         self.db.max_cargohold = 1000  
         self.db.cargohold = 0  
         self.db.credit_value = 50000  
-=======
+
         self.db.desc = ""
         self.db.health = 0
         self.db.shields = 0
         self.db.hold = 0
         self.db.max_hold = 10000
         self.db.credit_value = 0 
->>>>>>> Stashed changes
+
 
     def turn_on(self):
         super().ship_turn_on()
@@ -447,12 +421,12 @@ class Researcher(Ships):
 
     def at_object_creation(self):
         super().at_object_creation()
-<<<<<<< Updated upstream
+
         self.db.ship_class = "Researcher"
         self.db.max_volatilehold = 1000  
         self.db.volatilehold = 0  
         self.db.credit_value = 50000  
-=======
+
         self.db.desc = ""
         self.db.health = 0
         self.db.sheilds = 0
@@ -460,7 +434,7 @@ class Researcher(Ships):
         self.db.max_hold = 500
         self.db.cargo = {}
         self.db.credit_value = 0
->>>>>>> Stashed changes
+
     
     def turn_on(self):
         super().ship_turn_on()
@@ -524,24 +498,21 @@ class Fighter(Ships):
     def at_object_creation(self):
         """Initialize fighter ship attributes."""
         super().at_object_creation()
-<<<<<<< Updated upstream
+
         self.db.ship_class = "Fighter"
         self.db.health = 150  # Fighters have more durability
         self.db.shields = 100  # Higher shield capacity
         self.db.gunslots = 4  # Can equip multiple weapons
         self.db.ammohold = 500  # Stores ammunition
         self.db.genhold = 250  # Less general cargo capacity
-=======
+
         self.db.desc = ""
         self.db.health = 0
         self.db.sheilds = 0
         self.db.gunslots = 0
         self.db.hold = 0
         self.db.max_hold = 1000
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 
     def turn_on(self):
         """Power up the ship."""

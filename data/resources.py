@@ -1,6 +1,6 @@
 minerals = {
     "iron": "common",
-    "nickle": "common",
+    "nickel": "common",
     "clay": "common",
     "copper": "common",
     "aluminum": "common",

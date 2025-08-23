@@ -1,15 +1,9 @@
 from evennia import utils, TICKER_HANDLER, create_object
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 from typeclasses.asteroids import Asteroid
-=======
-=======
->>>>>>> Stashed changes
 import evennia.prototypes.spawner
 from typeclasses import exits
 from typeclasses.asteroids import Asteroid, Gas
 from typeclasses.anomolies import Anomoly
->>>>>>> Stashed changes
 import random
 
 def generate_room_name(room_type_prefix, unique_number):
@@ -97,6 +91,8 @@ class Room(ObjectParent, DefaultRoom):
                 if utils.inherits_from(item, "typeclasses.npc.NPC"):
                     item.at_char_entered(moved_obj)
 
+    
+
 class TutorialRoom(Room):
     """
     Only to be used for the spawning room! Needed to allow mission hook
@@ -166,11 +162,7 @@ class AsteroidRoom(SpaceRoom):
         """
         return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
+
     def add_asteroid(self):
         """
         Adds a new asteroid to the room.
@@ -182,7 +174,7 @@ class AsteroidRoom(SpaceRoom):
         #resource_dict = {resource.value for resource in Resource}
         asteroid= Asteroid.generate_asteroid()
         asteroid.location = self
-        self.msg_contents("An anomoly drifts into view.")
+        self.msg_contents("An asteroid drifts into view.")
 
     def check_and_add_asteroid(self):
         """
@@ -198,28 +190,7 @@ class AsteroidRoom(SpaceRoom):
             # Add an asteroid to the room
             self.add_asteroid()
 
-    def get_asteroid_count(self):
-        """
-        Counts the number of asteroids in the room.
-
-        Returns:
-            int: The count of asteroids in the room.
-        """
-        return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
-
->>>>>>> Stashed changes
-    def add_asteroid(self):
-        """
-        Adds a new asteroid to the room.
-
-        Notes:
-            - It generates random resource quantities for the asteroid and sets its location to the room.
-            - It also sends a message to all characters in the room about the newly added asteroid.
-        """
-        #resource_dict = {resource.value for resource in Resource}
-        asteroid = Asteroid.generate_asteroid()
-        asteroid.location = self
-        self.msg_contents("An asteroid drifts into view.")
+    
 
 class AnomalyRoom(SpaceRoom):
     """
@@ -231,13 +202,10 @@ class AnomalyRoom(SpaceRoom):
         self.db.room_type = "anomaly"
         self.db.desc = "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns."
         # Add any anomaly-specific initialization here
-<<<<<<< Updated upstream
-=======
         TICKER_HANDLER.add(60 * 3, self.check_and_add_anomoly) #makes a check every hours worth of seconds the ticker has run
         anomoly_count = random.randint(1, 10)
         for _ in range(anomoly_count):
             self.add_anomoly()
->>>>>>> Stashed changes
 
     def check_and_add_anomoly(self):
         """
