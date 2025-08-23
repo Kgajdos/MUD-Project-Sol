@@ -159,7 +159,13 @@ class Character(LivingMixin, DefaultCharacter):
     def set_active_ship(self, ship):
         self.db.active_ship = ship
 
+    def active_ship(self):
+        ship = evennia.search_object(self.db.active_ship)
+
+        if ship.exists():
+            return ship[0]
         
+        return None
 
     def at_post_puppet(self,session=None):
         if self.tags.has("newbie") and not self.tags.has("tutorial started"):
@@ -174,10 +180,10 @@ class Character(LivingMixin, DefaultCharacter):
     #sets the char description
     def set_char_description(self):
         """Set character description dynamically based on attributes."""
-        sex = self.db.get("sex", "unspecified")
-        adjective = self.db.get("adjective", "average")
-        body_type = self.db.get("body_type", "undefined")
-        disposition = self.db.get("disposition", "neutral")
+        sex = self.db.sex or "unspecified"
+        adjective = self.db.adjective or "average"
+        body_type = self.db.body_type or "average"
+        disposition = self.db.disposition or "nuetral"
 
         pronoun, adj = ("he", "is") if sex == "male" else ("she", "is") if sex == "female" else ("they", "are")
         self.db.desc = f"Before you stands {self.key}, {pronoun} {adj} {adjective} and {body_type} with a {disposition} disposition."
@@ -186,6 +192,19 @@ class Character(LivingMixin, DefaultCharacter):
     #To be called when a character learns a new skill for the first time
     def create_skill_set(self, raw_string):
         skill = self.raw_string
+
+    def gain_exp(self, skill, exp):
+        skills = self.attributes.get('skills', default={})
+
+        if skill in skills:
+            skills[skill]['exp'] += exp
+        else:
+            self.caller.msg(f"You do not have the skill {skill}.")
+        self.attributes.add('skills', skills)
+
+
+    def level_up(self, skill):
+        self.skills[skill] += 1
 
 
     def delete(self):

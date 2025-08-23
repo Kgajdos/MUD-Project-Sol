@@ -1,6 +1,8 @@
 import datetime
 import time
 from evennia import utils
+import datetime, math, time
+from evennia import utils, search_object
 from evennia.utils import delay
 from typeclasses import ships
 from typeclasses.objects import Object
@@ -78,21 +80,26 @@ class CmdShipConsole(Command):
     help_category = "Ship"
 
     def at_pre_cmd(self):
+
         #this function will terminate the command if this function returns True. 
         if not self.obj:
             self.obj = self.caller.location
 
         ship = self.obj.location.location
 
-        if str(ship.db.pilot) != str(self.caller.key):
-            self.caller.msg("You are not authorized to access this console!")
-            raise InterruptCommand
+        print(f"ship ID: {ship.db.shipID} ({type(ship.db.shipID)})")
+        print(f"player ship ID: {self.caller.db.active_ship} ({type(self.caller.db.active_ship)})")
+
+
+        if ship.db.shipID != self.caller.db.active_ship:
+
+            print(f"Checking self.obj: {self.obj}")
+            ship = self.obj.location.location
+            print(f"Checking ship: {ship}")
+
+
 
     def func(self):
-        if not self.obj:
-            self.caller.mg("No console available to interact with")
-            return
-        
         if hasattr(self.obj, 'start_consoles'):
             self.obj.start_consoles(self.caller, self.session)
         else:
@@ -403,7 +410,12 @@ def menunode_confirm_travel(caller, *raw_string, **kwargs):
     destination = str(kwargs['destination']).strip()
     menu_text = f"You've selected {destination}. Do you want to proceed with this destination?"
 
-    caller.db.travel_destination = destination
+
+
+    if not ship:
+        caller.msg("You are not on a ship.")
+        return "menunode_set_destination"
+
 
     choices = {
         "key": (f"Yes"),
@@ -413,16 +425,36 @@ def menunode_confirm_travel(caller, *raw_string, **kwargs):
 
     return menu_text, choices
 
+    choices = [{
+        "key": (f"Yes"),
+        "desc": f"Confirm Travel",
+        "goto": "menunode_travel",
+     },
+        {
+        "key": "No",
+        "desc": f"Return to Choices",
+        "goto": "menunode_set_destination"
+        }
+     ]
+
 
 def menunode_travel(caller):
     """
     Move the ship to the selected room.
     """
-    destination_name = caller.db.travel_destination
-    destination_room = search_object(destination_name)
 
-    print(f"Destination room: {destination_room}")
-    print(f"Destination name: {destination_name}")
+
+    destination_room = kwargs.get("destination_room")
+
+    destination_room = caller.db.travel_destination
+    destination_name = search_object(destination_room)
+    text = f"Arrived at {destination_name}!"
+
+
+    if not destination_room:
+        caller.msg("An error occurred: destination room not found.")
+        return "menunode_set_destination"
+
 
     if not destination_room:
         caller.msg("Error: Room not found!")
@@ -430,15 +462,32 @@ def menunode_travel(caller):
     
     ship = caller.location.location
 
-    ship.move_to(destination_room[0])
-    caller.msg(f"You travel to {destination_name}")
+
+    if not ship:
+        caller.msg("An error occurred: ship not found.")
+        return "menunode_start"
+
+
+    # Check if the destination room exists
+    if not SpaceRoom.objects.filter(key=destination_room.key).exists():
+        caller.msg("An error occurred: destination room does not exist.")
+        return "menunode_set_destination"
+
+    # Move the ship to the destination room
+    ship.msg_contents(f"The ship is now traveling to {destination_room.key}...")
+    ship.location = destination_room
+    ship.save()
+
+    # Notify the caller that the ship has arrived
+    caller.msg(f"The ship has arrived at {destination_room.key}.")
+
 
     return 
 
 
-
 # Constants for pagination
 OPTIONS_PER_PAGE = 20
+
 
 def get_paginated_options(options, page):
     """
@@ -452,50 +501,61 @@ def get_paginated_options(options, page):
     end_index = start_index + OPTIONS_PER_PAGE
     return options[start_index:end_index]
 
-def menunode_set_destination(caller, raw_string, page = 1):
+
+
+
+def menunode_set_destination(caller, raw_string, **kwargs):
+
     """
     Set the ship's destination based on the user's input.
     """
-    identifiers = get_all_space_room_identifiers()
-
-    paginated_options = get_paginated_options(identifiers, page)
-
-    if not paginated_options:
-        caller.msg("No destinations available")
-        return
+    destination = raw_string.strip()  # Clean up the input
+    print(f"Debug: Destination is {destination}")
     
+    # Retrieve all space room identifiers
+    page = kwargs.get("page", 1)
+
+    
+
+
+
+    # Proceed with setting the destination
+    caller.msg(f"Destination {destination} is set.")
 
     total_pages = (len(identifiers) + OPTIONS_PER_PAGE - 1) // OPTIONS_PER_PAGE
-
+ 
     option_text = "\n".join([f"{index + 1}.{destination}" for index, destination in enumerate(paginated_options)])
     menu_text = f"Choose your destination:\n{option_text}\n"
-    
+     
+
     if page > 1:
         menu_text += "Press [N] for next page."
     if page < total_pages:
         menu_text += "Press [P] for previous page."
-    
+
+     
     menu_text += f"Page{page} of {total_pages}"
-
+ 
     choices = []
-
+ 
     if page > 1:
         choices.append({
             "key": "P",
-            "callback": ("menunode_set_destination", page - 1)
+            "goto": ("menunode_set_destination", {"page": page - 1})
         })
-
+ 
     if page < total_pages:
         choices.append({
-            "key": "N",
-            "callback": ("menunode_set_destination", page + 1)
+             "key": "N",
+             "goto": ("menunode_set_destination", {"page": page + 1})
         })
-
+ 
     for index, destination in enumerate(paginated_options):
         choices.append({"desc": (f"|g{destination}|n"),
-                        "goto": ("menunode_confirm_travel", {"destination": destination})})
-
+                         "goto": ("menunode_confirm_travel", {"destination": destination})})
+ 
     return menu_text, choices
+ 
 
 def handle_pagination(caller, raw_string):
     """
@@ -530,6 +590,7 @@ def handle_pagination(caller, raw_string):
     else:
         caller.msg("Invalid input. Please type a number to select a destination or 'next' / 'prev' to navigate pages.")
 
+
 def menunode_chart_course(caller, raw_string, **kwargs):
     """
     Menu node for charting a new course.
@@ -547,6 +608,7 @@ def menunode_chart_course(caller, raw_string, **kwargs):
     
     # Return the text and options for the menu
     return text, options
+
 def menunode_fly_ship(caller, raw_string, **kwargs):
     text = f"Begin flying your ship?"
 
@@ -556,12 +618,16 @@ def menunode_fly_ship(caller, raw_string, **kwargs):
         ]
     return text, options
 
+def delayed_callback(caller, raw_string, **kwargs):
+    delay(5, _puppet, caller, raw_string, **kwargs)
+
 def _puppet(caller, raw_string, **kwargs):
     caller.msg("Attempting to connect neurocybernetics to Ship.")
     ship = caller.location.location
     session = caller.ndb._evmenu._session
     account = session.account
     account.puppet_object(session, ship)
+    caller.msg("Connecting to ship.")
     return "menunode_end"
 
 def menunode_end(caller, raw_string, **kwargs):
@@ -636,8 +702,14 @@ class ShipConsole(Object):
             new_name (str): The new name for the ship.
 
         """
+
         ship = self.search(player.db.active_ship)
         ship.db.key = new_name
+
+        ship = self.location.location
+        ship.key = new_name
+        ship.save()
+
 
     def ship_sheet(self,player):
         """

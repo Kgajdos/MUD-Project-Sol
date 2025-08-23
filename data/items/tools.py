@@ -1,0 +1,47 @@
+TOOLS = {
+    "repair_kit": {
+        "key": "Repair Kit",
+        "materials": {"steel_plate": 1, "wiring_bundle": 1},
+        "production_time": 25,
+        "category": "tool",
+        "market_value": 20,
+    },
+    "plasma_cutter": {
+        "key": "Plasma Cutter",
+        "materials": {"copper": 2, "plasma": 1, "titanium": 1},
+        "production_time": 60,
+        "required_research": "advanced_tools",
+        "category": "tool",
+        "market_value": 55,
+    },
+    "diagnostic_scanner": {
+        "key": "Diagnostic Scanner",
+        "materials": {"circuit_board": 1, "optical_fiber": 1},
+        "production_time": 50,
+        "required_research": "sensor_tech",
+        "category": "tool",
+        "market_value": 45,
+    },
+    "decontamination_spray": {
+        "key": "Decontamination Spray",
+        "materials": {"oxygen": 1, "quartz": 1},
+        "production_time": 20,
+        "category": "tool",
+        "market_value": 15,
+    },
+    "oxygen_filter": {
+        "key": "Oxygen Filter",
+        "materials": {"aluminum": 2, "quartz": 1},
+        "production_time": 40,
+        "category": "tool",
+        "market_value": 18,
+    },
+    "mining_laser": {
+        "key": "Mining Laser",
+        "materials": {"platinum": 2, "circuit_board": 1},
+        "production_time": 90,
+        "required_research": "mining_tools",
+        "category": "tool",
+        "market_value": 70,
+    },
+}

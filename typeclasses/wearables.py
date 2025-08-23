@@ -1,7 +1,8 @@
 from evennia import DefaultObject
+from typeclasses.objects import ProjectSolArmor
 import random
 
-class Wearable(DefaultObject):
+class Wearable(ProjectSolArmor):
     """
     A wearable can be defined as anything that the user can place on their body. 
 
@@ -44,7 +45,11 @@ class Wearable(DefaultObject):
             return
         self.db.wearer = wearer
         slot = wearable.db.armor_slot
-        wearer.db.worn[slot] = self
+        print(f"Slot = {slot}")
+        if wearer.db.worn is None:
+            wearer.db.worn = {}
+        if not wearer.db.worn.get(slot):
+            wearer.db.worn[slot] = self
         wearer.msg(f"You wear {self.key} on {slot} armor slot.")
 
     def do_remove(self, remover):
@@ -56,6 +61,8 @@ class Wearable(DefaultObject):
             remover.msg(f"You are not wearing {self.key}.")
         else:
             self.db.wearer = None
+            if remover.db.worn is None:
+                remover.db.worn = {}
             remover.db.worn.pop(self.db.armor_slot, None)
             remover.msg(f"You remove {self.key}.")
 

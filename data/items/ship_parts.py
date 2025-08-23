@@ -1,0 +1,47 @@
+SHIP_PARTS = {
+    "thruster_nozzle": {
+        "key": "Thruster Nozzle",
+        "materials": {"titanium": 2, "nickle": 1},
+        "production_time": 45,
+        "category": "ship_part",
+        "market_value": 50,
+    },
+    "fusion_core": {
+        "key": "Fusion Core",
+        "materials": {"uranium": 2, "plasma": 1, "steel_plate": 2},
+        "production_time": 120,
+        "required_research": "fusion_drive",
+        "category": "ship_part",
+        "market_value": 150,
+    },
+    "life_support_unit": {
+        "key": "Life Support Unit",
+        "materials": {"oxygen_filter": 2, "circuit_board": 1, "aluminum": 2},
+        "production_time": 60,
+        "category": "ship_part",
+        "market_value": 60,
+    },
+    "navigation_array": {
+        "key": "Navigation Array",
+        "materials": {"circuit_board": 2, "optical_fiber": 2},
+        "production_time": 75,
+        "required_research": "nav_ai",
+        "category": "ship_part",
+        "market_value": 65,
+    },
+    "shield_generator": {
+        "key": "Shield Generator",
+        "materials": {"platinum": 2, "energy_cell": 2},
+        "production_time": 90,
+        "required_research": "defense_tech",
+        "category": "ship_part",
+        "market_value": 100,
+    },
+    "fuel_tank": {
+        "key": "Fuel Tank",
+        "materials": {"steel_plate": 2, "nickel": 2},
+        "production_time": 40,
+        "category": "ship_part",
+        "market_value": 35,
+    },
+}

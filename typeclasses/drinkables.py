@@ -1,6 +1,6 @@
 from evennia import create_object
 from evennia.utils import evmenu
-from typeclasses.objects import Object
+from typeclasses.objects import ProjectSolObject
 
 
 def _add_effect(caller, raw_input_,**kwargs):
@@ -14,9 +14,6 @@ def node_add_drink_effect(caller, raw_input, **kwargs):
           {"key": ("[H]ealth", "health", "h"),
            "desc": "Alters health.",
            "goto": _add_effect, "attribute": "health"},
-           {"key": ("[S]tamina", "stamina", "s"),
-            "desc": "Alters stamina",
-            "goto": _add_effect, "attribute": "stamina"},
             {"key": ("[P]ysical", "physical", "p"),
             "desc": "Alters physical",
             "goto": _add_effect, "attribute": "physical"},
@@ -28,7 +25,7 @@ def node_add_drink_effect(caller, raw_input, **kwargs):
             "goto": _add_effect, "attribute": "social"},
      )
 
-class Drinkables(Object):
+class Drinkables(ProjectSolObject):
     #Effects should be a dict with keys as attributes and values as their modifiers (positive or negative)
     def at_object_creation(self):
          self.db.name = ""

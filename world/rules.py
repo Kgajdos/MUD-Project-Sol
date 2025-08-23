@@ -29,8 +29,9 @@ def calc_combatpower(character):
 
     There is no need to specify if attacking or defending.
     """
-    physical = character.db.stats["Physical"] / 2
-    mental = character.db.stats["Mental"] / 2
+    physical = character.physical / 2
+    mental = character.mental / 2
+    social = character.social / 3
     #TODO: Implement a weapons system
     #TODO: Other bonuses would go here.
-    return physical + mental
+    return (physical + mental + social)

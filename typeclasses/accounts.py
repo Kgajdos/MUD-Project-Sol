@@ -93,7 +93,6 @@ class Account(ContribChargenAccount):
     """
     def at_init(self):
         self.msg(f"Welcome {self.key}! Stay awhile and chat in the public channel.")
-        self.msg(b"If you're new here, why not type in tutorial to get started!")
     pass
 
     def puppet_object(self, session, obj):

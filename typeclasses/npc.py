@@ -39,43 +39,95 @@ class NPC(Character):
         super().at_object_creation()
         self.cmdset.add(NPCCommandSet, persistent=True)
 
+    def at_char_entered(self, character, **kwargs):
+        """
+        Called when a character enters the room this NPC is in.
+        You can add behavior here if you want.
+        """
+        pass
+
+
 
 
 class NPCCiveil(NPC):
         def at_object_creation(self):
             super().at_object_creation()
+            #tracking what the player has done/asked
+            self.db.dialog_flags = {} 
+            #populated by loader
+            self.db.dialog_tree = {}
+            #link to YAML
+            self.db.id = "civeil"
+            self.key = "Supervisor Civeil"
 
         def at_char_entered(self, character):
-            if character.tags.has("captain"):
-                character.msg(f"{self.key} says: How's the {character.db.active_ship.key} treating you?")
-            else:
-                from missions.first_steps import mission_complete
-                mission_complete(character)
-                character.msg(f"{self.key} says: Greetings, {character.key}. Are you here for your ship?")
+            """
+            Called when a character enters the same room.
+            We'll trigger the 'intro' dialog if not met yet.
+            """
+            flags = character.attributes.get("dialog_flags", {})
+            if not flags.get("has_met", False):
+                self._respond("intro", character)
+                flags["has_met"] = True
+                character.attributes.add("dialog_flags", flags)
 
         def msg(self, text=None, from_obj=None, **kwargs):
-            "Custom msg() method reacting to say."
+            """
+            React to being spoken to with 'say'
+            """
             if from_obj != self:
-                # make sure to not repeat what we ourselves said or we'll create a loop
                 try:
-                    # if text comes from a say, `text` is `('say_text', {'type': 'say'})`
-                    say_text, is_say = text[0], text[1]['type'] == 'say'
+                    say_text, is_say = text[0], text[1].get("type") == "say"
                 except Exception:
                     is_say = False
+                
                 if is_say:
-                    # First get the response (if any)
-                    response = f"Ah hello {from_obj}! I've been waiting for you."
-                    # If there is a response
-                    if response != None:
-                        # speak ourselves, using the return
-                        self.execute_cmd(f"say {response}")   
+                    #evaluate and respond based on keywords
+                    self._handle_dialog(say_text, from_obj)
+            super().msg(text=text, from_obj=from_obj,**kwargs)
 
-        
-            # this is needed if anyone ever puppets this NPC - without it you would never
-            # get any feedback from the server (not even the results of look)
-                super().msg(text=text, from_obj=from_obj, **kwargs) 
+        def _handle_dialog(self, message, speaker):
+            """
+            Search for dialog trigger keywords in player's message.
+            """
+            message = message.lower()
+            dialog_tree = self.db.dialog_tree or {}
+            flags = speaker.attributes.get("dialog_flags", {})
 
-        
+            for topic, node in dialog_tree.items():
+                if topic in message:
+                    #Handle special hooks like first mission
+                    if topic == "intro" and "first_steps" in node:
+                        self._trigger_hook("first_steps", speaker)
+                    
+                    self._respond(topic, speaker)
+                    flags[f"asked_{topic}"] = True
+                    speaker.attributes.add("dialog_flags", flags)
+                    return
+            #No matching topic found
+            self._respond("fallback", speaker)
+
+        def _respond(self, topic, speaker):
+            """
+            Respond with text from a dialog node.
+            """
+            dialog_tree = self.db.dialog_tree or {}
+            node = dialog_tree.get(topic)
+            if not node:
+                return
+            text = node.get("text", "").replace("{player}", speaker.key)
+            self.execute_cmd(f"say {text}")
+
+        def _trigger_hook(self, hook, speaker):
+            """
+            Handle one-time effects like assigning the player's ship.
+            """
+            if hook == "first_steps":
+                try:
+                    from missions.first_steps import mission_complete
+                    mission_complete(speaker)
+                except ImportError:
+                    speaker.msg("ERROR: Coult not complete onboarding.")
 
 #This needs Fixed!!
 class MechanicNPC(NPC):

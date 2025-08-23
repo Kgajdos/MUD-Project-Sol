@@ -1,9 +1,7 @@
-from evennia import create_object
-from evennia import DefaultObject
+from evennia import create_object, DefaultObject
 from typeclasses.objects import ProjectSolObject, Object
 import random
-from data.resources import minerals
-from evennia import DefaultObject
+from data.resources import minerals, gases
 
 
 class Resource(Object):
@@ -80,12 +78,10 @@ class Asteroid(Object):
         mine_asteroid(mining_skill): Mine the asteroid and retrieve resources based on the mining skill.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.resources = {}
 
     def at_object_creation(self):
         self.tags.add("Resource")
+        self.db.resource_contents = None
 
     def add_resource(self, resource, quantity):
         """
@@ -147,7 +143,70 @@ class Asteroid(Object):
         resource_string = "\n".join([f"{name}: {quantity}" for name, quantity in resource_contents.items()])
         return resource_string
     
+class Gas(Object):
+
+    def at_object_creation(self):
+        self.tags.add("Resource")
+        self.db.resource_contents = None
+
+    def add_resource(self, resource, quantity):
+        """
+        Add a resource to the asteroid.
+
+        Args:
+            resource (Resource): The resource enum.
+            rarity (str): The rarity level of the resource.
+
+        Notes:
+            This method stores the resource and its quantity in the asteroid's resource_contents dictionary.
+        """
+        if self.db.resource_contents is None:
+            self.db.resource_contents = {}
+        self.db.resource_contents[resource] = quantity
 
 
+
+    def generate_gas_contents(self):
+        """
+        Generate the contents of the asteroid.
+        """
+        selected_resources = random.sample(list(gases.keys()), k = 5)
+        tempdict = {}
+        for item in selected_resources:
+            tempdict[item] = gases[item]
+        for resource, rarity in tempdict.items():
+            #Add quantity based on rarity
+            resource_name = resource
+            if rarity == "common":
+                quantity = random.randint(50, 100)
+            elif rarity == "uncommon":
+                quantity = random.randint(25, 55)
+            elif rarity == "rare":
+                quantity = random.randint(10, 20)
+            self.add_resource(resource_name, quantity)
+
+
+    @classmethod
+    def generate_gas(cls):
+        """
+        Generate a new asteroid with random resource contents.
+
+        Returns:
+            Asteroid: The newly generated asteroid object.
+        """
+        gas = create_object(typeclass = "typeclasses.asteroids.Gas", key="Gas Cloud")
+        gas.generate_gas_contents()
+        return gas
+    
+    def display_resource_contents(self):
+        """
+        Return the resource contents of the asteroid as a string.
+        """
+        resource_contents = self.db.resource_contents
+        if not resource_contents:
+            return "No resources in the asteroid."
+
+        resource_string = "\n".join([f"{name}: {quantity}" for name, quantity in resource_contents.items()])
+        return resource_string
         
 

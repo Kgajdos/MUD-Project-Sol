@@ -37,11 +37,8 @@ AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False
 AUTO_PUPPET_ON_LOGIN = False
 MAX_NR_CHARACTERS = 4
 CHARGEN_MENU = "world.chargen_menu"
-START_LOCATION = 339
+START_LOCATION = 3
 ######################################################################
 # Settings given in secret_settings.py override those in this file.
 ######################################################################
-try:
-    from server.conf.secret_settings import *
-except ImportError:
-    print("secret_settings.py file not found or failed to import.")
+

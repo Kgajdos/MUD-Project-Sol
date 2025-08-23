@@ -1,6 +1,7 @@
 DEVELOPER NOTES - [6 AUG 2024]
 Past Updates and Fixes:
 
+<<<<<<< Updated upstream
 Menu Node Error Fix:
 
 Fixed the error with menunode_set_destination by ensuring it properly queries available destinations and uses get_all_space_room_identifiers().
@@ -33,6 +34,10 @@ Saving
 Checkpoints
 Player logging off could disrupt mission
 Verified Bugs:
+=======
+*********************************************KNOWN BUGS*********************************************
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
 
 Console cannot be accessed until the server is restarted.
 Find ways to update the ship without restarting the server
@@ -77,6 +82,8 @@ Fighter: Tutorial on contracts, combat, and space travel
 Freighter: Tutorial on contracts, storage, economies, and deep-space travel
 Researcher: Tutorial on research room, skills, and beginner contracts
 Ship Command File
+=======
+>>>>>>> Stashed changes
 
 Major changes needed: Split between classes
 FUTURE FEATURES

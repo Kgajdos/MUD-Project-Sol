@@ -8,7 +8,7 @@ import typeclasses
 from typeclasses import ship_console
 from typeclasses import objects, sittables
 from typeclasses.objects import Object
-from typeclasses import rooms, exits, ships
+from typeclasses import rooms, exits
 from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
@@ -75,38 +75,42 @@ class Ships(Object):
         self.locks.add("call:false()")
         self.cmdset.add_default(ShipCmdSet())
         self.db.pilot = None
+
         self.db.name = ""
         self.db.desc = ""
         self.db.cargo = {}
         self.db.targeting = None
-        self.db.shipID = self.create_ship_id()
-        self.db.contract = {}
-        if not self.exits:
-            self.create_rooms()
+
 
     def create_rooms(self):
-        bridge_room = evennia.prototypes.spawner.spawn("ROOM_BRIDGE")[0]
-        bridge_room.location = self
-        console = evennia.prototypes.spawner.spawn("CONSOLE")[0]
-        console.db.desc =  "The main terminal to the ship's computer. Here is where you can interact with your ship."
-        chair = evennia.prototypes.spawner.spawn("BS_CHAIR")[0]
-        chair.key = "Captains Chair"
-        console.move_to(bridge_room)
-        chair.move_to(bridge_room)
-        storage_room = evennia.prototypes.spawner.spawn("ROOM_STORAGE")[0]
-        quarters_room = evennia.prototypes.spawner.spawn("ROOM_QUARTERS")[0]
-        bed = evennia.prototypes.spawner.spawn("BS_BED")[0]
-        bed.move_to(quarters_room)
-       
-        # Create the exits between rooms
-        create_object(exits.Exit, key="Bridge", location = self, destination = bridge_room) #from Boarding to Bridge
-        create_object(exits.Exit, key="Boarding", location = bridge_room, destination = self) #from Bridge back to Boarding
-        create_object(exits.Exit, key="Storage", location = bridge_room, destination = storage_room) #from Bridge to Storage
-        create_object(exits.Exit, key="Bridge", location = storage_room, destination = bridge_room) #from Storage back to Bridge
-        create_object(exits.Exit, key="Quarters", location = storage_room, destination = quarters_room) #from Bridge to Quarters
-        create_object(exits.Exit, key="Bridge", location = quarters_room, destination = bridge_room) #from Quarters back to Bridge
 
-    #has not been tested yet
+        room_templates = {
+            "Bridge": "You stand at the bridge of your ship. The space is cozy...",
+            "Storage": "You stand in the main storage room of your ship...",
+            "Quarters": "You stand in your ship's quarters, there is a bed here...",
+        }
+
+        room_objects = {}  # Store created rooms
+
+        # Create rooms dynamically
+        for room_name, room_desc in room_templates.items():
+            room = create_object(rooms.Room, key=room_name, location=self)
+            room.db.desc = room_desc
+            room_objects[room_name] = room  # Store reference
+
+        # Create exits dynamically
+        exits = [
+            ("Bridge", "Storage"),
+            ("Storage", "Bridge"),
+            ("Storage", "Quarters"),
+            ("Quarters", "Storage"),
+        ]
+
+        for exit_from, exit_to in exits:
+            create_object(typeclass="typeclasses.exits.Exit", key=exit_to, location=room_objects[exit_from], destination=room_objects[exit_to])
+
+
+
     def create_ship_id(self):
         """
         Creates a randomized ship id in the form of AA-00-BB-11
@@ -190,17 +194,6 @@ class Ships(Object):
         except SpaceRoom.DoesNotExist:
             self.msg("Destination not found.")
 
-    def scan(self, player, target):
-        self.db.scan_results = []
-        message = ""
-        if hasattr(target.db, "resource_contents"):
-            for content in target.db.resource_contents:
-                self.db.scan_results.append(content)
-                message += f"{content} "
-        else:
-            message = "No resource contents found."
-        player.msg(message)
-
     def target(self, target):
         self.msg(f"Targetting {target}")
         self.db.target = target   
@@ -210,6 +203,17 @@ class Ships(Object):
         if not player:
             return
         player.msg(ContractBase.get_list(self))
+
+    def check_cargo(self):
+        cargo = {}
+        for items, quantity in self.db.cargo.items():
+            cargo.update({f"{items}": f"{quantity}"})
+        return cargo
+    
+    #Takes the cargo from the ship's db and deletes it (use when selling or transfering goods)
+    def remove_cargo(self, cargo):
+        self.db.cargo.pop(cargo, None)
+
 
 
     
@@ -241,12 +245,18 @@ class Miner(Ships):
         super().at_object_creation()
         self.cmdset.add(MinerCmdSet, persistent=True)
         self.db.ship_class = "Miner"
+
+
+        self.db.max_orehold = 1000  
+        self.db.orehold = 0  
+        self.db.credit_value = 50000  
+
         self.db.health = 100  # Set appropriate initial health
         self.db.shields = 50  # Set appropriate initial shields
-        self.db.max_orehold = 1000  # Set appropriate max ore hold capacity
-        self.db.orehold = 0  # Set initial ore hold to 0
-        self.db.genhold = 500  # Set appropriate general cargo hold capacity
+        self.db.max_hold = 5000  # Set appropriate max ore hold capacity
+        self.db.hold = 0  # Set initial ore hold to 0
         self.db.credit_value = 50000  # Set appropriate credit value
+
     
     def turn_on(self):
         super().ship_turn_on()
@@ -259,15 +269,12 @@ class Miner(Ships):
     def start_consoles(self):
         super().start_consoles()
     
-    def scan_asteroid(self):
+    def scan(self):
         if self.db.target:
             asteroid = self.db.target
-            resources = asteroid.db.resources
-            resource_count = asteroid.db.resource_count
+            resource_contents= asteroid.db.resource_contents
             self.msg(f"Scanning asteroid...")
-            for resource, count in resources.items():
-                self.msg(f"{resource}: {count}")
-            self.msg(f"Total resources: {resource_count}")
+            self.msg(f"Total resources: {resource_contents}")
         else:
             self.msg("You are not targeting any asteroid.")
 
@@ -281,11 +288,11 @@ class Miner(Ships):
             mined = random.choice(list(resources.keys()))
             rand = random.randint(0, resources[mined])  # creates a random number between 0 and the amount of available resources
             
-            if self.db.orehold + rand > self.db.max_orehold:
+            if self.db.hold + rand > self.db.max_hold:
                 self.msg("Your ore hold is full!")
                 return
 
-            self.db.orehold += rand
+            self.db.hold += rand
             if mined in self.db.cargo:
                 self.db.cargo[mined] += rand
             else:
@@ -341,11 +348,19 @@ class Freighter(Ships):
             - Sets the exterior description, health, shields, fragilehold, genhold, and credit_value attributes.
         """
         super().at_object_creation()
+
+
+        self.db.ship_class = "Freighter"
+        self.db.max_cargohold = 1000  
+        self.db.cargohold = 0  
+        self.db.credit_value = 50000  
+
         self.db.desc = ""
         self.db.health = 0
         self.db.shields = 0
         self.db.hold = 0
         self.db.credit_value = 0 
+
 
     def turn_on(self):
         super().ship_turn_on()
@@ -419,12 +434,22 @@ class Researcher(Ships):
 
     def at_object_creation(self):
         super().at_object_creation()
+
+
+        self.db.ship_class = "Researcher"
+        self.db.max_volatilehold = 1000  
+        self.db.volatilehold = 0  
+        self.db.credit_value = 50000  
+
         self.db.desc = ""
         self.db.health = 0
         self.db.sheilds = 0
-        self.db.voltilehold = 0
-        self.db.genhold = 0
+        self.db.hold = 0
+        self.db.max_hold = 500
+        self.db.cargo = {}
         self.db.credit_value = 0
+
+
     
     def turn_on(self):
         super().ship_turn_on()
@@ -434,17 +459,65 @@ class Researcher(Ships):
         super().ship_idle()
         print(f"{self.key} whirs and clicks randomly.")
 
+    def scan(self):
+        if self.db.target:
+            anomoly = self.db.target
+            point_count = anomoly.db.points
+            self.msg(f"Scanning anomoly...")
+
+            if self.db.cargo is None:
+                self.db.cargo = {}
+
+            if "research" not in self.db.cargo:
+                self.db.cargo["research"] = point_count
+            else:
+                self.db.cargo["research"] += point_count
+
+            anomoly.delete()
+            self.msg(f"{point_count} research points gained!")
+        else:
+            self.msg("You are not targeting any anomoly.")
+
+    def scan(self):
+        if self.db.target:
+            anomoly = self.db.target
+            point_count = anomoly.db.points
+            self.msg(f"Scanning anomoly...")
+
+            if self.db.cargo is None:
+                self.db.cargo = {}
+
+            if "research" not in self.db.cargo:
+                self.db.cargo["research"] = point_count
+            else:
+                self.db.cargo["research"] += point_count
+
+            anomoly.delete()
+            self.msg(f"{point_count} research points gained!")
+        else:
+            self.msg("You are not targeting any anomoly.")
+
 
 class Fighter(Ships):
 
     def at_object_creation(self):
         super().at_object_creation()
+
+        self.db.ship_class = "Fighter"
+        self.db.health = 150  # Fighters have more durability
+        self.db.shields = 100  # Higher shield capacity
+        self.db.gunslots = 4  # Can equip multiple weapons
+        self.db.ammohold = 500  # Stores ammunition
+        self.db.genhold = 250  # Less general cargo capacity
+
+
         self.db.desc = ""
         self.db.health = 0
         self.db.sheilds = 0
         self.db.gunslots = 0
-        self.db.genhold = 0
-        self.db.ammohold = 0
+        self.db.hold = 0
+        self.db.max_hold = 1000
+
 
     def turn_on(self):
         print(f"{self.key} turned on quietly.")

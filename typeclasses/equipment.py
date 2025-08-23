@@ -28,6 +28,7 @@ class EquipmentHandler:
                 WieldLocation.BACKPACK: []
             } 
         )
+        
     def _save(self):
         """Save our data back to the same Attribute"""
         self.obj.attributes.add(self.save_attribute, self.slots, category = "inventory")
@@ -79,9 +80,12 @@ class EquipmentHandler:
             #empty entire backback
             ret.extend(slots[slot])
             slots[slot] = []
-        else:
+        elif slots.get(slot):
             ret.append(slots[slot])
             slots[slot] = None
+        else:
+            #If the slot is empty, log or handle accordingly
+            print(f"Attemped to remove from an empty slot: {slot}")
         if ret:
             self._save()
         return ret
@@ -122,7 +126,6 @@ class EquipmentHandler:
     def all(self):
         """Get all objects in inventory, regardless of location"""
         slots = self.slots
-        print("Slots: ", slots)
         lst = [
             (slots[WieldLocation.WEAPON_HAND], WieldLocation.WEAPON_HAND),
             (slots[WieldLocation.FEET], WieldLocation.FEET),

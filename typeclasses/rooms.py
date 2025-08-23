@@ -1,5 +1,9 @@
 from evennia import utils, TICKER_HANDLER, create_object, ObjectDB
 from typeclasses.asteroids import Asteroid
+import evennia.prototypes.spawner
+from typeclasses import exits
+from typeclasses.asteroids import Asteroid, Gas
+from typeclasses.anomolies import Anomoly
 import random
 
 def generate_room_name(room_type_prefix, unique_number):
@@ -77,6 +81,8 @@ class Room(ObjectParent, DefaultRoom):
                 if utils.inherits_from(item, "typeclasses.npc.NPC"):
                     item.at_char_entered(moved_obj)
 
+    
+
 class TutorialRoom(Room):
     """
     Only to be used for the spawning room! Needed to allow mission hook
@@ -146,6 +152,7 @@ class AsteroidRoom(SpaceRoom):
         """
         return len([obj for obj in self.contents if obj.key.lower() == "asteroid"])
 
+
     def add_asteroid(self):
         """
         Adds a new asteroid to the room.
@@ -155,9 +162,25 @@ class AsteroidRoom(SpaceRoom):
             - It also sends a message to all characters in the room about the newly added asteroid.
         """
         #resource_dict = {resource.value for resource in Resource}
-        asteroid = Asteroid.generate_asteroid()
+        asteroid= Asteroid.generate_asteroid()
         asteroid.location = self
         self.msg_contents("An asteroid drifts into view.")
+
+    def check_and_add_asteroid(self):
+        """
+        Checks the number of asteroids in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        asteroid_count = self.get_asteroid_count()
+
+
+        if asteroid_count < 10:
+            # Add an asteroid to the room
+            self.add_asteroid()
+
+    
 
 class AnomalyRoom(SpaceRoom):
     """
@@ -169,6 +192,82 @@ class AnomalyRoom(SpaceRoom):
         self.db.room_type = "anomaly"
         self.db.desc = "A strange anomaly distorts the space around it, with odd gravitational effects and light patterns."
         # Add any anomaly-specific initialization here
+        TICKER_HANDLER.add(60 * 3, self.check_and_add_anomoly) #makes a check every hours worth of seconds the ticker has run
+        anomoly_count = random.randint(1, 10)
+        for _ in range(anomoly_count):
+            self.add_anomoly()
+
+    def check_and_add_anomoly(self):
+        """
+        Checks the number of anomolies in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        anomoly_count = self.get_anomoly_count()
+
+
+        if anomoly_count < 10:
+            # Add an asteroid to the room
+            self.add_anomoly()
+
+    def get_anomoly_count(self):
+        """
+        Counts the number of anomolies in the room.
+
+        Returns:
+            int: The count of anomolies in the room.
+        """
+        return len([obj for obj in self.contents if obj.key.lower() == "anomoly"])
+    
+    def add_anomoly(self):
+        """
+        Adds a new anomoly to the room.
+
+        Notes:
+            - It generates random point amounts for the anomoly and sets its location to the room.
+            - It also sends a message to all characters in the room about the newly added anomoly.
+        """
+        #resource_dict = {resource.value for resource in Resource}
+        anomoly = Anomoly.generate_anomoly()
+        anomoly.location = self
+        self.msg_contents("An anomoly drifts into view.")
+
+    def check_and_add_anomoly(self):
+        """
+        Checks the number of anomolies in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        anomoly_count = self.get_anomoly_count()
+
+
+        if anomoly_count < 10:
+            # Add an asteroid to the room
+            self.add_anomoly()
+
+    def get_anomoly_count(self):
+        """
+        Counts the number of anomolies in the room.
+
+        Returns:
+            int: The count of anomolies in the room.
+        """
+        return len([obj for obj in self.contents if obj.key.lower() == "anomoly"])
+    
+    def add_anomoly(self):
+        """
+        Adds a new anomoly to the room.
+
+        Notes:
+            - It generates random point amounts for the anomoly and sets its location to the room.
+            - It also sends a message to all characters in the room about the newly added anomoly.
+        """
+        #resource_dict = {resource.value for resource in Resource}
+        anomoly = Anomoly.generate_anomoly()
+        anomoly.location = self
+        self.msg_contents("An anomoly drifts into view.")
 
 class NebulaRoom(SpaceRoom):
     """
@@ -179,19 +278,72 @@ class NebulaRoom(SpaceRoom):
         super().at_object_creation()
         self.db.room_type = "nebula"
         self.db.desc = "A colorful nebula stretches across the void, with vibrant gases swirling in beautiful patterns."
-        # Add any nebula-specific initialization here
+                # Add any nebula/gas-specific initialization here
+        TICKER_HANDLER.add(60 * 3, self.check_and_add_gas) #makes a check every hours worth of seconds the ticker has run
+        gas_count = random.randint(1, 10)
+        for _ in range(gas_count):
+            self.add_gas()
+
+    def check_and_add_gas(self):
+        """
+        Checks the number of anomolies in the room and adds one if it is less than 10.
+
+        Notes:
+            - This method is called periodically by the ticker handler.
+        """
+        gas_count = self.get_gas_count()
+
+
+        if gas_count < 10:
+            # Add an asteroid to the room
+            self.add_gas()
+
+    def get_gas_count(self):
+        """
+        Counts the number of anomolies in the room.
+
+        Returns:
+            int: The count of anomolies in the room.
+        """
+        return len([obj for obj in self.contents if obj.key.lower() == "anomoly"])
+    
+    def add_gas(self):
+        """
+        Adds a new anomoly to the room.
+
+        Notes:
+            - It generates random point amounts for the anomoly and sets its location to the room.
+            - It also sends a message to all characters in the room about the newly added anomoly.
+        """
+        #resource_dict = {resource.value for resource in Resource}
+        gas = Gas.generate_gas()
+        gas.location = self
+        self.msg_contents("A gas cloud drifts into view.")
+    
 
 class PlanetRoom(SpaceRoom):
     """
     This is a room type representing a planet.
     Planets might have specific features or interactions.
+    These rooms are major spots for Frieghters and Fighters
     """
     def at_object_creation(self):
         super().at_object_creation()
         self.db.room_type = "planet"
         self.db.desc = "A distant planet looms ahead, its surface covered in swirling clouds."
         # Add any planet-specific initialization here
+        if not self.exits:    
+            self.create_station()
 
+    def create_station(self):
+        station = evennia.prototypes.spawner.spawn("ROOM_PLANET_STATION")[0]
+        station.move_to(self)
+        merchant = evennia.prototypes.spawner.spawn("")
+
+        create_object(exits.Exit, key="Planet Trade Station", location = self, destination = station)
+
+
+#possibly depreciated
 class ShipStorageRoom(Room):
 
     def at_object_creation(self):
@@ -205,3 +357,26 @@ class ShipStorageRoom(Room):
             contents[key] = quantity
         return contents
     
+class HangerRoom(Room):
+    
+    def at_object_creation(self):
+        #array that stores all ships in the hanger for easy data access
+        self.db.ships = []
+
+    def check_goods(self, ship, goods):
+        if ship in self.db.ships:
+            if goods in ship.db.cargo.items():
+                return True
+        return False
+    
+    def sell_goods(self, player, ship, goods):
+        if self.check_goods(ship, goods):
+            #move goods to respective corporate storage rooms in future
+            ship.cargo[goods].move_to(self)
+            pay = goods.value
+            self.pay_player(player, pay)
+        else:
+            self.caller.msg(f"{goods} is not stored in your ship!")
+
+    def pay_player(self, player, amount):
+        player.credits += amount

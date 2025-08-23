@@ -18,8 +18,8 @@ class Corporation(DefaultObject):
         super().at_object_creation()
         self.db.leaders = []
         self.db.employees = []
-        self.db.reserves = []
-        self.db.research = []
+        self.db.reserves = {}
+        self.db.research = 0
         self.db.owned_tech = []
         self.db.jobs = []
         self.db.contracts = []
@@ -32,11 +32,8 @@ class Corporation(DefaultObject):
             resource (dict): A dictionary containing the resources to add to the reserves. The keys are the resource
                 names, and the values are the quantities.
         """
-        for item, quantity in resource.items():
-            if item not in self.db.reserves:
-                self.db.reserves[item] = quantity
-            else:
-                self.db.reserves[item] += quantity
+        for key, value in resource.items():
+            self.db.reserves[key] = self.db.reserves.get(key, 0) + value
 
     def take_from_reserves(self, resource):
         """

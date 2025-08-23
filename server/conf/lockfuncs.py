@@ -24,6 +24,7 @@ def ispilot(accessing_obj, accessed_obj, *args, **kwargs):
     """
     True if accessing_obj is the pilot of accessed_obj
     """
+    print("Testing ispilot lockfunc")
     return accessed_obj.obj.db.pilot == accessing_obj
 
 def sitsonthis(accessing_obj, accessed_obj, *args, **kwargs):

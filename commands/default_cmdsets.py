@@ -14,11 +14,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 """
 
-from evennia import default_cmds
-from evennia import commands, CmdSet
-from commands import mycommands
-from commands import sittables
-from commands import wearables
+from evennia import default_cmds, commands, CmdSet
+from commands import mycommands, sittables, wearables
 from typeclasses import bags
 from typeclasses.bags import Bag
 from evennia.contrib.rpg.character_creator.character_creator import ContribCmdCharCreate
