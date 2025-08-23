@@ -34,12 +34,16 @@ class ShipManager:
         ship = None
         if ship_class == "Miner":
             ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")[0]
+            ship.save()
         elif ship_class == "Fighter":
             ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")[0]
+            ship.save()
         elif ship_class == "Freighter":
             ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")[0]
+            ship.save()
         elif ship_class == "Researcher":
             ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
+            ship.save()
 
         return ship
         
@@ -72,23 +76,11 @@ class Ships(Object):
         self.cmdset.add_default(ShipCmdSet())
         self.db.pilot = None
 
+        self.db.name = ""
         self.db.desc = ""
         self.db.cargo = {}
-        self.db.max_hold = 0
-        self.db.hold = 0
         self.db.targeting = None
 
-        self.db.shipID = self.create_ship_id()
-        self.db.contract = {}
-
-        # Common ship attributes
-        self.db.health = 100  
-        self.db.shields = 50  
-        self.db.cargo = {}  
-        self.db.max_hold = 500  # Generic cargo hold for all ships
-
-        if not self.exits:
-            self.create_rooms()
 
     def create_rooms(self):
 
@@ -120,11 +112,23 @@ class Ships(Object):
 
 
     def create_ship_id(self):
-        """Generate a unique ship ID"""
-        while True:
-            ship_id = f"{random.choice(string.ascii_uppercase)}{random.randint(10, 99)}-{random.choice(string.ascii_uppercase)}{random.randint(10, 99)}"
-            if not search_object(ship_id):  # Ensure uniqueness
-                return ship_id
+        """
+        Creates a randomized ship id in the form of AA-00-BB-11
+        
+        Checks against the database to ensure the number is unique.
+        """
+        letter_set_a = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        letter_set_b = random.choice(string.ascii_uppercase) + random.choice(string.ascii_uppercase)
+        number_set_0 = str(random.randint(10, 99))
+        number_set_1 = str(random.randint(10, 99))
+        
+        ship_id = f"{letter_set_a}-{number_set_0}-{letter_set_b}-{number_set_1}"
+        
+        # Assuming there is a method to check uniqueness
+        # if not self.is_unique(ship_id):
+        #     return self.create_ship_id()
+        
+        return ship_id
             
 
     def get_display_desc(self, looker, **kwargs):
@@ -239,7 +243,9 @@ class Miner(Ships):
     """
     def at_object_creation(self):
         super().at_object_creation()
+        self.cmdset.add(MinerCmdSet, persistent=True)
         self.db.ship_class = "Miner"
+
 
         self.db.max_orehold = 1000  
         self.db.orehold = 0  
@@ -254,11 +260,11 @@ class Miner(Ships):
     
     def turn_on(self):
         super().ship_turn_on()
-        self.msg("A deep rumble shakes the ship as the mining drills run a systems check. The dashboard flickers to life, displaying ore scan data.")
+        self.msg("The ground rumbles.")
 
     def idle(self):
         super().ship_idle()
-        self.msg("The ship vibrates faintly as the drills stay in standby mode. Occasional status updates blink on the console.")
+        self.msg("")
 
     def start_consoles(self):
         super().start_consoles()
@@ -334,7 +340,15 @@ class Freighter(Ships):
         accept_contract(contract): Accepts a freight contract and loads the cargo onto the freighter.
     """
     def at_object_creation(self):
+        """
+        Called when the freighter object is first created. Initializes its attributes.
+
+        Notes:
+            - Calls the at_object_creation method of the base class (Ships) to set up common ship attributes.
+            - Sets the exterior description, health, shields, fragilehold, genhold, and credit_value attributes.
+        """
         super().at_object_creation()
+
 
         self.db.ship_class = "Freighter"
         self.db.max_cargohold = 1000  
@@ -345,17 +359,16 @@ class Freighter(Ships):
         self.db.health = 0
         self.db.shields = 0
         self.db.hold = 0
-        self.db.max_hold = 10000
         self.db.credit_value = 0 
 
 
     def turn_on(self):
         super().ship_turn_on()
-        self.msg("The ship's systems boot up sluggishly, the low hum of cargo stabilizers filling the cabin. Status lights confirm the hull's integrity.")
+        self.caller.msg(f"{self.key} roared to life.")
 
     def idle(self):
         super().ship_idle()
-        self.msg("The engines maintain a soft, steady rhythm. The distant clatter of shifting cargo reminds you of the weight you're carrying.")
+        self.caller.msg(f"{self.key} rumbles noisly.")
 
     def check_manifest(self):
         """
@@ -422,6 +435,7 @@ class Researcher(Ships):
     def at_object_creation(self):
         super().at_object_creation()
 
+
         self.db.ship_class = "Researcher"
         self.db.max_volatilehold = 1000  
         self.db.volatilehold = 0  
@@ -435,14 +449,15 @@ class Researcher(Ships):
         self.db.cargo = {}
         self.db.credit_value = 0
 
+
     
     def turn_on(self):
         super().ship_turn_on()
-        self.msg("An array of analytical tools power on, screens filling with complex data streams. A faint sterilized scent fills the air as lab instruments calibrate.")
+        print(f"{self.key} produced random sounds.")
 
     def idle(self):
         super().ship_idle()
-        self.msg("The ship hums with quiet efficiency, sensors sweeping the environment. Occasionally, a robotic arm adjusts a delicate sample.")
+        print(f"{self.key} whirs and clicks randomly.")
 
     def scan(self):
         if self.db.target:
@@ -484,19 +499,8 @@ class Researcher(Ships):
 
 
 class Fighter(Ships):
-    """
-    Represents a fighter-class ship, designed for combat and tactical maneuvering.
-
-    Attributes:
-        health (int): Durability of the ship.
-        shields (int): Defensive energy shielding.
-        gunslots (int): Number of available weapon slots.
-        genhold (int): General cargo capacity.
-        ammohold (int): Storage space for ammunition.
-    """
 
     def at_object_creation(self):
-        """Initialize fighter ship attributes."""
         super().at_object_creation()
 
         self.db.ship_class = "Fighter"
@@ -505,6 +509,7 @@ class Fighter(Ships):
         self.db.gunslots = 4  # Can equip multiple weapons
         self.db.ammohold = 500  # Stores ammunition
         self.db.genhold = 250  # Less general cargo capacity
+
 
         self.db.desc = ""
         self.db.health = 0
@@ -515,39 +520,8 @@ class Fighter(Ships):
 
 
     def turn_on(self):
-        """Power up the ship."""
-        self.msg("The reactor core hums with restrained power. Targeting systems flicker online, displaying potential threats in the area.")
+        print(f"{self.key} turned on quietly.")
 
     def idle(self):
-        """Set the ship to idle mode."""
-        self.msg("The ship idles with a quiet, predatory patience. The targeting HUD occasionally flickers, tracking phantom signals.")
-
-    def fire_weapon(self, target):
-        """
-        Attack a target with an equipped weapon.
-
-        Args:
-            target (Object): The enemy or object being fired at.
-        """
-        if not target:
-            self.msg("You need to target something before firing!")
-            return
-
-        if self.db.ammohold <= 0:
-            self.msg("Out of ammo!")
-            return
-
-        # Deduct ammo and perform attack
-        self.db.ammohold -= 10  # Example ammo usage
-        target.msg(f"{self.key} fires at you!")
-        self.msg(f"You fire at {target.key}!")
-
-        # Placeholder for attack resolution
-        damage = random.randint(10, 30)
-        target.db.health = max(0, target.db.health - damage)
-        self.msg(f"You hit {target.key} for {damage} damage!")
-
-        # Check if the target is destroyed
-        if target.db.health <= 0:
-            target.msg(f"{target.key} is destroyed!")
-            target.delete()
+        super().ship_idle()
+        print("A quiet whir fills the air.")

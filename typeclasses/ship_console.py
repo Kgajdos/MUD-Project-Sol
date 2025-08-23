@@ -33,13 +33,6 @@ def get_all_specific_rooms(room_type):
     """
     return SpaceRoom.objects.filter(db_typeclass_path=f'typeclasses.rooms.{room_type}')
 
-def print_room_details():
-    """
-    Print details of all SpaceRoom instances.
-    """
-    rooms = get_all_space_rooms()
-    for room in rooms:
-        print(f"Room Name: {room.key}, Type: {room.db_typeclass_path}")
 
 def get_room_by_name(name):
     """
@@ -63,7 +56,7 @@ def get_all_space_room_identifiers():
     Retrieve all unique identifiers for space rooms.
     """
     # Use the correct field name
-    identifiers = SpaceRoom.objects.values_list('db_key', flat=True).distinct()
+    identifiers = utils.search.search_typeclass(SpaceRoom, include_children = True)
     return list(identifiers)
 
 
@@ -93,6 +86,7 @@ class CmdShipConsole(Command):
             self.obj = self.caller.location
 
         ship = self.obj.location.location
+
         print(f"ship ID: {ship.db.shipID} ({type(ship.db.shipID)})")
         print(f"player ship ID: {self.caller.db.active_ship} ({type(self.caller.db.active_ship)})")
 
@@ -103,16 +97,7 @@ class CmdShipConsole(Command):
             ship = self.obj.location.location
             print(f"Checking ship: {ship}")
 
-        if ship.db.pilot != self.caller:
 
-            print(f"Checking self.obj: {self.obj}")
-            ship = self.obj.location.location
-            print(f"Checking ship: {ship}")
-
-        if ship.db.pilot != self.caller:
-
-            self.caller.msg("You are not authorized to access this console!")
-            raise InterruptCommand
 
     def func(self):
         if hasattr(self.obj, 'start_consoles'):
@@ -417,39 +402,28 @@ def _new_name(caller, raw_string, **kwargs):
 
     return "menunode_start"
 
-def menunode_confirm_travel(caller, raw_string, **kwargs):
-    """
-    Confirm the travel to the chosen destination.
-    """
-    destination = kwargs.get("destination")
-    caller.msg(f"Debug: Destination is {destination}")
 
-    if not destination:
-        caller.msg("Invalid destination.")
-        return "menunode_set_destination"
-    
-    ship = caller.location.location
-    caller.msg(f"Debug: Ship is {ship}")
+def menunode_confirm_travel(caller, *raw_string, **kwargs):
+    """
+    Confirm the player's choice to travel to the selected destination.
+    """
+    destination = str(kwargs['destination']).strip()
+    menu_text = f"You've selected {destination}. Do you want to proceed with this destination?"
+
 
 
     if not ship:
         caller.msg("You are not on a ship.")
         return "menunode_set_destination"
 
-    try:
-        destination_room = SpaceRoom.objects.get(db_key=destination)
-        caller.msg(f"Debug: Destination room found with key {destination_room.db_key}")
-    except SpaceRoom.DoesNotExist:
-        caller.msg("Destination not found.")
-        return "menunode_set_destination"
-    except SpaceRoom.MultipleObjectsReturned:
-        caller.msg("Multiple destinations found, something went wrong.")
-        return "menunode_set_destination"
 
-    ship.move_to(destination_room)
-    caller.msg(f"The ship is now traveling to {destination_room.key}.")
+    choices = {
+        "key": (f"Yes"),
+        "desc": f"Confirm Travel",
+        "goto": "menunode_travel"
+    }
 
-    return "menunode_start"
+    return menu_text, choices
 
     choices = [{
         "key": (f"Yes"),
@@ -464,10 +438,11 @@ def menunode_confirm_travel(caller, raw_string, **kwargs):
      ]
 
 
-def menunode_travel(caller, raw_string, **kwargs):
+def menunode_travel(caller):
     """
     Move the ship to the selected room.
     """
+
 
     destination_room = kwargs.get("destination_room")
 
@@ -480,8 +455,13 @@ def menunode_travel(caller, raw_string, **kwargs):
         caller.msg("An error occurred: destination room not found.")
         return "menunode_set_destination"
 
-    # Assuming the player is on the ship's bridge and the ship is the location of the bridge's location
+
+    if not destination_room:
+        caller.msg("Error: Room not found!")
+        return 
+    
     ship = caller.location.location
+
 
     if not ship:
         caller.msg("An error occurred: ship not found.")
@@ -523,6 +503,7 @@ def get_paginated_options(options, page):
 
 
 
+
 def menunode_set_destination(caller, raw_string, **kwargs):
 
     """
@@ -533,13 +514,9 @@ def menunode_set_destination(caller, raw_string, **kwargs):
     
     # Retrieve all space room identifiers
     page = kwargs.get("page", 1)
-    identifiers = get_all_space_room_identifiers()
-    print(f"Debug: Available identifiers are {identifiers}")
 
-    if destination not in identifiers:
-        print(f"Destination not found: {destination}")
-        caller.msg("The destination could not be found.")
-        return
+    
+
 
 
     # Proceed with setting the destination
@@ -550,10 +527,12 @@ def menunode_set_destination(caller, raw_string, **kwargs):
     option_text = "\n".join([f"{index + 1}.{destination}" for index, destination in enumerate(paginated_options)])
     menu_text = f"Choose your destination:\n{option_text}\n"
      
+
     if page > 1:
         menu_text += "Press [N] for next page."
     if page < total_pages:
         menu_text += "Press [P] for previous page."
+
      
     menu_text += f"Page{page} of {total_pages}"
  
@@ -577,6 +556,7 @@ def menunode_set_destination(caller, raw_string, **kwargs):
  
     return menu_text, choices
  
+
 def handle_pagination(caller, raw_string):
     """
     Handle the player's input to change pages or select a destination
@@ -585,14 +565,14 @@ def handle_pagination(caller, raw_string):
     selected_destination = caller.db.get('selected_destination', None)
     identifiers = get_all_space_room_identifiers()
     total_pages = (len(identifiers) + OPTIONS_PER_PAGE - 1) // OPTIONS_PER_PAGE
- 
+
     if raw_string.lower() == 'next':
         if current_page < total_pages:
             current_page += 1
             return menunode_set_destination(caller, raw_string, current_page = current_page, selected_destination = selected_destination)
         else:
             caller.msg("You are already on the last page.")
- 
+
     elif raw_string.lower() == 'prev':
         if current_page > 1:
             current_page -= 1
@@ -609,7 +589,6 @@ def handle_pagination(caller, raw_string):
             caller.msg("Invalid choice. Please select a valid number.")
     else:
         caller.msg("Invalid input. Please type a number to select a destination or 'next' / 'prev' to navigate pages.")
-
 
 
 def menunode_chart_course(caller, raw_string, **kwargs):
@@ -665,6 +644,7 @@ def create_unique_identifier(base_identifier):
         new_identifier = f"{base_identifier}_{counter}"
         counter += 1
     return new_identifier
+
 
 
 
@@ -752,7 +732,6 @@ class ShipConsole(Object):
         })
         table = EvTable("CARGO", border="incols")
         storage = ship.db.cargo
-        print(storage)
         if not storage:
             table.add_row("No cargo")
         else:

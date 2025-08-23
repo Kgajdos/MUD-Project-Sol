@@ -112,13 +112,16 @@ RAT_ENEMY = {
 ROOM_QUARTERS = {
     "key": "Quarters",
     "typeclass": "typeclasses.rooms.Room",
+
     "contents": "bed_prototype",
     "attrs": [("desc", "You stand in your ship's quarters, there is a bed here for you to sleep in.")]
+
 
 }
 
 ROOM_STORAGE = {
     "key": "Storage",
+
 
     "typeclass": "typeclasses.rooms.Room",
 
