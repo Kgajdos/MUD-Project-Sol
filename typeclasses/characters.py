@@ -30,7 +30,11 @@ class LivingMixin:
         """
         String to describe how hurt the character is
         """
-        percent = max(0, min(100, 100 * (self.hp / self.hp_max)))
+        # guard against division by zero
+        if not getattr(self, 'hp_max', None) or self.hp_max <= 0:
+            percent = 0
+        else:
+            percent = max(0, min(100, 100 * (self.hp / self.hp_max)))
         if 95 < percent <= 100:
             return "|gPerfect|n"
         elif 80 < percent <= 95:
@@ -52,9 +56,9 @@ class LivingMixin:
         """
         Heal hp amount of health, not exceeding it
         """
-        damage = self.hp_max - self.hp
+        damage = max(0, (self.hp_max or 0) - (self.hp or 0))
         healed = min(damage, hp)
-        self.hp += healed
+        self.hp = (self.hp or 0) + healed
 
         self.msg(f"You heal for {healed} HP.")
 
@@ -62,8 +66,10 @@ class LivingMixin:
         """
         Makes sure we never spend more than we have
         """
-        amount = min(amount, self.coins)
-        self.credits -= amount
+        # use credits (not coins) consistently
+        current = getattr(self, 'credits', 0) or 0
+        amount = min(amount, current)
+        self.credits = current - amount
         return amount
     
     def at_attacked(self, attacker, **kwargs):
@@ -106,20 +112,41 @@ class Character(LivingMixin, DefaultCharacter):
     """
     is_pc = True
 
-    physical = AttributeProperty(random.randint(1, 10))
-    mental = AttributeProperty(random.randint(1, 10))
-    social = AttributeProperty(random.randint(1, 10))
+    # set non-random defaults at class-level; assign real random values in at_object_creation
+    physical = AttributeProperty(0)
+    mental = AttributeProperty(0)
+    social = AttributeProperty(0)
 
-    hp = AttributeProperty(random.randint(10, 20))
-    hp_max = AttributeProperty(hp)
-    stamina = AttributeProperty(random.randint(10, 20))
+    hp = AttributeProperty(0)
+    hp_max = AttributeProperty(0)
+    stamina = AttributeProperty(0)
 
     level = AttributeProperty(1)
     xp = AttributeProperty(0)
     credits = AttributeProperty(0)
 
 
-    def at_object_creation(self):     
+    def at_object_creation(self):
+        # ensure Evennia base setup runs
+        super().at_object_creation()
+        # initialize randomized stats per-character (not at import time)
+        self.physical = random.randint(1, 10)
+        self.mental = random.randint(1, 10)
+        self.social = random.randint(1, 10)
+
+        self.hp = random.randint(10, 20)
+        self.hp_max = self.hp
+        self.stamina = random.randint(10, 20)
+
+        self.level = 1
+        self.xp = 0
+        self.credits = 0
+
+        # initialize containers
+        self.db.skills = {}
+        self.db.is_sitting = False
+
+
         self.set_player_class()
         self.set_char_description()
         self.tags.add("newbie")
@@ -157,15 +184,18 @@ class Character(LivingMixin, DefaultCharacter):
         
     #Belo is functions that set a new ship to the player based on their class
     def set_active_ship(self, ship):
+        # store either an object reference or a dbref/string; prefer storing the object
         self.db.active_ship = ship
 
     def active_ship(self):
-        ship = evennia.search_object(self.db.active_ship)
-
-        if ship.exists():
-            return ship[0]
-        
-        return None
+        ship = self.db.active_ship
+        if not ship:
+            return None
+        # if stored as a string/ref, try to resolve
+        if isinstance(ship, str):
+            found = evennia.search_object(ship)
+            return found[0] if found else None
+        return ship
 
     def at_post_puppet(self,session=None):
         if self.tags.has("newbie") and not self.tags.has("tutorial started"):
@@ -190,26 +220,35 @@ class Character(LivingMixin, DefaultCharacter):
 
 
     #To be called when a character learns a new skill for the first time
-    def create_skill_set(self, raw_string):
-        skill = self.raw_string
+    def create_skill_set(self, skill_name):
+        """Create a new skill entry with default level/exp."""
+        skills = self.db.get('skills', {}) or {}
+        if skill_name not in skills:
+            skills[skill_name] = {'level': 1, 'exp': 0}
+            self.db.skills = skills
 
     def gain_exp(self, skill, exp):
-        skills = self.attributes.get('skills', default={})
+        skills = self.db.get('skills', {}) or {}
 
         if skill in skills:
-            skills[skill]['exp'] += exp
+            skills[skill]['exp'] = skills[skill].get('exp', 0) + exp
         else:
-            self.caller.msg(f"You do not have the skill {skill}.")
-        self.attributes.add('skills', skills)
+            self.msg(f"You do not have the skill {skill}.")
+            return
+        self.db.skills = skills
 
 
     def level_up(self, skill):
-        self.skills[skill] += 1
-
+        skills = self.db.get('skills', {}) or {}
+        if skill in skills:
+            skills[skill]['level'] = skills[skill].get('level', 0) + 1
+            self.db.skills = skills
+        else:
+            self.msg(f"You do not have the skill {skill} to level up.")
 
     def delete(self):
-        bag = self.search("Bag", candidates=self.contents, typeclass = "typeclasses.bags.Bag")
-        if bag:
+        bags = self.search("Bag", candidates=self.contents, typeclass="typeclasses.bags.Bag")
+        for bag in bags:
             bag.delete()
         super().delete()
 
@@ -226,9 +265,15 @@ class Character(LivingMixin, DefaultCharacter):
         self.credits += credits
 
     def train_skill(self, skill_trained, amount):
-        value = self.attributes.get(skill_trained) * amount
-        self.attributes.add(skill_trained, value)
-        self.msg(f"You trained {skill_trained} for {value} experience points!")
+        skills = self.db.get('skills', {}) or {}
+        skill = skills.get(skill_trained)
+        if not skill:
+            self.msg(f"You do not have the skill {skill_trained}.")
+            return
+        skill['exp'] = skill.get('exp', 0) + amount
+        skills[skill_trained] = skill
+        self.db.skills = skills
+        self.msg(f"You trained {skill_trained} for {amount} experience points!")
 
     #NEEDS THOUROUGH TESTING!!!!
     def player_sheet(self):

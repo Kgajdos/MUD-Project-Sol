@@ -15,7 +15,7 @@ class AmmoCrate(Loot):
 
 	def load_ammo_crate(self, box):
 		if self.db.ammo_box_count == 100:
-			self.caller.msg("Ammo crate is full.")
+			self.msg("Ammo crate is full.")
 			return
 		else:
 			box.move_to(self.contents)

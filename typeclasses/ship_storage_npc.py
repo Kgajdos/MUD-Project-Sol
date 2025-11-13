@@ -24,7 +24,7 @@ class CmdStoreShip(Command):
     def parse(self):
         self.args = self.args.strip()
         if not self.args:
-            self.caller.msg("Store which ship?")
+            self.msg("Store which ship?")
             raise InterruptCommand
 
     def func(self):
@@ -32,11 +32,11 @@ class CmdStoreShip(Command):
         if ship:
             try:
                 ship.move_to(self.obj)
-                self.caller.msg(f"You have stored {ship.name}.")
+                self.msg(f"You have stored {ship.name}.")
             except:
                 self.msg("Something went wrong.")
         else:
-            self.caller.msg(f"You don't have a ship named {self.args}.")
+            self.msg(f"You don't have a ship named {self.args}.")
 
 
 class CmdRetrieveShip(Command):

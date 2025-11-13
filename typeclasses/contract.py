@@ -26,7 +26,8 @@ class ContractBase:
         return False
     
     def is_expired(self):
-        return self.expiry_date and datetime.now > self.expiry_date
+        # call datetime.now() (previously missed parentheses)
+        return self.expiry_date and datetime.now() > self.expiry_date
 
 
 class Job(ContractBase):
@@ -159,6 +160,9 @@ class ContractHandler:
         return contract.accept()
     
     @staticmethod
-    def complete_contract(contract):
-        return contract.complete()
+    def complete_contract(contract, player):
+        """
+        Complete a contract and pay the given player (for contracts that expect a player).
+        """
+        return contract.complete(player)
 

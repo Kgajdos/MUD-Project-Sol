@@ -376,7 +376,7 @@ class HangerRoom(Room):
             pay = goods.value
             self.pay_player(player, pay)
         else:
-            self.caller.msg(f"{goods} is not stored in your ship!")
+            self.msg(f"{goods} is not stored in your ship!")
 
     def pay_player(self, player, amount):
         player.credits += amount

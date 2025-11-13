@@ -173,7 +173,7 @@ class CmdGreet(Command):
     help_category = "General"
 
     def func(self):
-        self.caller.msg("The NPC greets you warmly")
+        self.msg("The NPC greets you warmly")
 
 class MechanicMenuCommand(Command):
     key="mechanic"

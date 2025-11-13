@@ -39,8 +39,23 @@ class ShipManager:
         elif ship_class == "Researcher":
             ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
 
-        ship.db.pilot = player.db.key
-        ship.save
+        # ensure the ship has a stable shipID stored on creation
+        try:
+            if not ship.db.get('shipID'):
+                ship.db.shipID = ship.create_ship_id()
+        except Exception:
+            # ignore if create_ship_id is unavailable
+            pass
+
+        # store the pilot as a simple, serializable reference (player key)
+        try:
+            ship.db.pilot = getattr(player, 'key', str(player))
+            # also keep a non-persistent runtime reference for quick lookups
+            ship.ndb._pilot_obj = player
+            ship.save()
+        except Exception:
+            # ignore save failures, object will persist via Evennia normally
+            pass
 
         return ship
         
@@ -172,23 +187,31 @@ class Ships(Object):
         print(f"{self.key} is iddling.")
     
     def store_cargo(self, destination):
-        if self.db.cargo:
-            for items in self.db.cargo.items():
-                destination.db.cargo += items
+        """Transfer all cargo from this ship to destination (merging quantities)."""
+        if not self.db.cargo:
+            return
+        if not hasattr(destination.db, 'cargo') or destination.db.cargo is None:
+            destination.db.cargo = {}
+        for item, qty in list(self.db.cargo.items()):
+            destination.db.cargo[item] = destination.db.cargo.get(item, 0) + qty
+        # clear this ship's cargo after transfer
+        self.db.cargo = {}
 
     def warp(self, location):
         room = self.search(location)
-        self.move_to(room)
+        if room:
+            self.move_to(room)
 
     def warp_to_existing_room(self, identifier):
         """
-        Warp to a known destination room based on identifier.
+        Warp to a known destination room based on identifier using Evennia search.
         """
-        try:
-            destination_room = SpaceRoom.objects.get(key=identifier)
+        results = search_object(identifier)
+        if results:
+            destination_room = results[0]
             self.move_to(destination_room)
             self.msg(f"Warping to {destination_room.key}.")
-        except SpaceRoom.DoesNotExist:
+        else:
             self.msg("Destination not found.")
 
     def target(self, target):
@@ -196,16 +219,32 @@ class Ships(Object):
         self.db.target = target   
 
     def display_work_pending(self):
-        player = self.db.pilot
-        if not player:
+        pilot = self.db.pilot
+        if not pilot:
             return
-        player.msg(ContractBase.get_list(self))
+        # if pilot stored as key/string, try to resolve to object
+        if isinstance(pilot, str):
+            found = search_object(pilot)
+            if not found:
+                return
+            pilot_obj = found[0]
+        else:
+            pilot_obj = pilot
+
+        contracts = getattr(self.db, 'contracts', None)
+        if not contracts:
+            pilot_obj.msg("No pending work.")
+            return
+        active = ContractHandler.list_active_contracts(contracts)
+        if not active:
+            pilot_obj.msg("No active contracts.")
+            return
+        for c in active:
+            pilot_obj.msg(f"Contract: {c.description} | Reward: {c.reward} | Status: {c.status}")
 
     def check_cargo(self):
-        cargo = {}
-        for items, quantity in self.db.cargo.items():
-            cargo.update({f"{items}": f"{quantity}"})
-        return cargo
+        # return a clean dict of cargo items -> quantities
+        return dict(self.db.cargo) if self.db.cargo else {}
     
     #Takes the cargo from the ship's db and deletes it (use when selling or transfering goods)
     def remove_cargo(self, cargo):
@@ -346,83 +385,68 @@ class Freighter(Ships):
         """
         super().at_object_creation()
 
-
         self.db.ship_class = "Freighter"
-        self.db.max_cargohold = 1000  
-        self.db.cargohold = 0  
-        self.db.credit_value = 50000  
+
+        self.db.max_cargohold = 1000
+        self.db.cargohold = 0
+        self.db.credit_value = 50000
 
         self.db.desc = ""
         self.db.health = 0
         self.db.shields = 0
-        self.db.hold = 0
-        self.db.credit_value = 0 
 
+        self.db.hold = 0
+        self.db.credit_value = 0
 
     def turn_on(self):
         super().ship_turn_on()
-        self.caller.msg(f"{self.key} roared to life.")
+        self.msg(f"{self.key} roared to life.")
 
     def idle(self):
         super().ship_idle()
-        self.caller.msg(f"{self.key} rumbles noisly.")
+        self.msg(f"{self.key} rumbles noisly.")
 
     def check_manifest(self):
-        """
-        Generates and displays a shipping manifest for the cargo container.
-
-        Notes:
-            - The method iterates through the cargo container's contents and consolidates the quantities of each item.
-            - The resulting shipping manifest is displayed to the caller.
-        """
+        """Return a consolidated manifest of cargo currently held."""
         temp_dict = {}
-        for item, quantity in self.db.contents.items():
-            temp_dict[item] += quantity
+        for item, quantity in (self.db.cargo or {}).items():
+            temp_dict[item] = temp_dict.get(item, 0) + quantity
         self.msg(f"Shipping Manifest: {temp_dict}")
 
     def load_container(self, cargo_container):
-        """
-        Loads a cargo container onto the freighter.
-
-        Args:
-            cargo_container (Object): The cargo container to be loaded.
-
-        Notes:
-            - Moves the cargo container to the freighter's location.
-            - Assumes that the cargo container is compatible with the freighter's hold capacity.
-            - If the freighter's hold capacity is exceeded, the cargo container will not be loaded.
-        """
-        if self.db.hold - cargo_container.size >= 0:
+        """Attempt to load a cargo container object onto the freighter."""
+        size = getattr(cargo_container, 'size', 0)
+        if self.db.cargohold + size <= self.db.max_cargohold:
             cargo_container.move_to(self)
-            self.db.hold -= cargo_container.size
-            self.caller.msg(f"{cargo_container.key} loaded onto {self.key}.")
+            self.db.cargohold += size
+            self.msg(f"{cargo_container.key} loaded onto {self.key}.")
         else:
-            self.caller.msg(f"Cannot load {cargo_container.key}. Not enough hold capacity.")
+            self.msg(f"Cannot load {cargo_container.key}. Not enough hold capacity.")
 
     def unload_container(self, cargo_container, weight, location):
         cargo_container.move_to(location)
-        self.db.hold += weight
-        
+        self.db.cargohold = max(0, self.db.cargohold - weight)
 
     def accept_contract(self, contract):
-        """
-        Accepts a freight contract and loads the cargo onto the freighter.
-
-        Args:
-            contract (FreightContract): The freight contract to accept.
-
-        Returns:
-            bool: True if the contract is successfully accepted and cargo loaded, False otherwise.
-        """
-        # Check if the contract cargo can fit within the available cargo space
-        total_cargo_volume = sum(contract.cargo.values())
-        if self.db.hold - total_cargo_volume < 0:
-            self.caller.msg("Not enough cargo space to accept the contract.")
+        """Accept a freight contract if space permits and load its cargo into self.db.cargo."""
+        total_cargo_volume = sum(contract.cargo.values()) if contract.cargo else 0
+        if self.db.cargohold + total_cargo_volume > self.db.max_cargohold:
+            self.msg("Not enough cargo space to accept the contract.")
             return False
 
-        # Attempt to accept the contract
-        result = ContractHandler.accept_contract(contract)
-        self.caller.msg(result)
+        # Accept the contract
+        accepted = ContractHandler.accept_contract(contract)
+        if not accepted:
+            self.msg("Failed to accept contract.")
+            return False
+
+        # merge cargo into ship
+        if not self.db.cargo:
+            self.db.cargo = {}
+        for item, qty in contract.cargo.items():
+            self.db.cargo[item] = self.db.cargo.get(item, 0) + qty
+        self.db.cargohold += total_cargo_volume
+        self.msg(f"Contract accepted and cargo loaded. Reward: {contract.reward}")
         return True
     
 

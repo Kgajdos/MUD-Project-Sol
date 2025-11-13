@@ -21,7 +21,7 @@ class CmdEnterTram(Command):
 
     def func(self):
         tram = self.obj
-        self.caller.msg("You board the tram.")
+        self.msg("You board the tram.")
         self.caller.move_to(tram, move_type = "board")
 
 class CmdLeaveTram(Command):
@@ -39,7 +39,7 @@ class CmdLeaveTram(Command):
     def func(self):
         tram = self.obj
         parent = tram.location
-        self.caller.msg("You disembark the tram.")
+        self.msg("You disembark the tram.")
         self.caller.move_to(parent, move_type = "disembark")
 
 class CmdSetTram(CmdSet):

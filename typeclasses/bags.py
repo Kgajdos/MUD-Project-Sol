@@ -16,7 +16,7 @@ class CmdOpenBag(Command):
     
     def func(self):
         #self.obj is bag, self.caller is pc
-        self.caller.msg(self.obj.contents)
+        self.msg(self.obj.contents)
 
 
 
@@ -41,14 +41,14 @@ class CmdRetrieve(Command):
     def func(self):
         item_name = self.item
         if not item_name:
-            self.caller.msg("Retrieve what?")
+            self.msg("Retrieve what?")
             raise InterruptCommand
         item = self.caller.search(item_name)
         container = self.obj.search(self.container)
         if not container:
-            self.caller.msg(f"You do not see {container.key}")
+            self.msg(f"You do not see {container.key}")
         container.retrieve_item(self.caller, item_name)
-        self.caller.msg(f"You grab {item_name}.")
+        self.msg(f"You grab {item_name}.")
 
 
 class BagCmdSet(CmdSet):
@@ -91,4 +91,3 @@ class Chest(Bag):
         super().retrieve_item()
         caller.location.msg(f"You grab {item_name.key} from {self.key}")
 
-    

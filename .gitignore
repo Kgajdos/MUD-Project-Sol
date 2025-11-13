@@ -60,3 +60,63 @@ launch.bat
 #Personal bat files
 *.bat
 Developer Notes.txt
+
+# Virtual envs and caches
+.venv/
+venv/
+env/
+ENV/
+.Python
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# VSCode
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secret/env files
+.env
+.env.*
+.env.local
+.envrc
+secrets.yml
+secrets.yaml
+*.secret
+*.key
+*.pem
+*.p12
+*.crt
+*.csr
+credentials.json
+secrets.json
+*.enc
+
+# SSH / private keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pub
+
+# Sensitive configs and local overrides
+server/conf/*.py
+server/conf/local_*.py
+settings_local.py
+local_settings.py
+
+# Optional: Ignore generated datasets or exported data
+data/*.csv
+data/*.json
+
+# Node/npm (if any)
+node_modules/
+
+# Logs and runtime
+logs/
+
+# End of .gitignore

@@ -30,8 +30,10 @@ class CombatBaseHandler(DefaultScript):
             raise CombatFailure("Cannot start combat without a place to do it.")
         
         combathandler_key = kwargs.pop("key", "combathandler")
-        combathandler = obj.ndb.combathandler
-        if not combathandler or combathandler.id:
+        # be defensive: ndb may not have the attribute yet, and an existing
+        # combathandler may lack a valid id if it's been deleted/etc.
+        combathandler = getattr(obj.ndb, "combathandler", None)
+        if not combathandler or not getattr(combathandler, "id", None):
             combathandler = obj.scripts.get(combathandler_key).first()
             if not combathandler:
                 persistent = kwargs.pop("persistent", True)
@@ -96,7 +98,7 @@ class CombatBaseHandler(DefaultScript):
 
         #preparing colors and hurt levels
         allies = [f"{ally} ({ally.hurt_level})" for ally in allies]
-        enemies = [f"{enemy} {enemy.hurt_level})" for enemy in enemies]
+        enemies = [f"{enemy} ({enemy.hurt_level})" for enemy in enemies]
 
         #The center collumn with the vs
         vs_column = ["" for _ in range(max(nallies, nenemies))]
@@ -164,22 +166,6 @@ class CombatBaseHandler(DefaultScript):
         """ 
         raise NotImplementedError
 
-    def msg(self, message, combatant=None, broadcast=True, location=True):
-        if not location:
-            location = self.obj
-
-        if not broadcast and combatant:
-            exclude = [obj for obj in location.contents if obj is not combatant]
-        else:
-            exclude = []
-
-        location.msg_contents(
-            message,
-            exclude=exclude,
-            from_obj=combatant,
-            mapping={locobj.key: locobj for locobj in location.contents}
-        )
-
     def queue_action(self, action_dict, combatant):
         """ 
         Queue an action for the combatant by providing 
@@ -221,9 +207,15 @@ class CombatAction:
         self.combathandler = combathandler
         self.combatant  = combatant
 
+        # Initialize attributes from the provided action dict.  We allow
+        # keys beginning with '_' to be treated as private, but most
+        # action parameters (target, item, recipient, dt, etc.) need to
+        # become attributes on the action instance.
         for key, val in action_dict.items():
-            if key.startswith("_"):
+            if not key.startswith("_"):
                 setattr(self, key, val)
+        # keep the raw action dict available if needed
+        self._action_dict = action_dict
 
     def msg(self, message, broadcast=True):
         "Send message to others in combat"

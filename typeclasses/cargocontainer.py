@@ -39,7 +39,7 @@ class CargoContainer(Object):
         for item, quantity in resource.items():
             self.db.stored += quantity
             if self.db.stored > self.db.capacity:
-                self.caller.msg("Container is full!")
+                self.msg("Container is full!")
                 break  # Stop adding resources once the container is full
             else:
                 if item not in self.db.resources:
@@ -62,7 +62,7 @@ class CargoContainer(Object):
             object.move_to(self)
             self.db.stored += object.size
         else:
-            self.caller.msg("Container is full!")
+            self.msg("Container is full!")
 
     def check_manifest(self):
-        self.caller.msg(self.db.resources)
+        self.msg(self.db.resources)

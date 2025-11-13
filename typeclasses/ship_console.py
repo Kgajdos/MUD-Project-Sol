@@ -80,28 +80,71 @@ class CmdShipConsole(Command):
     help_category = "Ship"
 
     def at_pre_cmd(self):
+        """Prepare the console command. Locate a console object in the caller's
+        location if self.obj is not set, and guard all attribute access so the
+        command won't blow up and will gracefully cancel if no console/ship is
+        present.
+        """
+        console_obj = self.obj
+        if not console_obj:
+            loc = getattr(self.caller, 'location', None)
+            if loc:
+                for o in getattr(loc, 'contents', []):
+                    # prefer objects that expose the ship console API
+                    if hasattr(o, 'start_consoles'):
+                        console_obj = o
+                        break
+        if not console_obj:
+            # Nothing to act on - cancel the command
+            self.caller.msg("There is no ship console here.")
+            return True
 
-        #this function will terminate the command if this function returns True. 
-        if not self.obj:
-            self.obj = self.caller.location
+        # ensure we keep the found console for func()
+        self.obj = console_obj
 
-        ship = self.obj.location.location
+        # try to resolve the ship object safely
+        ship = None
+        try:
+            loc = getattr(console_obj, 'location', None)
+            if loc is not None:
+                ship = getattr(loc, 'location', None)
+        except Exception:
+            ship = None
 
-        print(f"ship ID: {ship.db.shipID} ({type(ship.db.shipID)})")
-        print(f"player ship ID: {self.caller.db.active_ship} ({type(self.caller.db.active_ship)})")
+        # use logger.debug instead of print to avoid spamming stdout
+        try:
+            ship_id = ship.db.get('shipID') if ship else None
+        except Exception:
+            ship_id = None
+        try:
+            active_ship = self.caller.db.get('active_ship')
+        except Exception:
+            active_ship = None
 
-
-        if ship.db.shipID != self.caller.db.active_ship:
-
-            print(f"Checking self.obj: {self.obj}")
-            ship = self.obj.location.location
-            print(f"Checking ship: {ship}")
-
+        from evennia import logger as _logger
+        if ship:
+            _logger.debug(f"ship ID: {ship_id} ({type(ship_id)})")
+            _logger.debug(f"player ship ID: {active_ship} ({type(active_ship)})")
+            if ship_id != active_ship:
+                _logger.debug(f"Console/ship mismatch: console={console_obj} ship={ship}")
+        else:
+            _logger.debug("No ship resolved for this console.")
 
 
     def func(self):
+        # If at_pre_cmd found and set self.obj, attempt to start the menu.
+        if not getattr(self, 'obj', None):
+            self.caller.msg("There is no working console to use.")
+            return
+
         if hasattr(self.obj, 'start_consoles'):
-            self.obj.start_consoles(self.caller, self.session)
+            try:
+                self.obj.start_consoles(self.caller, self.session)
+            except Exception as e:
+                # Log full traceback for debugging and tell the player something went wrong.
+                from evennia import logger as _logger
+                _logger.log_trace(f"Error starting ship console menu: {e}")
+                self.caller.msg("The console failed to start. Check server logs.")
         else:
             self.caller.msg("The console is malfunctioning.")
 
@@ -204,7 +247,7 @@ class CmdLoadCargo(Command):
         self.args = self.args.strip()
 
         if not self.args:
-            self.caller.msg("Load what cargo?")
+            self.msg("Load what cargo?")
             raise InterruptCommand
 
         
@@ -237,7 +280,7 @@ class CmdUnloadCargo(Command):
         self.args = self.args.strip()
 
         if not self.args:
-            self.caller.msg("Load what?")
+            self.msg("Load what?")
             raise InterruptCommand
         
     def func(self):
@@ -246,7 +289,7 @@ class CmdUnloadCargo(Command):
             return
 
         cargo.move_to(self.caller)
-        self.caller.msg(f"You move {cargo.key} into your inventory")
+        self.msg(f"You move {cargo.key} into your inventory")
 
 class ConsoleCmdSet(CmdSet):
     key = "consolecmdset"
@@ -411,12 +454,6 @@ def menunode_confirm_travel(caller, *raw_string, **kwargs):
     menu_text = f"You've selected {destination}. Do you want to proceed with this destination?"
 
 
-
-    if not ship:
-        caller.msg("You are not on a ship.")
-        return "menunode_set_destination"
-
-
     choices = {
         "key": (f"Yes"),
         "desc": f"Confirm Travel",
@@ -425,20 +462,9 @@ def menunode_confirm_travel(caller, *raw_string, **kwargs):
 
     return menu_text, choices
 
-    choices = [{
-        "key": (f"Yes"),
-        "desc": f"Confirm Travel",
-        "goto": "menunode_travel",
-     },
-        {
-        "key": "No",
-        "desc": f"Return to Choices",
-        "goto": "menunode_set_destination"
-        }
-     ]
 
 
-def menunode_travel(caller):
+def menunode_travel(caller, *args, **kwargs):
     """
     Move the ship to the selected room.
     """
@@ -503,59 +529,55 @@ def get_paginated_options(options, page):
 
 
 
-
 def menunode_set_destination(caller, raw_string, **kwargs):
-
     """
-    Set the ship's destination based on the user's input.
+    Present a paginated list of available space room identifiers and allow
+    the player to pick a destination. Accepts optional kwargs:
+      - page: int page number (1-based)
     """
-    destination = raw_string.strip()  # Clean up the input
-    print(f"Debug: Destination is {destination}")
-    
-    # Retrieve all space room identifiers
-    page = kwargs.get("page", 1)
+    destination_input = (raw_string or "").strip()
+    page = int(kwargs.get("page", 1)) if kwargs.get("page") is not None else 1
 
-    
+    identifiers = get_all_space_room_identifiers()
+    if not identifiers:
+        caller.msg("No destinations available.")
+        return "menunode_start"
 
+    total_pages = max(1, (len(identifiers) + OPTIONS_PER_PAGE - 1) // OPTIONS_PER_PAGE)
+    page = max(1, min(page, total_pages))
 
+    paginated_options = get_paginated_options(identifiers, page)
+    start_index = (page - 1) * OPTIONS_PER_PAGE
 
-    # Proceed with setting the destination
-    caller.msg(f"Destination {destination} is set.")
+    option_lines = [f"{start_index + i + 1}. {dest}" for i, dest in enumerate(paginated_options)]
+    option_text = "\n".join(option_lines)
+    menu_text = f"Choose your destination:\n{option_text}\n\nPage {page} of {total_pages}\n"
 
-    total_pages = (len(identifiers) + OPTIONS_PER_PAGE - 1) // OPTIONS_PER_PAGE
- 
-    option_text = "\n".join([f"{index + 1}.{destination}" for index, destination in enumerate(paginated_options)])
-    menu_text = f"Choose your destination:\n{option_text}\n"
-     
-
-    if page > 1:
-        menu_text += "Press [N] for next page."
-    if page < total_pages:
-        menu_text += "Press [P] for previous page."
-
-     
-    menu_text += f"Page{page} of {total_pages}"
- 
     choices = []
- 
     if page > 1:
         choices.append({
             "key": "P",
+            "desc": "Previous Page",
             "goto": ("menunode_set_destination", {"page": page - 1})
         })
- 
     if page < total_pages:
         choices.append({
-             "key": "N",
-             "goto": ("menunode_set_destination", {"page": page + 1})
+            "key": "N",
+            "desc": "Next Page",
+            "goto": ("menunode_set_destination", {"page": page + 1})
         })
- 
-    for index, destination in enumerate(paginated_options):
-        choices.append({"desc": (f"|g{destination}|n"),
-                         "goto": ("menunode_confirm_travel", {"destination": destination})})
- 
+
+    for i, dest in enumerate(paginated_options):
+        numeric_key = str(start_index + i + 1)
+        choices.append({
+            "key": numeric_key,
+            "desc": (f"|g{dest}|n"),
+            "goto": ("menunode_confirm_travel", {"destination": dest})
+        })
+
+    choices.append({"key": ("B", "b"), "desc": "Back", "goto": "menunode_start"})
     return menu_text, choices
- 
+
 
 def handle_pagination(caller, raw_string):
     """
@@ -724,9 +746,29 @@ class ShipConsole(Object):
         """
         ship = self.location.location
         form = EvForm("typeclasses.shipform-1")
+
+        # Ensure pilot is populated. If the stored pilot is missing but the
+        # player opening the console has this ship as their active_ship,
+        # persist the player's name onto the ship so a server restart isn't
+        # required to see the pilot value.
+        pilot = ship.db.get("pilot")
+        try:
+            ship_id = ship.db.get("shipID")
+        except Exception:
+            ship_id = None
+
+        if not pilot and player and player.db.get("active_ship") is not None and ship_id is not None:
+            if player.db.get("active_ship") == ship_id:
+                # persist the current player as the pilot for future queries
+                ship.db.pilot = player.key
+                pilot = player.key
+
+        # Fallback to an empty string if still not set to avoid None in the form
+        pilot_display = pilot or "(Unassigned)"
+
         form.map(cells={
             1: ship.key,
-            2: ship.db.pilot,
+            2: pilot_display,
             3: ship.db.ship_class,
             4: ship.db.shipID
         })

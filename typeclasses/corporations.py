@@ -25,8 +25,13 @@ class Corporation(DefaultObject):
         self.db.contracts = []
 
     def notify(self, message):
-        for leader in self.db.leaders.values():
-            leader.msg(f"[{self.key}] {message}")
+        # leaders mapping is employee -> title, so iterate the employee keys
+        for leader in list(self.db.leaders.keys()):
+            try:
+                leader.msg(f"[{self.key}] {message}")
+            except Exception:
+                # ignore invalid/cleared references
+                continue
 
     def add_to_reserves(self, resource):
         """
@@ -103,15 +108,80 @@ class Corporation(DefaultObject):
         for employee, player_class in self.db.employees.items():
             self.notify(f"{employee} is employed as a {player_class}.")
 
+    def show_jobs(self):
+        if not self.db.jobs:
+            self.notify("No jobs available.")
+            return
+        for job in self.db.jobs:
+            self.notify(f"Job: {job.description}, Reward: {job.reward} credits, Task: {job.task_details}.")
+
+    def show_contracts(self):
+        if not self.db.contracts:
+            self.notify("No contracts available.")
+            return
+        for contract_summary in self.db.contracts:
+            # contract_summary is a serializable dict
+            self.notify(f"Contract: {contract_summary.get('description')}, Reward: {contract_summary.get('reward')} credits, Cargo: {contract_summary.get('cargo')}.")
+
+    def complete_job(self, job, player):
+        """
+        Completes a job and pays the player.
+
+        Args:
+            job (Job): The job to be completed.
+            player (Object): The player who completed the job.
+        """
+        if job.complete(player):
+            # remove job from persistent list if present
+            if job in (self.db.jobs or []):
+                self.db.jobs.remove(job)
+            self.notify(f"Job completed: {job.description}. {player.name} has been paid {job.reward} credits.")
+        else:
+            self.notify("Job could not be completed.")
+
+    def complete_contract(self, contract, player):
+        """
+        Completes a contract and pays the player.
+
+        Args:
+            contract (FreightContract or dict): The contract to be completed (object or stored summary).
+            player (Object): The player who completed the contract.
+        """
+        # allow passing either the live contract object or a serializable summary
+        live_contract = contract
+        if isinstance(contract, dict):
+            # try to find the live object in ndb
+            live_contract = None
+            for c in getattr(self.ndb, 'contracts', []):
+                if id(c) == contract.get('id') or c.description == contract.get('description'):
+                    live_contract = c
+                    break
+        if not live_contract:
+            self.notify("Contract could not be completed.")
+            return
+
+        if live_contract.complete(player):
+            # remove from ndb live list
+            ndb_contracts = getattr(self.ndb, 'contracts', [])
+            if live_contract in ndb_contracts:
+                ndb_contracts.remove(live_contract)
+                self.ndb.contracts = ndb_contracts
+            # remove associated serializable summary from db
+            if self.db.contracts:
+                self.db.contracts = [s for s in self.db.contracts if s.get('id') != id(live_contract) and s.get('description') != live_contract.description]
+            self.notify(f"Contract completed: {live_contract.description}. {player.name} has been paid {live_contract.reward} credits.")
+        else:
+            self.notify("Contract could not be completed.")
+
     def promote(self, employee, title):
         """
-        Promotes an employee to a leadership position.
+        Promotes an employee to a leadership position. Stored as employee -> title mapping.
 
         Args:
             employee (Object): The object representing the employee to be promoted.
             title (str): The title or position to be assigned to the employee as a leader.
         """
-        self.db.leaders[title] = employee
+        self.db.leaders[employee] = title
         employee.cmdset.add(CorpoCmdSet())
 
     def demote(self, employee):
@@ -121,10 +191,8 @@ class Corporation(DefaultObject):
         Args:
             employee (Object): The object representing the employee to be demoted.
         """
-        for title, leader in self.db.leaders.items():
-            if leader == employee:
-                del self.db.leaders[title]
-                break
+        if employee in self.db.leaders:
+            del self.db.leaders[employee]
         employee.cmdset.remove(CorpoCmdSet())
 
     def create_cargo_crate(self, resources=None, object=None):
@@ -177,49 +245,24 @@ class Corporation(DefaultObject):
 
     def post_contract(self, sender, receiver, cargo, weight, destination, reward, expiry_date=None):
         contract = ContractHandler.create_freight_contract(sender, receiver, cargo, weight, destination, reward, expiry_date)
-        self.db.contracts.append(contract)
+        # keep the live contract in ndb (non-persistent) to avoid pickling Evennia objects
+        if not hasattr(self.ndb, 'contracts') or self.ndb.contracts is None:
+            self.ndb.contracts = []
+        self.ndb.contracts.append(contract)
+
+        # persist a lightweight serializable summary in db.contracts
+        summary = {
+            'id': id(contract),
+            'description': contract.description,
+            'reward': contract.reward,
+            'cargo': contract.cargo,
+            'status': contract.status,
+        }
+        if not self.db.contracts:
+            self.db.contracts = []
+        self.db.contracts.append(summary)
         self.notify(f"Contract posted: {contract.description} for {contract.reward} credits.")
         return contract
-
-    def show_jobs(self):
-        if not self.db.jobs:
-            self.notify("No jobs available.")
-        for job in self.db.jobs:
-            self.notify(f"Job: {job.description}, Reward: {job.reward} credits, Task: {job.task_details}.")
-
-    def show_contracts(self):
-        if not self.db.contracts:
-            self.notify("No contracts available.")
-        for contract in self.db.contracts:
-            self.notify(f"Contract: {contract.description}, Reward: {contract.reward} credits, Cargo: {contract.cargo}.")
-
-    def complete_job(self, job, player):
-        """
-        Completes a job and pays the player.
-
-        Args:
-            job (Job): The job to be completed.
-            player (Object): The player who completed the job.
-        """
-        if job.complete(player):
-            self.db.jobs.remove(job)
-            self.notify(f"Job completed: {job.description}. {player.name} has been paid {job.reward} credits.")
-        else:
-            self.notify("Job could not be completed.")
-
-    def complete_contract(self, contract, player):
-        """
-        Completes a contract and pays the player.
-
-        Args:
-            contract (FreightContract): The contract to be completed.
-            player (Object): The player who completed the contract.
-        """
-        if contract.complete(player):
-            self.db.contracts.remove(contract)
-            self.notify(f"Contract completed: {contract.description}. {player.name} has been paid {contract.reward} credits.")
-        else:
-            self.notify("Contract could not be completed.")
 
     def show_available_tech(self, caller):
         available = [t for t, data in TECH_TREE.items() if all(r in self.db.owned_tech for r in data['requirements'])]

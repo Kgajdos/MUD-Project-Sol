@@ -1,131 +1,51 @@
-DEVELOPER NOTES - [6 AUG 2024]
-Past Updates and Fixes:
+DEVELOPER NOTES - 13 NOV 2025
 
-<<<<<<< Updated upstream
-Menu Node Error Fix:
+Summary
+-------
+Today I performed a repository-wide sweep and fixed multiple runtime and design issues focused on the economy, ships, consoles, and initialization logic. I also added a YAML-backed skills registry with admin tooling and Evennia-focused tests for the economy flows.
 
-Fixed the error with menunode_set_destination by ensuring it properly queries available destinations and uses get_all_space_room_identifiers().
-New Room Creation Logic:
+Key changes
+-----------
+- Contracts / Corporations
+  - Fixed Contract and ContractHandler signatures and status transitions.
+  - Prevented storing live Evennia objects in persistent attributes: live contract objects are kept in ndb (runtime) and lightweight serializable summaries are stored in db to avoid pickling errors.
+  - Leaders mapping normalized to employee -> title; promote/demote and notify flows updated accordingly.
 
-Implemented create_new_room() to handle the creation of new rooms with random descriptions and types.
-Added functionality to randomly pick a room type and ensure the room description matches the type.
-Ensured newly created rooms have keys that match their descriptions and include default descriptions for various room types.
-Error Handling:
+- Ships / Ship spawning
+  - Fixed ship cargo, capacity and save() logic; added proper checks when accepting freight contracts.
+  - Ship spawn now creates and persists a stable shipID and stores the pilot as a serializable string (player.key) in `ship.db.pilot`; also stores a transient `ship.ndb._pilot_obj` for runtime messaging. This avoids requiring a server restart after spawning ships.
 
-Addressed issues with room type checking and corrected the handling of no_default parameter.
-Fixed errors related to setting room attributes and handling database-related exceptions.
-Testing and Verification:
+- Ship console / Menus
+  - Restored and hardened the ship console command (`CmdShipConsole`) and EvMenu nodes. The `console` command now safely locates a nearby console object, guards against missing ship references, logs debug info, and presents friendly messages to the player.
+  - `ShipConsole.ship_sheet` now populates and persists `ship.db.pilot` dynamically when the console is accessed by the ship owner so pilot shows up immediately.
+  - Restored paginated destination list in `menunode_set_destination` and added Next/Previous navigation.
 
-Verified the functionality by running tests to ensure new rooms are created correctly and menu nodes transition as expected.
-12 March 2025:
+- Character initialization
+  - Moved import-time random AttributeProperty initializations into `at_object_creation` for per-instance randomness (characters, enemies, etc.).
 
-Tested Console:
+- Skills system
+  - Added `typeclasses/skills.py` (YAML-backed registry) and `data/skills.yml` containing skill definitions.
+  - Added a small admin command `@skills` to manage the registry at runtime (`commands/skill_admin.py`).
 
-Tested fly into uncharted space
-Testing reveals the room is created but cannot be found
-Likely a bug in how the function fetches the list of rooms
-Tested set destination
-Testing reveals that function is not implemented
-Updates on First Steps Mission
+- Tests and CI
+  - Added Evennia-style tests for corporations/jobs/freighter contract flows (`tests/test_economy.py`).
+  - Ran the Evennia test harness; found and fixed a pickling error by moving live objects to ndb and storing serializable summaries in db.
 
-Ongoing issues with calling the required mission start function
-No safeguards are implemented to include:
-Saving
-Checkpoints
-Player logging off could disrupt mission
-Verified Bugs:
-=======
-*********************************************KNOWN BUGS*********************************************
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
+- Misc
+  - Updated `.gitignore` to exclude virtualenvs, keys, and IDE artifacts.
+  - Various messaging and minor bug fixes (use of caller.msg vs self.msg, save() invocations, pagination, menu node resilience).
 
-Console cannot be accessed until the server is restarted.
-Find ways to update the ship without restarting the server
-Board currently lets the player puppet any player/character in the room
-Filter results to only allow the player's ship to be boarded
-Need to account for multiple ships owned by other players to be in the same room/hanger
-16 March 2025:
+Why these decisions
+-------------------
+- Evennia DB attributes are pickled when stored; storing live typeclass objects caused runtime pickle errors. Storing only serializable summaries in `db` and keeping live objects in `ndb` is the safe pattern.
+- Persisting `shipID` and storing `pilot` as a serializable key removes the need to restart the server to see the assigned pilot when spawning new ships.
+- Moving randomness into `at_object_creation` guarantees unique per-instance values instead of a single import-time value.
 
-Fixed tutorial mission not working with a new character
+Next steps / TODO
+-----------------
+- Run the full Evennia test suite and iterate on any remaining failings.
+- Optionally expose the skill admin command in an admin CmdSet.
+- Decide preferred admin permission group for runtime admin commands (currently uses ADMIN_PERMISSION constant in the new command); align with your existing perms (e.g., "Developer" or "Immortals").
+- Add more tests for ships, chargen and skill flows (integration tests for EvMenu nodes).
 
-Works as intended
-Attempted to fix ship name change from breaking
 
-Bug where the ship.db.shipID is None before the server resets
-DEVELOPMENT TASKS
-Books
-
-Create book objects with menus and contents
-Every page is an object with a number and text stored in the book
-Directory for books, each with its own defining file
-Wearables
-
-Add stats to wearables
-Document how to build the object in-game
-Example:
-python
-Copy
-Edit
-class ToolQuality(Enum):
-    POOR = 0.01
-    LOW = 0.05
-    MED = 0.10
-    GOOD = 0.15
-    GREAT = 0.20
-    EXTRAORDINARY = 0.25
-Player Roles/Jobs
-
-Separate player roles/jobs based on class
-Pilots: Tutorial on basic movement, commands, and ship commands
-Miner: Tutorial on finding asteroids, landing/attaching, and mining
-Fighter: Tutorial on contracts, combat, and space travel
-Freighter: Tutorial on contracts, storage, economies, and deep-space travel
-Researcher: Tutorial on research room, skills, and beginner contracts
-Ship Command File
-=======
->>>>>>> Stashed changes
-
-Major changes needed: Split between classes
-FUTURE FEATURES
-Corporations
-
-Split leaders into CEO, COO, CFO
-Create building projects
-Projects
-
-Define a class for projects including required resources/research
-Exploration System
-
-Procedurally generated points of interest:
-Celestial phenomenon:
-Solar Flares
-Comets
-Supernovae
-Black Holes
-Gravitational Waves
-Asteroid Belts
-Nebulae
-Currently Working On
-Corporate computer: Allows players to sell cargo and take on contracts
-Setting values to minerals: In data/minerals.py
-TO-DO LIST - [6 AUG 2024]
-Further Testing:
-
-Test menunode_chart_course and other related menu nodes extensively to ensure they handle all possible scenarios correctly.
-Validate that newly created rooms are correctly listed and navigated to.
-Room Descriptions:
-
-Consider expanding the list of pre-generated room descriptions to include a wider variety of scenarios.
-Implement additional descriptions or features if needed based on player feedback.
-Player Experience:
-
-Review and adjust the user experience to ensure players find it engaging and intuitive.
-Gather feedback on the new room creation and navigation process to make improvements.
-Documentation:
-
-Update developer notes to include details about the new room creation logic, menu node changes, and error handling improvements.
-Document the testing procedures and any specific changes made to the Evennia configurations.
-Future Enhancements:
-
-Explore adding more features or customization options for room creation and navigation.
-Consider implementing additional menu nodes or interactions based on future requirements.

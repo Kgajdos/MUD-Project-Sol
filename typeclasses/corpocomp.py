@@ -17,12 +17,12 @@ class CmdCorporateComputer(Command):
 
     def func(self):
         if not self.obj:
-            self.caller.msg("Error: No computer object found.")
+            self.msg("Error: No computer object found.")
             return
         try:
             self.obj.start_computer(self.caller, self.session)
         except Exception as e:
-            self.caller.msg(f"An error occurred: {e}")
+            self.msg(f"An error occurred: {e}")
 
 class CorpoCompCmdSet(CmdSet):
     key = "corpocompcmdset"

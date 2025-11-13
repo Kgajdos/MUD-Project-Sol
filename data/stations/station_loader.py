@@ -50,11 +50,11 @@ class StationLoader:
             to_id = str(exit_data["to"]).lower()
             destination = self.room_map.get(to_id)
             if not destination:
-                print(f"  ⚠️  Destination not found for ID {to_id}")
+                print(f"Destination not found for ID {to_id}")
                 continue
             if not any(e.key.lower() == exit_data["direction"].lower() for e in origin.exits):
                 create_object(Exit, key=exit_data["direction"], location=origin, destination=destination)
-                print(f"  ✅ Exit '{exit_data['direction']}' created from '{origin.key}' to '{destination.key}'")
+                print(f"Exit '{exit_data['direction']}' created from '{origin.key}' to '{destination.key}'")
 
 
     def _load_npcs(self):

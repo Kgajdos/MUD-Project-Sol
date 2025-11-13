@@ -1,36 +1,47 @@
 from typeclasses.objects import Object
-from evennia import AttributeProperty
 
-#Class that defines tools and how they interact with the world
+# Class that defines tools and how they interact with the world
 class Tools(Object):
 
     def at_object_creation(self):
-        self.ToolQuality = AttributeProperty.attributes.add("toolquality", "poor")
-        self.modifier = AttributeProperty.attributes.add("modifier", None)
-        self.set_tool_quality
+        super().at_object_creation()
+        # store simple, serializable attributes on the db
+        self.db.toolquality = "poor"
+        self.db.modifier = 0.0
 
-
-    #The idea here is that tools will give a % extra based on tool quality (Poor = 0%, Low = 5%, Med = 10%, Good = 15%, Great = 20%, Extrodinary = 25%) 
-    #self.ToolQuality is a number to represent a %
-    @staticmethod
     def set_tool_quality(self, percentage):
-        self.modifier = percentage
-        if percentage < .05:
-            self.ToolQuality = "Poor"
-        elif percentage > .05 and percentage < .1:
-            self.ToolQuality = "Low"
-        elif percentage > .1 and percentage < .15:
-            self.ToolQuality = "Medium"
-        elif percentage > .15 and percentage < .2:
-            self.ToolQuality = "Good"
-        elif percentage > .2 and percentage < .25:
-            self.ToolQuality = "Great"
-        elif percentage > .25:
-            self.ToolQuality = "Extrodinary"
+        """Set tool quality based on a percentage (0.0-1.0).
+        Also stores a numeric modifier suitable for calculations.
+        """
+        try:
+            percentage = float(percentage)
+        except Exception:
+            percentage = 0.0
+        self.db.modifier = percentage
+        if percentage < 0.05:
+            self.db.toolquality = "Poor"
+        elif percentage < 0.10:
+            self.db.toolquality = "Low"
+        elif percentage < 0.15:
+            self.db.toolquality = "Medium"
+        elif percentage < 0.20:
+            self.db.toolquality = "Good"
+        elif percentage < 0.25:
+            self.db.toolquality = "Great"
         else:
-            self.ToolQuality = "Broken"
+            self.db.toolquality = "Extraordinary"
 
-    @classmethod
-    def tool_advantage(cls, self, caller):
-        tool_quality = self.ToolQuality
-        return caller * tool_quality
+    @staticmethod
+    def tool_advantage(tool, base_value):
+        """Return the modified value based on the tool's modifier.
+        tool may be an object instance or a dict-like with a 'modifier'.
+        """
+        modifier = 0.0
+        if hasattr(tool, 'db'):
+            modifier = getattr(tool.db, 'modifier', 0.0) or 0.0
+        elif isinstance(tool, dict):
+            modifier = tool.get('modifier', 0.0) or 0.0
+        try:
+            return base_value + base_value * float(modifier)
+        except Exception:
+            return base_value

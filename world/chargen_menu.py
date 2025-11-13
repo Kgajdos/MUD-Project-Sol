@@ -1,5 +1,14 @@
 from evennia.utils import dedent
 from typeclasses.characters import Character
+from typeclasses.skills import (
+    make_skill_entry as _make_skill_entry,
+    init_skills_on_char,
+    add_skill_xp,
+    format_skill_display,
+    get_selectable_skill_keys,
+    get_default_xp_required,
+)
+
 import inflect
 _INFLECT = inflect.engine()
 
@@ -268,20 +277,6 @@ def _set_category_opt(caller, raw_string, category, value, **kwargs):
 #                 MULTIPLE CHOICE                       #
 #########################################################
 
-_SKILL_OPTIONS = [
-    "cooking",
-    "diplomacy",
-    "fabricating",
-    "guns",
-    "logic",
-    "luck",
-    "mechanic",
-    "melee",
-    "piloting",
-    "tinkering",
-    "trade"
-]
-
 def menunode_multi_choice(caller, raw_string, **kwargs):
     char = caller.new_char
 
@@ -290,7 +285,11 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
 # in order to support picking up from where we left off, get the options from the character
 # if they weren't passed in
 # this is again just a simple attribute, but you could retrieve this list however
-    selected = kwargs.get("selected") or char.attributes.get("skill_list", [])
+    selected = kwargs.get("selected") or char.db.get("skills", {}).keys()
+
+    # normalize selected to a list
+    if not isinstance(selected, (list, tuple)):
+        selected = list(selected)
 
     text = dedent(
         """\
@@ -299,7 +298,7 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
     )
     help = ("Please choose exactly 3 skills.")
     options = []
-    for option in _SKILL_OPTIONS:
+    for option in get_selectable_skill_keys():
         #check if option is selected
         if option in selected:
             #if it has, we want to highlight it
@@ -307,7 +306,7 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
         else:
             opt_desc = option
         options.append(
-            {"desc": opt_desc, "goto": (_set_multichoice, {"selected": selected, "option": option, "level": 1, "xp": 0})}
+            {"desc": opt_desc, "goto": (_set_multichoice, {"selected": selected, "option": option})}
         )
 
     #will only display the next option if 3 choices are made
@@ -328,18 +327,30 @@ def menunode_multi_choice(caller, raw_string, **kwargs):
     )
     return (text, help), options
     
-def _set_multichoice(caller, raw_string, selected=[], **kwargs):
-    """Saves the current choices to the character"""
+def _set_multichoice(caller, raw_string, selected=None, **kwargs):
+    """Saves the current choices to the character. Uses serializable skill entries
+    and ensures the character.db.skills mapping exists.
+    """
+    if selected is None:
+        selected = []
+
     #get the option being chosen
-    if option := kwargs.get("option"):
+    option = kwargs.get("option")
+    if option:
         #already in list, remove
         if option in selected:
             selected.remove(option)
         #otherwise we add it
         else:
-            selected.append(option)
+            # limit to three selections
+            if len(selected) < 3:
+                selected.append(option)
 
-        caller.new_char.attributes.add('skills', {skill: dict(level=1, exp=0) for skill in selected})
+    # persist as skill entries, using registry defaults for xp_required
+    caller.new_char.db.skills = {
+        skill: _make_skill_entry(xp_required=get_default_xp_required(skill))
+        for skill in selected
+    }
 
     return ("menunode_multi_choice", {"selected": selected})
 

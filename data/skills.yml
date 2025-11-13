@@ -1,0 +1,98 @@
+# data/skills.yml
+# Authoritative skill registry for Project Sol.
+#
+# Each top-level key is a skill identifier (snake_case). Values are metadata
+# used by chargen, UI and game systems. Add new skills here and (optionally)
+# call the reload helper in-game or restart the server to pick up changes.
+#
+# Fields:
+#   label: human-readable name
+#   selectable: whether the skill is offered at character creation
+#   category: arbitrary grouping for UI/filters
+#   xp_required: XP required for the first level-up (integer)
+#   description: short description shown in UIs or tooltips
+
+cooking:
+  label: "Cooking"
+  selectable: true
+  category: "life"
+  xp_required: 100
+  description: "Preparing food, rations and recipes."
+
+diplomacy:
+  label: "Diplomacy"
+  selectable: true
+  category: "social"
+  xp_required: 120
+  description: "Negotiation, persuasion and etiquette."
+
+fabricating:
+  label: "Fabricating"
+  selectable: true
+  category: "trade"
+  xp_required: 110
+  description: "Building components and crafting equipment."
+
+guns:
+  label: "Firearms"
+  selectable: true
+  category: "combat"
+  xp_required: 140
+  description: "Ranged weapons, aiming and maintenance."
+
+logic:
+  label: "Logic"
+  selectable: true
+  category: "mental"
+  xp_required: 100
+  description: "Reasoning, puzzles and problem solving."
+
+luck:
+  label: "Luck"
+  selectable: true
+  category: "misc"
+  xp_required: 100
+  description: "Fortune and chance; affects random outcomes."
+
+mechanic:
+  label: "Mechanic"
+  selectable: true
+  category: "trade"
+  xp_required: 110
+  description: "Repair, diagnostics and mechanical maintenance."
+
+melee:
+  label: "Melee"
+  selectable: true
+  category: "combat"
+  xp_required: 120
+  description: "Close-quarters combat and weapon handling."
+
+piloting:
+  label: "Piloting"
+  selectable: true
+  category: "skill"
+  xp_required: 130
+  description: "Ship piloting, maneuvering and navigation."
+
+tinkering:
+  label: "Tinkering"
+  selectable: true
+  category: "trade"
+  xp_required: 105
+  description: "Small inventions, modifications and experimentation."
+
+trade:
+  label: "Trade"
+  selectable: true
+  category: "economy"
+  xp_required: 100
+  description: "Barter, appraising and commerce."
+
+# Example of a non-selectable skill (kept for reference)
+# advanced_research:
+#   label: "Advanced Research"
+#   selectable: false
+#   category: "science"
+#   xp_required: 500
+#   description: "High-end research work (not available at chargen)."
