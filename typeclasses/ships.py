@@ -5,10 +5,8 @@ import evennia.prototypes
 import evennia.prototypes.spawner
 from commands.minercommands import MinerCmdSet
 import typeclasses
-from typeclasses import ship_console
-from typeclasses import objects, sittables
+from typeclasses import ship_console, objects, sittables, rooms, exits
 from typeclasses.objects import Object
-from typeclasses import rooms, exits
 from typeclasses.rooms import Room
 from evennia import Command, CmdSet, create_object, create_script, search_object, EvMenu, EvForm, EvTable, TICKER_HANDLER, search_script
 from commands import sittables
@@ -21,7 +19,7 @@ from typeclasses.rooms import SpaceRoom
 #exists as a way to spawn ships in for the player
 class ShipManager:
     @staticmethod
-    def spawn_ship(ship_class):
+    def spawn_ship(ship_class, player):
         """
         Spawn a new ship of the given ship class.
 
@@ -34,16 +32,15 @@ class ShipManager:
         ship = None
         if ship_class == "Miner":
             ship = evennia.prototypes.spawner.spawn("BS_MINER_ROCKSKIPPER")[0]
-            ship.save()
         elif ship_class == "Fighter":
             ship = evennia.prototypes.spawner.spawn("BS_FIGHTER_CRICKET")[0]
-            ship.save()
         elif ship_class == "Freighter":
             ship = evennia.prototypes.spawner.spawn("BS_FREIGHTER_SMALLHAULER")[0]
-            ship.save()
         elif ship_class == "Researcher":
             ship = evennia.prototypes.spawner.spawn("BS_RESEARCHER_ASTEROIDDUST")[0]
-            ship.save()
+
+        ship.db.pilot = player.db.key
+        ship.save
 
         return ship
         

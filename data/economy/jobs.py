@@ -10,16 +10,32 @@ JOBS = {
         "category": "smelting"
     },
     "make_aluminum_sheet": {
-
+        "item_key": "aluminum_sheet",
+        "materials": {"aluminum": 3},
+        "production_time": 15,
+        "required_research": None,
+        "category": "smelting"
     },
     "make_titanium_panel": {
-
+        "item_key": "titanium_panel",
+        "materials": {"titanium": 5},
+        "production_time": 30,
+        "required_research": "smelting_tech_one",
+        "category": "smelting"
     },
     "make_copper_wiring": {
-
+        "item_key": "copper_wiring",
+        "materials": {"copper": 1},
+        "production_time": 5,
+        "required_research": None,
+        "category": "smelting"
     },
     "make_gold_plating": {
-
+        "item_key": "gold_plating",
+        "materials": {"gold": 5},
+        "production_time": 45,
+        "required_research": "smelting_tech_one",
+        "category": "smelting"
     },
     "make_platinum_alloy": {
 
@@ -28,7 +44,11 @@ JOBS = {
 
     },
     "make_iron_bar": {
-
+        "item_key": "iron_bar",
+        "materials": {"iron": 5},
+        "production_time": 20,
+        "required_research": None,
+        "category": "smelting"
     },
     "make_nickel_coil": {
 

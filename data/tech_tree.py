@@ -1,4 +1,11 @@
 TECH_TREE = {
+    #Smelting Tech
+    "smelting_tech_one": {
+    "name": "Smelting Tech 1",
+    "research": 1000,
+    "requires": [None]
+    },
+
     #Medical Tech
     "basic_medbay_tech": {
     "name": "Basic Medical Bay",

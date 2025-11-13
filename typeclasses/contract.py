@@ -25,14 +25,8 @@ class ContractBase:
             return True
         return False
     
-    #**kwargs: the ship where jobs are located
-    def get_list(self, **kwargs):
-        job_list = []
-        if not kwargs:
-            return job_list
-        for job in kwargs.items():
-            job_list.append(job)
-        return job_list
+    def is_expired(self):
+        return self.expiry_date and datetime.now > self.expiry_date
 
 
 class Job(ContractBase):
@@ -117,6 +111,10 @@ class ContractHandler:
             FreightContract: The created freight contract object.
         """
         return FreightContract(sender, receiver, cargo, weight, destination, reward, expiry_date)
+    
+    @staticmethod
+    def list_active_contracts(contracts):
+        return [c for c in contracts if c.status in ("pending", "accepted")]
     
     @staticmethod
     def update_contract(contract, **kwargs):

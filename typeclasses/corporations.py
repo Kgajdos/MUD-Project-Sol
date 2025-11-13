@@ -16,13 +16,17 @@ def create_corporation(name, leader):
 class Corporation(DefaultObject):
     def at_object_creation(self):
         super().at_object_creation()
-        self.db.leaders = []
-        self.db.employees = []
+        self.db.leaders = {}
+        self.db.employees = {}
         self.db.reserves = {}
         self.db.research = 0
         self.db.owned_tech = []
         self.db.jobs = []
         self.db.contracts = []
+
+    def notify(self, message):
+        for leader in self.db.leaders.values():
+            leader.msg(f"[{self.key}] {message}")
 
     def add_to_reserves(self, resource):
         """
@@ -57,7 +61,7 @@ class Corporation(DefaultObject):
                 temp_dict[item] = quantity
             else:
                 temp_dict[item] += quantity
-        self.msg(f"Corporate Reserves: {temp_dict}.")
+        self.notify(f"Corporate Reserves: {temp_dict}.")
 
     def pay_employee(self, employee, credits):
         """
@@ -70,7 +74,7 @@ class Corporation(DefaultObject):
         if employee in self.db.employees:
             employee.db.credits += credits
         else:
-            self.caller.msg(f"{employee} is not a member of this corporation")
+            self.notify(f"{employee} is not a member of this corporation")
 
     def hire_employee(self, employee, player_class):
         """
@@ -97,7 +101,7 @@ class Corporation(DefaultObject):
         Displays a list of employed players and their assigned player classes.
         """
         for employee, player_class in self.db.employees.items():
-            self.msg(f"{employee} is employed as a {player_class}.")
+            self.notify(f"{employee} is employed as a {player_class}.")
 
     def promote(self, employee, title):
         """
@@ -163,29 +167,31 @@ class Corporation(DefaultObject):
         if crate.location == self.location:
             crate.move_to(location)
         else:
-            self.msg(f"{crate} not found in the current location.")
+            self.notify(f"{crate} not found in the current location.")
 
     def post_job(self, description, reward, task_details):
         job = ContractHandler.create_job(description, reward, task_details)
         self.db.jobs.append(job)
-        self.msg(f"Job posted: {description} for {reward} credits.")
+        self.notify(f"Job posted: {description} for {reward} credits.")
+        return job
 
     def post_contract(self, sender, receiver, cargo, weight, destination, reward, expiry_date=None):
         contract = ContractHandler.create_freight_contract(sender, receiver, cargo, weight, destination, reward, expiry_date)
         self.db.contracts.append(contract)
-        self.msg(f"Contract posted: {contract.description} for {contract.reward} credits.")
+        self.notify(f"Contract posted: {contract.description} for {contract.reward} credits.")
+        return contract
 
     def show_jobs(self):
         if not self.db.jobs:
-            self.msg("No jobs available.")
+            self.notify("No jobs available.")
         for job in self.db.jobs:
-            self.msg(f"Job: {job.description}, Reward: {job.reward} credits, Task: {job.task_details}.")
+            self.notify(f"Job: {job.description}, Reward: {job.reward} credits, Task: {job.task_details}.")
 
     def show_contracts(self):
         if not self.db.contracts:
-            self.msg("No contracts available.")
+            self.notify("No contracts available.")
         for contract in self.db.contracts:
-            self.msg(f"Contract: {contract.description}, Reward: {contract.reward} credits, Cargo: {contract.cargo}.")
+            self.notify(f"Contract: {contract.description}, Reward: {contract.reward} credits, Cargo: {contract.cargo}.")
 
     def complete_job(self, job, player):
         """
@@ -197,9 +203,9 @@ class Corporation(DefaultObject):
         """
         if job.complete(player):
             self.db.jobs.remove(job)
-            self.msg(f"Job completed: {job.description}. {player.name} has been paid {job.reward} credits.")
+            self.notify(f"Job completed: {job.description}. {player.name} has been paid {job.reward} credits.")
         else:
-            self.msg("Job could not be completed.")
+            self.notify("Job could not be completed.")
 
     def complete_contract(self, contract, player):
         """
@@ -211,9 +217,13 @@ class Corporation(DefaultObject):
         """
         if contract.complete(player):
             self.db.contracts.remove(contract)
-            self.msg(f"Contract completed: {contract.description}. {player.name} has been paid {contract.reward} credits.")
+            self.notify(f"Contract completed: {contract.description}. {player.name} has been paid {contract.reward} credits.")
         else:
-            self.msg("Contract could not be completed.")
+            self.notify("Contract could not be completed.")
+
+    def show_available_tech(self, caller):
+        available = [t for t, data in TECH_TREE.items() if all(r in self.db.owned_tech for r in data['requirements'])]
+        caller.msg(f"Available tech upgrades: {', '.join(available)}")
 
     def buy_tech(self, caller, tech_name):
         owned_tech = self.db.owned_tech
@@ -227,8 +237,8 @@ class Corporation(DefaultObject):
         if self.db.research < tech_data['research']:
             caller.msg(f"{self.key} can't afford that.")
             return
-        if not all(r in owned_tech for r in tech_name['requirements'] ):
-            caller.msg(f"{self.key} is missing {tech_name['requirements']}.")
+        if not all(r in owned_tech for r in tech_data.get('requirements', [])):
+            caller.msg(f"{self.key} is missing {tech_data['requirements']}.")
             return
         self.db.research -= tech_data['research']
         self.db.owned_tech.append(tech_name)
